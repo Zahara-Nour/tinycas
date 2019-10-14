@@ -1,0 +1,36 @@
+{
+  "name": "tinycas",
+  "version": "1.0.0",
+  "description": "A tinycas babe !!!",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src -d build",
+    "test": "jest --coverage --colors",
+    "testw": "jest --watch --colors",
+    "start": "node src/index.js",
+    "coverage": "open coverage/lcov-report/index.html",
+    "lint": "eslint",
+    "prepush": "npm run lint && npm run test",
+    "precommit": "npm run lint && npm test"
+  },
+  "author": "David Le Jolly",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
+    "eslint": "^6.4.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2"
+  },
+  "dependencies": {
+    "decimal.js": "^10.2.0"
+  }
+}
