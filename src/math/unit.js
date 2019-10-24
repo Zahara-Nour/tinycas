@@ -1,4 +1,4 @@
-import { symbol, number } from './node'
+import { symbol, number, TYPE_PRODUCT_POINT } from './node'
 
 const TYPE_UNIT = 'type unit'
 
@@ -7,23 +7,32 @@ const TYPE_UNIT = 'type unit'
 // une unité simple ou composée
 const PUnit = {
   mult (u) {
-    return unit(this.u.mult(u), this.normal.mult(u.normal))
+    return unit(this.u.mult(u, TYPE_PRODUCT_POINT), this.normal.mult(u.normal))
   },
 
   div (u) {
     return unit(this.u.div(u), this.normal.div(u.normal))
   },
   pow (n) {
-    return unit(this.u.pow(n), this.normal.pow(n))
+    //  n doit être un entier relatif
+    return unit(this.u.pow(n), this.normal.pow(n.normal))
   },
 
   toString () {
     return this.u.string
   },
 
+  get string () {
+    return this.toString()
+  },
+
   isConvertibleTo (expectedUnit) {
+    return this.normal.isConvertibleTo(expectedUnit.normal)
     // on compare les bases de la forme normale
-    return this.normal.first[1].equalsTo(expectedUnit.normal.first[1])
+  },
+
+  getCoefTo(u) {
+    return this.normal.getCoefTo(u.normal).node
   },
 
   equalsTo (u) {
@@ -36,16 +45,20 @@ ne doit être appelée à l'extérieur que pour créer une unité simple. Les un
 */
 function unit (u, normal) {
   if (!normal) { // c'est une unité simple
-      const coef = number(baseUnits[u.string][0])
-      const base = symbol(baseUnits[u.string][1])
+      const coef = number(baseUnits[u][0])
+      const base = symbol(baseUnits[u][1])
       normal = coef.mult(base).normal
   }
      
-  return Object.create(PUnit, {
+  const e = Object.create(PUnit)
+  Object.assign(e,  {
     type:    TYPE_UNIT,
-    u,
+    u: symbol(u),
     normal
   })
+  return e
+  
+
 }
 
 const baseUnits = {
@@ -86,4 +99,4 @@ const baseUnits = {
   noUnit:   [1, 'noUnit']
 }
 
-export { baseUnits }
+export { unit, baseUnits }

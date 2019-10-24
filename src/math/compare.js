@@ -2,12 +2,10 @@
 import { TYPE_HOLE, TYPE_NUMBER, TYPE_SYMBOL, TYPE_TEMPLATE } from './node'
 import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal'
 /**
- * Un ordre doit être défini sur les expressions pour créer les formes normales, pour pouvoir identifier comme identiques deux expressions qui ne diffèrent qu'au niveau de l'ordre
+ * Un ordre doit être défini sur les expressions afin de créer les formes normales, qui permettent d'identifier
+ * deux expressions équiavalentes
  * ordre choisi:
- *
- * @param {*} node1
- * @param {*} node2
- * ordre choisi     2 < a < ? < template
+ * 2 < a < ? < template
  * pour les autres type, on compare les formes normales, termes à termes
  * renvoie 1 si node1 > node2
  * renvoie 0 si node1 = node2
@@ -16,6 +14,8 @@ import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal'
 
 export default function compare (node1, node2) {
   let result
+  let i1, i2, next1,next2
+  
   switch (node1.type) {
     case TYPE_HOLE:
       switch (node2.type) {
@@ -78,6 +78,7 @@ export default function compare (node1, node2) {
       result = node1.n.mult(node2.d).compareTo(node2.n.mult(node1.d))
       
       if (result === 0) {
+        //  on doit comparer les unités
         if (node1.unit && node2.unit) {
           result = node1.unit.compareTo(node2.unit)
         } else if (node1.unit) {
@@ -90,10 +91,7 @@ export default function compare (node1, node2) {
 
     case TYPE_NSUM:
     case TYPE_NPRODUCT:
-      let i1,
-        i2,
-        next1,
-        next2
+      
         // !!!!! attention avec les crochets en début de ligne !!!!!!!!!!
       ;[i1, i2] = [node1[Symbol.iterator](), node2[Symbol.iterator]()]
       ;[next1, next2] = [i1.next(), i2.next()]
@@ -106,10 +104,9 @@ export default function compare (node1, node2) {
         const [base1, base2] = [child1[1], child2[1]]
         result = base1.compareTo(base2)
         if (result !== 0) return result
-
+        
         // ce n'est pas concluant, on passe aux coefs
         const [coef1, coef2] = [child1[0], child2[0]]
-
         if (coef1.type === TYPE_NSUM) {
           result = coef1.compareTo(coef2)
           if (result !== 0) return result
@@ -121,6 +118,7 @@ export default function compare (node1, node2) {
             return 1
           }
         }
+        //  La comparaison n'est toujours pas concluante, on passe au terme suivant
         next1 = i1.next()
         next2 = i2.next()
       }
@@ -132,6 +130,7 @@ export default function compare (node1, node2) {
       return 1
 
     default:
+      // par défaut on compare les formes normales
       return node1.normal.compareTo(node2.normal)
   }
 }

@@ -3,28 +3,26 @@ import {
   TYPE_BRACKET,
   TYPE_DIFFERENCE,
   TYPE_DIVISION,
-  TYPE_EQUALITY,
   TYPE_ERROR,
   TYPE_HOLE,
-  TYPE_INEQUALITY,
   TYPE_NUMBER,
   TYPE_OPPOSITE,
   TYPE_POWER,
   TYPE_PRODUCT,
   TYPE_PRODUCT_IMPLICIT,
+  TYPE_PRODUCT_POINT,
   TYPE_QUOTIENT,
   TYPE_RADICAL,
-  TYPE_SIMPLE_UNIT,
   TYPE_SUM,
   TYPE_SYMBOL,
   TYPE_TEMPLATE,
-  TYPE_UNIT
 } from './node'
 
 import { TYPE_NORMAL, TYPE_NPRODUCT, TYPE_NSUM } from './normal'
+import { POINT_CONVERSION_COMPRESSED } from 'constants'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
-export function text (e) {
+export function text (e, displayUnit) {
   
   let s
 
@@ -60,19 +58,14 @@ export function text (e) {
     case TYPE_QUOTIENT:
       s = e.first.string + '/' + e.last.string
       break
-      
+   
     case TYPE_SUM:
-      s = e.children.map(child => child.toString()).join('+')
-      break
-      
     case TYPE_PRODUCT:
-      s = e.children.map(child => child.toString()).join('*')
-      break
-      
     case TYPE_PRODUCT_IMPLICIT:
-      s = e.children.map(child => child.toString()).join('')
+    case TYPE_PRODUCT_POINT:
+      s = e.children.map(child => child.toString()).join(e.type)
       break
-      
+          
     case TYPE_SYMBOL:
       s = e.letter
       break
@@ -133,7 +126,7 @@ export function text (e) {
     default:
       
   }
-  if (e.unit) s += " " + e.unit.string
+  if (e.unit && displayUnit) s += " " + e.unit.string
   return s
 }
 

@@ -62,6 +62,10 @@ describe('Testing normal forms for litteral expressions', () => {
     ['0a', '0'],
     ['2a', '2*a'],
     ['a+a', '2*a'],
+    ['a+b', 'a+b'],
+    ['2a+3b', '2*a+3*b'],
+    ['a-b', 'a-b'],
+    ['a-2b', 'a-2*b'],
     ['ab', 'a*b'],
     ['-ab', '-a*b'],
     ['(-a)*b', '-a*b'],
@@ -74,6 +78,7 @@ describe('Testing normal forms for litteral expressions', () => {
     ['(a+b)^2', '2*a*b+a^2+b^2'],
     ['(a-b)^2', '-2*a*b+a^2+b^2'],
     ['(a+b-c)^3', '-6*a*b*c+3*a*b^2+3*a*c^2+3*a^2*b-3*a^2*c+a^3+3*b*c^2-3*b^2*c+b^3-c^3'],
+    ['(a+b)/(c+d)', '(a+b)/(c+d)'],
    
   ]
 

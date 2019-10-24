@@ -2,14 +2,14 @@ import evaluate from './evaluate'
 import fraction from './fraction'
 import normalize from './normal'
 import { text } from './output'
-import { baseUnits } from './unit'
 import compare from './compare'
-import { math } from './math'
+import { substitute, generate } from './transform'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
 export const TYPE_PRODUCT = '*'
 export const TYPE_PRODUCT_IMPLICIT = '.'
+export const TYPE_PRODUCT_POINT = '.'
 export const TYPE_DIVISION = ':'
 export const TYPE_QUOTIENT = '/'
 export const TYPE_POWER = '^'
@@ -29,6 +29,12 @@ export const TYPE_INEQUALITY = '<>'
 
 
 const PNode = {
+
+  [Symbol.iterator]() {
+    return this.children ? this.children[Symbol.iterator]() : null
+  },
+
+  //  simplifier une fraction numérique
   reduce () {
     // la fraction est déj
     const b = fraction(this.string).reduce()
@@ -71,7 +77,7 @@ const PNode = {
     return this.type === TYPE_POSITIVE
   },
   isProduct () {
-    return this.type === TYPE_PRODUCT || this.type === TYPE_PRODUCT_IMPLICIT
+    return this.type === TYPE_PRODUCT || this.type === TYPE_PRODUCT_IMPLICIT || this.type === TYPE_PRODUCT_POINT
   },
   isDivision () {
     return this.type === TYPE_DIVISION
@@ -128,7 +134,7 @@ const PNode = {
     return this.string === e.string
   },
   equals (e) {
-    return this.normalized.string === e.normalized.string
+    return this.normal.string === e.normal.string
   },
 
   get pos () {
@@ -147,8 +153,8 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString (unit = false) {
-    return text(this)
+  toString (displayUnit = true) {
+    return text(this, displayUnit)
   },
 
   get string () {
@@ -178,7 +184,6 @@ const PNode = {
   },
 
   add(e) {
-    // TODO: mettre à plat
     return sum([this,e])
   },
   
@@ -186,9 +191,8 @@ const PNode = {
     return difference([this,e])
   },
 
-  mult(e) {
-    // TODO: mettre à plat
-    return product([this,e])
+  mult(e, type = TYPE_PRODUCT) {
+    return product([this,e], type)
   },
 
   div(e) {
@@ -210,60 +214,93 @@ const PNode = {
   
   /* 
   params contient :
-   - les valeurs de substituion
-   - decimal : true si on veut la valeur décimale ou un résultat approché
+   - les valeurs de substitution
+   - decimal : true si on veut la valeur décimale (approchée dans certains cas)
    - precision : précision du résultat approché
+   - unit : l'unité dans laquelle on veut le résultat
    */
 
-  eval (params) {
-    // TOTO : memoize
+  eval (params = {}) {
+    // TODO: memoize
     // par défaut on veut une évaluation exacte
     params.decimal = params.decimal || false
 
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
-
+    
     // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+    e = e.normal
+    
+    // si on doit faire une conversion
     if (params.unit) {
-      if (!this.unit) { throw new Error("calcul avec unité d'une expression sans unité") }
-      e = e._normal.convertTo(params.unit).node
-    } else {
-      e = e.normal
+      if (!e.unit) { throw new Error("calcul avec unité d'une expression sans unité") }
+      const coef = e.unit.getCoefTo(params.unit.normal)
+      e = e.mult(coef)
+    }
+    
+    // on retourne à la forme naturelle
+    e = e.node
+
+    // on met à jour l'unité qui a pu être modifiée par une conversion
+    //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
+    if (params.unit) {
+      e.unit = params.unit
     }
 
     // si on veut la valeur décimale
     if (params.decimal) {
-      // evaluate retourne un objet Decimal
+      
+      //  on garde en mémoire l'unité
       const unit = e.unit
-      e = number(evaluate(this).toString())
+
+      // evaluate retourne un objet Decimal
+      e = number(evaluate(e).toString())
+
+      //  on remet l'unité qui avait disparu
       if (unit) e.unit = unit
     }
     return e
   },
 
-  showShallowStructure () {
+  // génère des valeurs pour les templates
+  generate () {
+    return generate(this)
+  },
+
+  shallow () {
     return {
       nature:   this.type,
       children: this.children.map(e => e.type)
     }
   },
 
+  // renvoie la forme normale dans le format interne
+  //  pour avoir la forme normale dans le même format que les autres expressions,
+  //  il faut utiliser l'attribut .node
   get normal() {
-    // if (!this._normal) this._normal= normalize(this)
-    return normalize(this)
+    if (!this._normal) this._normal= normalize(this)
+    return this._normal
+  },
+
+  // substituee les symboles
+  // certains symboles (pi, ..) sont résevés à des constantes
+  substitute(symbols) {
+    return substitute(this, symbols)
   }
 }
 
 
 
 /* 
-Création de la représentation intermédiaire de l'expresssion mathématique
-La forme normale
+Création de la représentation intermédiaire de l'expresssion mathématique (AST)
+La forme normale utilise une forme propre.
  */
-function createNode (params) {
-  if (params.type === TYPE_SUM ||params.type === TYPE_PRODUCT || params.type === TYPE_PRODUCT_IMPLICIT) {
+export function createNode (params) {
+
+  // dans le cas des sommes et des produits, on applatit d'abord les fils qui auraient la même structure
+  if (params.type === TYPE_SUM ||params.type === TYPE_PRODUCT || params.type === TYPE_PRODUCT_IMPLICIT || params.type === TYPE_PRODUCT_POINT) {
     let t = []
-    for (let child of params.children) {
+    for (const child of params.children) {
       if  (params.type === child.type) {
         t = t.concat(child.children)
       }
@@ -277,16 +314,17 @@ function createNode (params) {
   const node = Object.create(PNode)
   Object.assign(node, params)
 
+  //  on associe le père à chaque fils
   if (node.children) {
-    for (let child of node.children) {
+    for (const child of node) {
       child.parent = node
     }
   }
   return node
 }
 
-// Deux constantes servant pour les formes normales. Ne pas utiliser ailleurs. A freezer
-// n'ont pas besoin d'avoir une forme normale
+// Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
+
 const one = (function () {
   let instance
   return () => {
@@ -352,12 +390,3 @@ export function template(params) {
   return createNode({ type: TYPE_TEMPLATE, ...params})
 }
 
-// unité non composé
-export function simpleUnit(name) {
-  return createNode({name , coef:number(baseUnits[name][0]) , base:symbol(baseUnits[name][1]), type: TYPE_SIMPLE_UNIT})
-}
-
-// unité composée
-export function unit(children) {
-  return createNode({children, type: TYPE_UNIT})
-}

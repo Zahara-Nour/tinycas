@@ -3,28 +3,26 @@ import {
   TYPE_BRACKET,
   TYPE_DIFFERENCE,
   TYPE_DIVISION,
-  TYPE_EQUALITY,
-  TYPE_ERROR,
   TYPE_HOLE,
-  TYPE_INEQUALITY,
   TYPE_NUMBER,
   TYPE_OPPOSITE,
   TYPE_POWER,
   TYPE_PRODUCT,
   TYPE_PRODUCT_IMPLICIT,
+  TYPE_PRODUCT_POINT,
   TYPE_QUOTIENT,
   TYPE_RADICAL,
-  TYPE_SIMPLE_UNIT,
   TYPE_SUM,
   TYPE_SYMBOL,
-  TYPE_TEMPLATE,
-  TYPE_UNIT
 } from './node'
+
 
 import Decimal from 'decimal.js'
 
-// evaluation décimale d'une forme normale dont les symboles ont été substitués
-// pour éviter les conversions répétées, renvoie un Decimal
+// Evaluation décimale d'une forme normale dont les symboles ont été substitués.
+// Pour éviter les conversions répétées, renvoie un Decimal
+// Les unités ne sont pas gérées ici, mais dans la fonction appelante eval() associé 
+// à node
 export default function evaluate (node, params) {
   switch (node.type) {
     case TYPE_NUMBER:
@@ -64,12 +62,13 @@ export default function evaluate (node, params) {
 
     case TYPE_PRODUCT:
     case TYPE_PRODUCT_IMPLICIT:
+    case TYPE_PRODUCT_POINT:
       return node.children.reduce(
         (sum, child) => sum.mul(evaluate(child)),
         new Decimal(1)
       )
 
     default:
-      break
+      return node
   }
 }

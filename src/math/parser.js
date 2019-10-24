@@ -16,6 +16,7 @@ import {
   bracket,
   template
 } from './node'
+
 import { unit, baseUnits } from './unit'
 // import template from './template'
 
@@ -38,6 +39,7 @@ const CLOSING_BRACKET = token(')')
 // const CLOSING_SQUAREBRACKET = token(']')
 // const OPENING_CURLYBRACKET = token('{')
 // const CLOSING_CURLYBRACKET = token('}')
+const CONSTANTS = token('@pi')
 const FUNCTION = token('@cos|sin|sqrt')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const NUMBER = token('@[\\d]+([,\\.][\\d]+)?') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -222,8 +224,11 @@ ${msg}`
           e = null
       }
       require(CLOSING_BRACKET)
-  
-    } else if (match(TEMPLATE)) {
+    } 
+    else if (match(CONSTANTS)) {
+      e = symbol(_lexem)
+    } 
+    else if (match(TEMPLATE)) {
       switch (_lexem.slice(0, 2)) {
         /*
         $e : entier positif
@@ -239,18 +244,18 @@ ${msg}`
         case '$e':
           e = template({
             nature: _parts[2],
-            max: _parts[6] ? _parts[6] : _parts[4],
-            min: _parts[6] ? _parts[4] : null
+            max: parseInt(_parts[6] ? _parts[6] : _parts[4], 10),
+            min: parseInt(_parts[6] ? _parts[4] : null, 10),
           })
           break
 
         case '$d':
             e = template({
               nature: _parts[7],
-              max_e: _parts[11] ? _parts[11] : _parts[9],
-              min_e: _parts[11] ? _parts[9] : null,
-              max_d: _parts[15] ? _parts[15] : _parts[13],
-              min_d: _parts[15] ? _parts[13] : null
+              max_e: parseInt(_parts[11] ? _parts[11] : _parts[9], 10),
+              min_e: parseInt(_parts[11] ? _parts[9] : null, 10),
+              max_d: parseInt(_parts[15] ? _parts[15] : _parts[13], 10),
+              min_d: parseInt(_parts[15] ? _parts[13] : null, 10),
             })
           break
 
@@ -298,10 +303,10 @@ ${msg}`
 
   function parseUnit () {
     function getUnit () {
-      let u = baseUnits[_lexem]
+      let u = unit(_lexem)
       if (match(POW)) {
         const n = parseAtom()
-        if (!(n.isInt() || (n.isOpposite() && n.first.isInt()))) {
+        if (!(n.isInt() || (n.isBracket() && n.first.isOpposite() && n.first.first.isInt()))) {
           failure('Integer required')
         }
         u = u.pow(n)
@@ -318,7 +323,7 @@ ${msg}`
           failure('Unit required')
         }
       }
-      return unit(result)
+      return result
     } else {
       return null
     }
