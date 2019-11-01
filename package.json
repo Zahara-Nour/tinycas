@@ -2,7 +2,7 @@
   "name": "tinycas",
   "version": "1.0.0",
   "description": "A tinycas babe !!!",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "build": "babel src -d build",
     "test": "jest --coverage --colors",

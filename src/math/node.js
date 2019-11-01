@@ -1,7 +1,7 @@
 import evaluate from './evaluate'
 import fraction from './fraction'
 import normalize from './normal'
-import { text } from './output'
+import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
 
@@ -159,6 +159,10 @@ const PNode = {
 
   get string () {
     return this.toString()
+  },
+
+  get latex () {
+    return latex(this)
   },
 
   get root () {

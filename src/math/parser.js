@@ -14,7 +14,8 @@ import {
   power,
   notdefined,
   bracket,
-  template
+  template,
+  TYPE_PRODUCT_IMPLICIT
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -192,7 +193,7 @@ ${msg}`
         }
       }
     }
-    return factors.length === 1 ? e : product(factors)
+    return factors.length === 1 ? e : product(factors, TYPE_PRODUCT_IMPLICIT)
   }
 
   function parsePower (options, optional = false) {

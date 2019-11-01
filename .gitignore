@@ -30,23 +30,14 @@ pids
 coverage
 
 
-# nyc test coverage
-.nyc_output
 
-
-
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
+# Compiled binary 
+build/
 
 # Dependency directories
 node_modules/
-jspm_packages/
 
-# TypeScript v1 declaration files
-typings/
 
-# TypeScript cache
-*.tsbuildinfo
 
 # Optional npm cache directory
 .npm

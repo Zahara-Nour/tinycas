@@ -18,8 +18,7 @@ import {
   TYPE_TEMPLATE,
 } from './node'
 
-import { TYPE_NORMAL, TYPE_NPRODUCT, TYPE_NSUM } from './normal'
-import { POINT_CONVERSION_COMPRESSED } from 'constants'
+import { TYPE_NORMAL } from './normal'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
 export function text (e, displayUnit) {
@@ -130,6 +129,73 @@ export function text (e, displayUnit) {
   return s
 }
 
-export function latex() {
+export function latex (e) {
+  
+  let s
 
+  switch (e.type) {
+    case TYPE_POSITIVE:
+      s = '+' + e.first.latex
+      break
+
+    case TYPE_OPPOSITE:
+      s = '-' + e.first.latex
+      break
+      
+    case TYPE_RADICAL:
+      s = '\\sqrt{' + e.first.latex + '}'
+      break
+      
+    case TYPE_BRACKET:
+      s = '\\left(' + e.first.latex + '\\right)'
+      break
+      
+    case TYPE_DIFFERENCE:
+      s = e.first.latex + '-' + e.last.latex
+      break
+      
+    case TYPE_POWER:
+      s = e.first.latex + '^' + e.last.latex
+      break
+      
+    case TYPE_DIVISION:
+      s = e.first.latex + '\\div' + e.last.latex
+      break
+      
+    case TYPE_QUOTIENT:
+      s = '\\frac{'+ e.first.latex + '}{' + e.last.latex + '}'
+      break
+   
+    case TYPE_SUM:
+        s = e.children.map(child => child.latex).join('+')
+        break 
+
+    case TYPE_PRODUCT:
+        s = e.children.map(child => child.latex).join(' \\times ')
+        break 
+
+    case TYPE_PRODUCT_IMPLICIT:
+        s = e.children.map(child => child.latex).join('')
+        break
+
+    case TYPE_PRODUCT_POINT:
+      s = e.children.map(child => child.latex).join(' \\cdot ')
+      break
+          
+    case TYPE_SYMBOL:
+      s = e.letter
+      break
+      
+    case TYPE_NUMBER:
+      s = e.value.toString()
+      break
+      
+    case TYPE_HOLE:
+      s = '\\ldots'
+      break
+      
+    default:
+      s = e.string   
+  }
+  return s
 }
