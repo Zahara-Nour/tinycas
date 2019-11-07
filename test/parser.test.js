@@ -104,15 +104,32 @@ describe('Parsing', () => {
 
   test('Parser parses templates', () => {
     const exps = [
-      '$e',
-      '$er',
-      '$en',
-      '$d',
-      '$dr',
+      // '$e',
+      // '$er',
+      // '$en',
+      // '$d',
+      // '$dr',
       '$e{2}',
-      '$e{2:4}',
-      '$d{2;3}',
-      '$d{2:4;3:5}'
+      '$ep{2}',
+      '$ei{2}',
+      '$er{2}',
+      '$epr{2}',
+      '$eir{2}',
+      '$e{2;4}',
+      '$ep{2;4}',
+      '$ei{2;4}',
+      '$er{2;4}',
+      '$epr{2;4}',
+      '$eir{2;4}',
+      '$e[2;4]',
+      '$er[2;4]',
+      '$ep[2;4]',
+      '$epr[2;4]',
+      '$ei[2;4]',
+      '$eir[2;4]',
+      
+      // '$d{2;3}',
+      // '$d{2:4;3:5}'
     ]
     for (let tested of exps) {
       const e = p.parse(tested)

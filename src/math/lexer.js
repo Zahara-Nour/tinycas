@@ -47,6 +47,7 @@ function regExToken (pattern) {
 function token (pattern) {
   let t
   if (pattern.startsWith('@')) {
+    // TODO: pourquoi les parentheses -> ça décale les indices dans le tableau de matching
     t = regExToken('^(' + pattern.slice(1, pattern.length) + ')')
   } else {
     t = stringToken(pattern)

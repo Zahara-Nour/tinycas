@@ -1,4 +1,5 @@
 import { token, lexer } from './lexer'
+import { math } from './math'
 import {
   number,
   hole,
@@ -15,7 +16,7 @@ import {
   notdefined,
   bracket,
   template,
-  TYPE_PRODUCT_IMPLICIT
+  TYPE_PRODUCT_IMPLICIT,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -34,23 +35,26 @@ const PERIOD = token('.')
 // const EQUAL = token('=')
 // const COMP = token('@[<>]=?')
 // const ANTISLASH = token('\\')
+const DIGITS = token('@(\\d)+')
 const OPENING_BRACKET = token('(')
 const CLOSING_BRACKET = token(')')
-// const OPENING_SQUAREBRACKET = token('[')
-// const CLOSING_SQUAREBRACKET = token(']')
-// const OPENING_CURLYBRACKET = token('{')
-// const CLOSING_CURLYBRACKET = token('}')
+const SEMICOLON = token(';')
+const OPENING_SQUAREBRACKET = token('[')
+const CLOSING_SQUAREBRACKET = token(']')
+const OPENING_CURLYBRACKET = token('{')
+const CLOSING_CURLYBRACKET = token('}')
+// const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
+const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?|\\$(\\d)+')
 const CONSTANTS = token('@pi')
 const FUNCTION = token('@cos|sin|sqrt')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const NUMBER = token('@[\\d]+([,\\.][\\d]+)?') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 // const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const UNIT = token(
-  '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h'
+  '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h',
 )
-const TEMPLATE = token(
-  '@\\$fi|\\$ri|\\$f|\\$r|\\$p|(\\$e[rn]?)({(\\d+)(:(\\d+))?})?|(\\$d[rn]?)({(\\d+)(:(\\d+))?(;(\\d+)(:(\\d+))?)?})?'
-)
+
+// const TEMPLATE = token(`@${regexBase}|${regexInteger}|${regexDecimal}`)
 
 // const LENGTH = token('@km|hm|dam|dm|cm|mm|m')
 // const MASS = token('@kg|hg|dag|dg|cg|mg|g')
@@ -88,13 +92,13 @@ const SYMBOL = token('@[a-z]{1}')
 
 class ParsingError extends Error {}
 
-function parser () {
+function parser() {
   let _lex
   let _lexem
   let _input
   let _parts
 
-  function failure (msg) {
+  function failure(msg) {
     let place = '-'.repeat(_lex.pos)
     place += '^'
     const text = `${_input}
@@ -103,7 +107,7 @@ ${msg}`
     throw new ParsingError(text)
   }
 
-  function match (t) {
+  function match(t) {
     if (_lex.match(t)) {
       _lexem = _lex.lexem
       _parts = _lex.parts
@@ -112,29 +116,29 @@ ${msg}`
     return false
   }
 
-  function pass (t) {
+  function pass(t) {
     match(t)
   }
 
-  function require (t) {
+  function require(t) {
     if (!match(t)) throw new ParsingError(`${t.pattern} required`)
   }
 
-  function parseExpression (options) {
+  function parseExpression(options) {
     let e
     let term
-    let unit = {string : baseUnits.noUnit[1] }
+    let unit = { string: baseUnits.noUnit[1] }
     let sign
 
     if (match(MINUS) || match(PLUS)) {
-      sign  = _lexem
+      sign = _lexem
     }
     term = parseTerm(options)
     switch (sign) {
       case '-':
-        e = opposite([term]) 
+        e = opposite([term])
         break
-      
+
       case '+':
         e = positive([term])
         break
@@ -148,7 +152,8 @@ ${msg}`
       sign = _lexem
       term = parseTerm(options)
       if (
-        (!term.unit && unit.string !== baseUnits.noUnit[1]) || (term.unit && unit.string === baseUnits.noUnit[1]) ||
+        (!term.unit && unit.string !== baseUnits.noUnit[1]) ||
+        (term.unit && unit.string === baseUnits.noUnit[1]) ||
         (term.unit && !term.unit.isConvertibleTo(unit))
       ) {
         failure("Erreur d'unité")
@@ -158,7 +163,7 @@ ${msg}`
     return e
   }
 
-  function parseTerm (options) {
+  function parseTerm(options) {
     let e = parseFraction(options)
 
     while (match(TIMES) || match(DIV)) {
@@ -171,7 +176,7 @@ ${msg}`
     return e
   }
 
-  function parseFraction (options) {
+  function parseFraction(options) {
     let e = parseImplicitFactors(options)
     while (match(FRAC)) {
       e = quotient([e, parseImplicitFactors(options)])
@@ -179,7 +184,7 @@ ${msg}`
     return e
   }
 
-  function parseImplicitFactors (options) {
+  function parseImplicitFactors(options) {
     const e = parsePower(options)
     const factors = [e]
 
@@ -196,7 +201,7 @@ ${msg}`
     return factors.length === 1 ? e : product(factors, TYPE_PRODUCT_IMPLICIT)
   }
 
-  function parsePower (options, optional = false) {
+  function parsePower(options, optional = false) {
     let e = parseAtom(options, optional)
     // parseAtom peut retrouner undefined dans le cas d'une recherche infructueuse  de produit implicite
     if (e) {
@@ -208,7 +213,7 @@ ${msg}`
     return e
   }
 
-  function parseAtom (options, optional = false) {
+  function parseAtom(options, optional = false) {
     let e, func
     if (match(NUMBER)) {
       e = number(_lexem)
@@ -225,59 +230,8 @@ ${msg}`
           e = null
       }
       require(CLOSING_BRACKET)
-    } 
-    else if (match(CONSTANTS)) {
+    } else if (match(CONSTANTS)) {
       e = symbol(_lexem)
-    } 
-    else if (match(TEMPLATE)) {
-      switch (_lexem.slice(0, 2)) {
-        /*
-        $e : entier positif
-        $en : entier négatif
-        $er : entier relatif
-        $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
-        $e{2:3} : entre 2 et 3 chiffres
-        dans 'l'expression régulière :
-        _parts[2] renvoie la nature ($e, $er, ouu $en)
-        _parts[4] et _parts[6] : nb chiffres min et max
-        _parts[4] nb chiffres ax si il n'y a pas _parts[6]
-         */
-        case '$e':
-          e = template({
-            nature: _parts[2],
-            max: parseInt(_parts[6] ? _parts[6] : _parts[4], 10),
-            min: parseInt(_parts[6] ? _parts[4] : null, 10),
-          })
-          break
-
-        case '$d':
-            e = template({
-              nature: _parts[7],
-              max_e: parseInt(_parts[11] ? _parts[11] : _parts[9], 10),
-              min_e: parseInt(_parts[11] ? _parts[9] : null, 10),
-              max_d: parseInt(_parts[15] ? _parts[15] : _parts[13], 10),
-              min_d: parseInt(_parts[15] ? _parts[13] : null, 10),
-            })
-          break
-
-        case '$f':
-          e = template('$f')
-          break
-        case '$fi':
-          e = template('$f')
-          break
-        case '$r':
-          e = template('$f')
-          break
-        case '$ri':
-          e = template('$f')
-          break
-        case '$p':
-          e = template('$p')
-          break
-
-        default:
-      }
     } else if (match(SYMBOL)) {
       switch (_lexem) {
         /*
@@ -287,10 +241,59 @@ ${msg}`
         default:
           e = symbol(_lexem)
       }
-    } else if (match(OPENING_BRACKET)) {
+    }
+    else if (match(OPENING_BRACKET)) {
       // TODO : rajouter dans options qu'il ne faut pas de nouvelles unités
       e = bracket([parseExpression(options)])
       require(CLOSING_BRACKET)
+    } 
+    else if (match(INTEGER_TEMPLATE)) {
+      let nature
+      let relative
+      if (_parts[4]) {
+        nature = _parts[4]
+      } 
+      else {
+        nature = _parts[2]
+        relative = _parts[3]
+      }
+      let minDigit = hole()
+      let maxDigit = hole()
+      let min = hole()
+      let max = hole()
+      /*
+        $e : entier positif
+        $en : entier négatif
+        $er : entier relatif
+        $ep : entier pair
+        $ei : entier impair
+        $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
+        $e{2:3} : entre 2 et 3 chiffres
+        $e([ ])
+        dans 'l'expression régulière :
+        _parts[2] renvoie la nature ($e, $er, ouu $en)
+        _parts[4] et _parts[6] : nb chiffres min et max
+        _parts[4] nb chiffres ax si il n'y a pas _parts[6]
+         */
+
+      if (match(OPENING_CURLYBRACKET)) {
+        maxDigit = parseExpression(options)
+        if (match(SEMICOLON)) {
+          minDigit = maxDigit
+          maxDigit = parseExpression(options)
+        }
+        require(CLOSING_CURLYBRACKET)
+      } else if (match(OPENING_SQUAREBRACKET)) {
+        min = parseExpression(options)
+        require(SEMICOLON)
+        max = parseExpression(options)
+        require(CLOSING_SQUAREBRACKET)
+      }
+      e = template({
+        nature: '$' + nature,
+        relative,
+        children: [minDigit, maxDigit, min, max],
+      })
     } else if (!optional) {
       failure('No valid atom found')
     }
@@ -302,12 +305,17 @@ ${msg}`
     return e
   }
 
-  function parseUnit () {
-    function getUnit () {
+  function parseUnit() {
+    function getUnit() {
       let u = unit(_lexem)
       if (match(POW)) {
         const n = parseAtom()
-        if (!(n.isInt() || (n.isBracket() && n.first.isOpposite() && n.first.first.isInt()))) {
+        if (
+          !(
+            n.isInt() ||
+            (n.isBracket() && n.first.isOpposite() && n.first.first.isInt())
+          )
+        ) {
           failure('Integer required')
         }
         u = u.pow(n)
@@ -331,7 +339,7 @@ ${msg}`
   }
 
   return {
-    parse (input, options = { implicit: true }) {
+    parse(input, options = { implicit: true }) {
       _input = input
       _lex = lexer(input)
       let e
@@ -341,7 +349,7 @@ ${msg}`
         e = notdefined({ message: error.message })
       }
       return e
-    }
+    },
   }
 }
 

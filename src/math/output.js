@@ -87,17 +87,15 @@ export function text (e, displayUnit) {
       
     case TYPE_TEMPLATE:
       s = e.nature
+      if (e.relative) s +='r'
       switch (e.nature) {
         case '$e':
-        case '$er':
-        case '$en':
-          if (e.max) {
-            if (e.min) {
-              s += `{${e.min}:${e.max}}`
-            }
-            else {
-              s += `{${e.max}}`
-            }
+        case '$ep':
+        case '$ei':
+          if (!(e.children[0].isHole() && e.children[1].isHole())) {
+            s += `{${!e.children[0].isHole() ? e.children[0].string + ';' : ''}${e.children[1].string}}`
+          } else {
+            s+=`[${e.children[2].string};${e.children[3].string}]`
           }
           break
 

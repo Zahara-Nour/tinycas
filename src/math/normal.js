@@ -657,6 +657,10 @@ export default function normalize(node) {
       break
 
     case TYPE_HOLE:
+        n = nSum([[coefOne(), createBase(node)]])
+        d = nSumOne()
+        break
+
     case TYPE_SYMBOL:
       n = nSum([[coefOne(), createBase(symbol(node.toString(false)))]])
       d = nSumOne()

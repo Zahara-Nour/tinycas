@@ -268,6 +268,7 @@ const PNode = {
 
   // génère des valeurs pour les templates
   generate () {
+    this.root.generated =[]
     return generate(this)
   },
 
@@ -289,6 +290,7 @@ const PNode = {
   // substituee les symboles
   // certains symboles (pi, ..) sont résevés à des constantes
   substitute(symbols) {
+    this.root.substitutionMap = {...this.root.substitutionMap, ...symbols}
     return substitute(this, symbols)
   }
 }
