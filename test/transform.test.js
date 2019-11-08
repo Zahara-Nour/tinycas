@@ -45,7 +45,10 @@ describe('Testing templates generations', () => {
     '-$e{3}',
     '$e{1}+$e{3}',
     '$e{1;1}*$e{3}+3:?-a',
-    '$e{1}+$1'
+    '$e{1}+$1',
+    '$e{1}+$e{2}+$1+$2',
+    '$e{1}*$e{3}+$1*$e{3}',
+    '$e{1}+$e{$1;$1}'
 
     // '$d{2:2;4:4}',
     // '$d{3;1}',
@@ -54,7 +57,8 @@ describe('Testing templates generations', () => {
   let e
 
   for (let i = 0; i < 30; i++) {
-    e = math(t[6])
+    e = math(t[9])
+
     // console.log(e.string)
 
     console.log(e.generate().string)

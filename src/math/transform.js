@@ -91,10 +91,7 @@ function generateTemplate(node) {
   const children = node.children.map(child =>
     child.isTemplate()
       ? generateTemplate(child)
-      : child
-          .substitute()
-          .generate()
-          .eval(),
+      : generate(child.substitute()).eval(),
   )
   let e
   let value

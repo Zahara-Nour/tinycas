@@ -27,26 +27,22 @@ export const TYPE_BRACKET = 'bracket'
 export const TYPE_EQUALITY = '='
 export const TYPE_INEQUALITY = '<>'
 
-
 const PNode = {
-
   [Symbol.iterator]() {
     return this.children ? this.children[Symbol.iterator]() : null
   },
 
   //  simplifier une fraction numérique
-  reduce () {
+  reduce() {
     // la fraction est déj
     const b = fraction(this.string).reduce()
     let result
 
     if (b.n === 0) {
       result = number(0)
-    }
-    else if (b.d === 1) {
+    } else if (b.d === 1) {
       result = b.s === 1 ? number(b.n) : opposite([number(b.n)])
-    }
-    else {
+    } else {
       result = quotient([number(b.n), number(b.d)])
       if (b.s === -1) {
         result = opposite([result])
@@ -55,132 +51,134 @@ const PNode = {
     return result
   },
 
-  develop () {
+  develop() {
     return this
   },
-  simplify () {
+  simplify() {
     return this
   },
-  isIncorrect () {
+  isIncorrect() {
     return this.type === TYPE_ERROR
   },
-  isSum () {
+  isSum() {
     return this.type === TYPE_SUM
   },
-  isDifference () {
+  isDifference() {
     return this.type === TYPE_DIFFERENCE
   },
-  isOpposite () {
+  isOpposite() {
     return this.type === TYPE_OPPOSITE
   },
-  isPositive () {
+  isPositive() {
     return this.type === TYPE_POSITIVE
   },
-  isProduct () {
-    return this.type === TYPE_PRODUCT || this.type === TYPE_PRODUCT_IMPLICIT || this.type === TYPE_PRODUCT_POINT
+  isProduct() {
+    return (
+      this.type === TYPE_PRODUCT ||
+      this.type === TYPE_PRODUCT_IMPLICIT ||
+      this.type === TYPE_PRODUCT_POINT
+    )
   },
-  isDivision () {
+  isDivision() {
     return this.type === TYPE_DIVISION
   },
-  isQuotient () {
+  isQuotient() {
     return this.type === TYPE_QUOTIENT
   },
-  isPower () {
+  isPower() {
     return this.type === TYPE_POWER
   },
-  isRadical () {
+  isRadical() {
     return this.type === TYPE_RADICAL
   },
-  isNumber () {
+  isNumber() {
     return this.type === TYPE_NUMBER
   },
-  isBracket () {
+  isBracket() {
     return this.type === TYPE_BRACKET
   },
-  isSymbol () {
+  isSymbol() {
     return this.type === TYPE_SYMBOL
   },
-  isTemplate () {
+  isTemplate() {
     return this.type === TYPE_TEMPLATE
   },
-  isHole () {
+  isHole() {
     return this.type === TYPE_HOLE
   },
-  isChild () {
+  isChild() {
     return !!this.parent
   },
-  isFunction () {
+  isFunction() {
     return this.isRadical()
   },
-  compareTo (e) {
-    return compare(this,e)
+  compareTo(e) {
+    return compare(this, e)
   },
-  isLowerThan (e) {
+  isLowerThan(e) {
     return fraction(this).isLowerThan(fraction(e))
   },
-  isGreaterThan (e) {
+  isGreaterThan(e) {
     return e.isLowerThan(this)
   },
-  isOne () {
+  isOne() {
     return this.string === '1'
   },
-  isMinusOne () {
+  isMinusOne() {
     return this.string === '-1'
   },
-  isZero () {
+  isZero() {
     return this.string === '0'
   },
-  strictlyEquals (e) {
+  strictlyEquals(e) {
     return this.string === e.string
   },
-  equals (e) {
+  equals(e) {
     return this.normal.string === e.normal.string
   },
 
-  get pos () {
+  get pos() {
     return this.parent ? this.parent.children.indexOf(this) : 0
   },
 
-  get first () {
+  get first() {
     return this.children ? this.children[0] : null
   },
 
-  get last () {
+  get last() {
     return this.children ? this.children[this.children.length - 1] : null
   },
 
-  get length () {
+  get length() {
     return this.children ? this.children.length : null
   },
 
-  toString (displayUnit = true) {
+  toString(displayUnit = true) {
     return text(this, displayUnit)
   },
 
-  get string () {
+  get string() {
     return this.toString()
   },
 
-  get latex () {
+  get latex() {
     return latex(this)
   },
 
-  get root () {
-  
+  get root() {
     if (this.parent) {
       return this.parent.root
-    }
-    else {
-      return  this
+    } else {
+      return this
     }
   },
 
-  isInt () {
+  isInt() {
     // trick pour tester si un nombre est un entier
     return this.isNumber() && (this.value | 0) === this.value
   },
 
-  isNumeric () {
+  isNumeric() {
     return (
       this.isNumber() ||
       (this.children && !!this.children.find(child => child.isNumeric()))
@@ -188,34 +186,33 @@ const PNode = {
   },
 
   add(e) {
-    return sum([this,e])
+    return sum([this, e])
   },
-  
+
   sub(e) {
-    return difference([this,e])
+    return difference([this, e])
   },
 
   mult(e, type = TYPE_PRODUCT) {
-    return product([this,e], type)
+    return product([this, e], type)
   },
 
   div(e) {
-    return division([this,e])
+    return division([this, e])
   },
 
   frac(e) {
-    return quotient([this,e])
+    return quotient([this, e])
   },
 
   oppose() {
     return opposite([this])
   },
 
-
   pow(e) {
     return power([this, e])
   },
-  
+
   /* 
   params contient :
    - les valeurs de substitution
@@ -224,24 +221,26 @@ const PNode = {
    - unit : l'unité dans laquelle on veut le résultat
    */
 
-  eval (params = {}) {
+  eval(params = {}) {
     // TODO: memoize
     // par défaut on veut une évaluation exacte
     params.decimal = params.decimal || false
 
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
-    
+
     // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
     e = e.normal
-    
+
     // si on doit faire une conversion
     if (params.unit) {
-      if (!e.unit) { throw new Error("calcul avec unité d'une expression sans unité") }
+      if (!e.unit) {
+        throw new Error("calcul avec unité d'une expression sans unité")
+      }
       const coef = e.unit.getCoefTo(params.unit.normal)
       e = e.mult(coef)
     }
-    
+
     // on retourne à la forme naturelle
     e = e.node
 
@@ -253,7 +252,6 @@ const PNode = {
 
     // si on veut la valeur décimale
     if (params.decimal) {
-      
       //  on garde en mémoire l'unité
       const unit = e.unit
 
@@ -267,15 +265,15 @@ const PNode = {
   },
 
   // génère des valeurs pour les templates
-  generate () {
-    this.root.generated =[]
+  generate() {
+    this.root.generated = []
     return generate(this)
   },
 
-  shallow () {
+  shallow() {
     return {
-      nature:   this.type,
-      children: this.children.map(e => e.type)
+      nature: this.type,
+      children: this.children.map(e => e.type),
     }
   },
 
@@ -283,40 +281,76 @@ const PNode = {
   //  pour avoir la forme normale dans le même format que les autres expressions,
   //  il faut utiliser l'attribut .node
   get normal() {
-    if (!this._normal) this._normal= normalize(this)
+    if (!this._normal) this._normal = normalize(this)
     return this._normal
   },
 
   // substituee les symboles
   // certains symboles (pi, ..) sont résevés à des constantes
   substitute(symbols) {
-    this.root.substitutionMap = {...this.root.substitutionMap, ...symbols}
+    this.root.substitutionMap = { ...this.root.substitutionMap, ...symbols }
     return substitute(this, symbols)
-  }
+  },
+
+  matchTemplate(t) {
+
+    function checkChildren() {
+      for (let i=0; i<t.length; i++) {
+        if (!(this.children[i].match(t.children[i]))) return false
+      }
+      return true
+    }
+    function checkDigitsNumber(minDigits, maxDigits) {
+
+    }
+    function checkLimits(min, max) {
+
+    }
+    switch (t.type) {
+      case TYPE_NUMBER:
+        return this.isNumber() && this.value === t.value
+
+      case TYPE_HOLE:
+        return this.isHole()
+      
+      case TYPE_SYMBOL:
+        return this.isSymbol() && this.letter === t.letter
+
+      case TYPE_TEMPLATE:
+        switch(t.nature) {
+          case $e
+        }
+
+      default:
+        return t.type === this.type && t.length === this.length && checkChildren()
+      
+    }
+  },
 }
-
-
 
 /* 
 Création de la représentation intermédiaire de l'expresssion mathématique (AST)
 La forme normale utilise une forme propre.
  */
-export function createNode (params) {
-
+export function createNode(params) {
   // dans le cas des sommes et des produits, on applatit d'abord les fils qui auraient la même structure
-  if (params.type === TYPE_SUM ||params.type === TYPE_PRODUCT || params.type === TYPE_PRODUCT_IMPLICIT || params.type === TYPE_PRODUCT_POINT) {
+  if (
+    params.type === TYPE_SUM ||
+    params.type === TYPE_PRODUCT ||
+    params.type === TYPE_PRODUCT_IMPLICIT ||
+    params.type === TYPE_PRODUCT_POINT
+  ) {
     let t = []
     for (const child of params.children) {
-      if  (params.type === child.type) {
+      if (params.type === child.type) {
         t = t.concat(child.children)
-      }
-      else {
+      } else {
         t.push(child)
       }
     }
     params.children = t
   }
-  
+
   const node = Object.create(PNode)
   Object.assign(node, params)
 
@@ -331,68 +365,67 @@ export function createNode (params) {
 
 // Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
 
-const one = (function () {
+const one = (function() {
   let instance
   return () => {
-    if (!instance) instance = number("1")
+    if (!instance) instance = number('1')
     return instance
   }
 })()
 
-const zero = (function () {
+const zero = (function() {
   let instance
   return () => {
-    if (!instance) instance = number("0")
+    if (!instance) instance = number('0')
     return instance
   }
 })()
 
 export { one, zero }
 
-export function sum (children) {
+export function sum(children) {
   return createNode({ type: TYPE_SUM, children })
 }
-export function difference (children) {
+export function difference(children) {
   return createNode({ type: TYPE_DIFFERENCE, children })
 }
-export function division (children) {
+export function division(children) {
   return createNode({ type: TYPE_DIVISION, children })
 }
-export function product (children, type = TYPE_PRODUCT) {
+export function product(children, type = TYPE_PRODUCT) {
   return createNode({ type, children })
 }
-export function quotient (children) {
+export function quotient(children) {
   return createNode({ type: TYPE_QUOTIENT, children })
 }
-export function power (children) {
+export function power(children) {
   return createNode({ type: TYPE_POWER, children })
 }
-export function opposite (children) {
+export function opposite(children) {
   return createNode({ type: TYPE_OPPOSITE, children })
 }
-export function positive (children) {
+export function positive(children) {
   return createNode({ type: TYPE_POSITIVE, children })
 }
-export function bracket (children) {
+export function bracket(children) {
   return createNode({ type: TYPE_BRACKET, children })
 }
-export function radical (children) {
+export function radical(children) {
   return createNode({ type: TYPE_RADICAL, children })
 }
-export function number (value) {
+export function number(value) {
   return createNode({ type: TYPE_NUMBER, value: parseFloat(value) })
 }
-export function symbol (letter) {
+export function symbol(letter) {
   return createNode({ type: TYPE_SYMBOL, letter })
 }
-export function notdefined (error) {
+export function notdefined(error) {
   return createNode({ type: TYPE_ERROR, error })
 }
-export function hole () {
+export function hole() {
   return createNode({ type: TYPE_HOLE })
 }
 
 export function template(params) {
-  return createNode({ type: TYPE_TEMPLATE, ...params})
+  return createNode({ type: TYPE_TEMPLATE, ...params })
 }
-
