@@ -48,19 +48,31 @@ describe('Testing templates generations', () => {
     '$e{1}+$1',
     '$e{1}+$e{2}+$1+$2',
     '$e{1}*$e{3}+$1*$e{3}',
-    '$e{1}+$e{$1;$1}'
+    // '$e{1}+$e{$1;$1}'
 
     // '$d{2:2;4:4}',
     // '$d{3;1}',
     // '$dr{2:2;4:4}',
   ]
-  let e
 
-  for (let i = 0; i < 30; i++) {
-    e = math(t[9])
+  test.each(t)(
+    'is %s generation matching initial template',
+    (e) => {
+      // const f = math(e).generate()
+      
+      const f = math(e)
+      for (let i=0; i<100 ; i++) {
+        expect(f.generate().matchTemplate(f)).toBeTruthy()
+      }
+    },
+  )
+  // let e
 
-    // console.log(e.string)
+  // for (let i = 0; i < 30; i++) {
+  //   e = math(t[9])
 
-    console.log(e.generate().string)
-  }
+  //   // console.log(e.string)
+
+  //   console.log(e.generate().string)
+  // }
 })

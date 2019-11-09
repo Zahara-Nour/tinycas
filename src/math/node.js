@@ -178,6 +178,14 @@ const PNode = {
     return this.isNumber() && (this.value | 0) === this.value
   },
 
+  isEven() {
+    return this.isInt() && this.value % 2 === 0
+  },
+
+  isOdd() {
+    return this.isInt() && this.value % 2 === 1
+  },
+
   isNumeric() {
     return (
       this.isNumber() ||
@@ -293,37 +301,72 @@ const PNode = {
   },
 
   matchTemplate(t) {
-
-    function checkChildren() {
-      for (let i=0; i<t.length; i++) {
-        if (!(this.children[i].match(t.children[i]))) return false
+    let n
+    function checkChildren(e, t) {
+      for (let i = 0; i < t.length; i++) {
+        if (!e.children[i].matchTemplate(t.children[i])) return false
       }
       return true
     }
-    function checkDigitsNumber(minDigits, maxDigits) {
 
+    function checkDigitsNumber(n, minDigits, maxDigits) {
+      const ndigits = n === 0 ? 0 : Math.floor(Math.log10(n)) + 1
+      return ndigits <= maxDigits && ndigits >= minDigits
     }
-    function checkLimits(min, max) {
 
+    function checkLimits(n, min, max) {
+      return n >= min && n <= max
     }
+
     switch (t.type) {
       case TYPE_NUMBER:
         return this.isNumber() && this.value === t.value
 
       case TYPE_HOLE:
         return this.isHole()
-      
+
       case TYPE_SYMBOL:
         return this.isSymbol() && this.letter === t.letter
 
       case TYPE_TEMPLATE:
-        switch(t.nature) {
-          case $e
-        }
+        switch (t.nature) {
+          case '$e':
+          case '$ep':
+          case '$ei':
+            if (t.relative && this.isOpposite())
+              return this.first.matchTemplate(
+                template({ nature: t.nature, children: t.children }),
+              )
+            if (
+              !t.children[1].isHole() &&
+              !checkDigitsNumber(
+                this.value,
+                !t.children[0].isHole() ? t.children[0].value : 0,
+                t.children[1].value,
+              )
+            )
+              return false
+            if (
+              !t.children[2].isHole() &&
+              !checkLimits(this.value, t.children[2].value, t.children[3].value)
+            )
+              return false
+            if (t.nature === '$e') return this.isInt()
+            if (t.nature === '$ep') return this.isEven()
+            if (t.nature === '$ei') return this.isOdd()
+            break
 
+          default: // $1 ....
+              n = parseInt(t.nature.slice(1, t.nature.length),10)
+              return this.matchTemplate(t.root.generated[n-1])
+        }
+        break
       default:
-        return t.type === this.type && t.length === this.length && checkChildren()
-      
+        return (
+          t.type === this.type &&
+          t.length === this.length &&
+          checkChildren(this, t)
+        )
     }
   },
 }
