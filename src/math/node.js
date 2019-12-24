@@ -25,7 +25,10 @@ export const TYPE_SIMPLE_UNIT = 'simple unit'
 export const TYPE_UNIT = 'unit'
 export const TYPE_BRACKET = 'bracket'
 export const TYPE_EQUALITY = '='
-export const TYPE_INEQUALITY = '<>'
+export const TYPE_INEQUALITY_LESS = '<'
+export const TYPE_INEQUALITY_LESSOREQUAL = '<='
+export const TYPE_INEQUALITY_MORE = '>'
+export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 
 const PNode = {
   [Symbol.iterator]() {
@@ -60,6 +63,13 @@ const PNode = {
   isIncorrect() {
     return this.type === TYPE_ERROR
   },
+  isEquality() {
+    return this.type === TYPE_EQUALITY
+  },
+  isInequality() {
+    return this.type === TYPE_INEQUALITY_LESS || this.type === TYPE_INEQUALITY_LESSOREQUAL || this.type === TYPE_INEQUALITY_MORE || this.type === TYPE_INEQUALITY_MOREOREQUAL
+  },
+
   isSum() {
     return this.type === TYPE_SUM
   },
@@ -472,3 +482,12 @@ export function hole() {
 export function template(params) {
   return createNode({ type: TYPE_TEMPLATE, ...params })
 }
+
+export function equality(children) {
+  return createNode({type: TYPE_EQUALITY, children})
+}
+  
+export function inequality(children, relation) {
+  return createNode({type: relation, children})
+} 
+  

@@ -102,6 +102,18 @@ describe('Parsing', () => {
     
   })
 
+  test('Parser parses an equality', () => {
+    const e = p.parse('1=1')
+    expect(e.toString()).toEqual('1=1')
+    expect(e.isEquality()).toBeTruthy()
+  })
+
+  test('Parser parses an equality', () => {
+    const e = p.parse('1<1')
+    expect(e.toString()).toEqual('1<1')
+    expect(e.isInequality()).toBeTruthy()
+  })
+
   test('Parser parses templates', () => {
     const exps = [
       // '$e',
@@ -131,7 +143,7 @@ describe('Parsing', () => {
       // '$d{2;3}',
       // '$d{2:4;3:5}'
     ]
-    for (let tested of exps) {
+    for (const tested of exps) {
       const e = p.parse(tested)
       expect(e.isTemplate()).toBeTruthy()
       expect(e.string).toBe(tested)
@@ -253,8 +265,8 @@ describe('Parsing', () => {
       '1^(1^1)': { children: ['number', '^'], nature: '^' },
       '(1^1)^1': { children: ['^', 'number'], nature: '^' }
     }
-    for (let [tested, expected] of Object.entries(exps)) {
-      let e = p.parse(tested)
+    for (const [tested, expected] of Object.entries(exps)) {
+      const e = p.parse(tested)
       expect(e.showShallowStructure()).toEqual(expected)
     }
   })
@@ -373,8 +385,8 @@ describe('Parsing', () => {
       '1^(1^1)': '1^(1^1)',
       '(1^1)^1': '1^1^1'
     }
-    for (let [tested, expected] of Object.entries(exps)) {
-      let e = p.parse(tested)
+    for (const [tested, expected] of Object.entries(exps)) {
+      const e = p.parse(tested)
       expect(e.toString()).toEqual(expected)
     }
   })
@@ -481,7 +493,7 @@ describe.skip('Testing parsing units', () => {
   }
 
   // TODO : division par 0
-  for (let [tested, expected] of Object.entries(exps)) {
+  for (const [tested, expected] of Object.entries(exps)) {
     test(`parsing ${tested}`, () => {
       expect(p.parse(tested).string).toBe(expected)
     })
@@ -492,7 +504,7 @@ describe.skip('Testing wrong units expressions ', () => {
   const p = parser()
   const exps = ['1 cm + 1', '1L + 1m', '1 cm cm', '(2cm + 5 cm) cm']
 
-  for (let tested of exps) {
+  for (const tested of exps) {
     test(`parsing ${tested}`, () => {
       const e = p.parse(tested)
       expect(e.type === 'error').toBe(true)

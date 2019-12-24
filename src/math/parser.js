@@ -1,5 +1,4 @@
 import { token, lexer } from './lexer'
-import { math } from './math'
 import {
   number,
   hole,
@@ -16,6 +15,8 @@ import {
   notdefined,
   bracket,
   template,
+  equality,
+  inequality,
   TYPE_PRODUCT_IMPLICIT,
 } from './node'
 
@@ -32,10 +33,10 @@ const FRAC = token('/')
 const POW = token('^')
 const HOLE = token('?')
 const PERIOD = token('.')
-// const EQUAL = token('=')
-// const COMP = token('@[<>]=?')
+const EQUAL = token('=')
+const COMP = token('@[<>]=?')
 // const ANTISLASH = token('\\')
-const DIGITS = token('@(\\d)+')
+// const DIGITS = token('@(\\d)+')
 const OPENING_BRACKET = token('(')
 const CLOSING_BRACKET = token(')')
 const SEMICOLON = token(';')
@@ -116,15 +117,36 @@ ${msg}`
     return false
   }
 
-  function pass(t) {
-    match(t)
-  }
-
   function require(t) {
     if (!match(t)) throw new ParsingError(`${t.pattern} required`)
   }
 
   function parseExpression(options) {
+    return parseRelation(options)
+  }
+
+  function parseRelation(options) {
+    let e = parseMember(options)
+    let relation
+    if (match(EQUAL) || match(COMP)) {
+      relation = _lexem
+    }
+    switch (relation) {
+      case '=':
+        e = equality([e, parseMember(options)])
+        break
+
+      case '<':
+      case '>':
+      case '<=':
+      case '>=':
+        e = inequality([e, parseMember(options)], relation)
+    }
+
+    return e
+  }
+
+  function parseMember(options) {
     let e
     let term
     let unit = { string: baseUnits.noUnit[1] }
@@ -241,19 +263,16 @@ ${msg}`
         default:
           e = symbol(_lexem)
       }
-    }
-    else if (match(OPENING_BRACKET)) {
+    } else if (match(OPENING_BRACKET)) {
       // TODO : rajouter dans options qu'il ne faut pas de nouvelles unités
       e = bracket([parseExpression(options)])
       require(CLOSING_BRACKET)
-    } 
-    else if (match(INTEGER_TEMPLATE)) {
+    } else if (match(INTEGER_TEMPLATE)) {
       let nature
       let relative
       if (_parts[4]) {
         nature = _parts[4]
-      } 
-      else {
+      } else {
         nature = _parts[2]
         relative = _parts[3]
       }
