@@ -142,6 +142,9 @@ describe('Parsing', () => {
       
       // '$d{2;3}',
       // '$d{2:4;3:5}'
+
+      '${1}',
+      '$l{1;2}'
     ]
     for (const tested of exps) {
       const e = p.parse(tested)

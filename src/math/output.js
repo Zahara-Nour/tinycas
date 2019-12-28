@@ -129,6 +129,13 @@ export function text(e, displayUnit) {
             }
           }
           break
+        case '$l':
+          s += '{' + e.children.map(child => child.string).join(';') + '}'
+
+          break
+        
+        case '$':
+          s += '{' + e.first.string + '}'
       }
       break
 

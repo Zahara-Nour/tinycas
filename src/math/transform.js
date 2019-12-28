@@ -91,7 +91,7 @@ function generateTemplate(node) {
   const children = node.children.map(child =>
     child.isTemplate()
       ? generateTemplate(child)
-      : generate(child.substitute()).eval(),
+      : generate(child).eval(),
   )
   let e
   let value
@@ -132,6 +132,17 @@ function generateTemplate(node) {
 
       node.root.generated.push(e)
       break
+
+    case '$l':
+      e = children[Math.floor(Math.random()*children.length)]
+      node.root.generated.push(e)
+      break
+
+    case '$':
+      e = children[0]
+      node.root.generated.push(e)
+      break
+
 
     default:
       // $1....

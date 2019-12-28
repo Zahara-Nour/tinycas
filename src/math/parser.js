@@ -45,7 +45,10 @@ const CLOSING_SQUAREBRACKET = token(']')
 const OPENING_CURLYBRACKET = token('{')
 const CLOSING_CURLYBRACKET = token('}')
 // const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
-const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?|\\$(\\d)+')
+const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?')
+const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
+const LIST_TEMPLATE = token('$l')
+const VALUE_TEMPLATE = token('$')
 const CONSTANTS = token('@pi')
 const FUNCTION = token('@cos|sin|sqrt')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -264,18 +267,14 @@ ${msg}`
           e = symbol(_lexem)
       }
     } else if (match(OPENING_BRACKET)) {
-      // TODO : rajouter dans options qu'il ne faut pas de nouvelles unités
+      // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
       e = bracket([parseExpression(options)])
       require(CLOSING_BRACKET)
     } else if (match(INTEGER_TEMPLATE)) {
-      let nature
-      let relative
-      if (_parts[4]) {
-        nature = _parts[4]
-      } else {
-        nature = _parts[2]
-        relative = _parts[3]
-      }
+  
+      const nature = _parts[2]
+      const relative = _parts[3]
+      
       let minDigit = hole()
       let maxDigit = hole()
       let min = hole()
@@ -308,12 +307,43 @@ ${msg}`
         max = parseExpression(options)
         require(CLOSING_SQUAREBRACKET)
       }
+     
       e = template({
         nature: '$' + nature,
         relative,
         children: [minDigit, maxDigit, min, max],
       })
-    } else if (!optional) {
+    }
+    else if (match(VARIABLE_TEMPLATE)) {
+      const nature = _parts[2]
+      e = template({
+        nature: '$' + nature,
+        children: []
+      })
+    }
+    else if (match(LIST_TEMPLATE)) {
+      const nature = _lexem
+      require(OPENING_CURLYBRACKET)
+      const children = [parseExpression(options)]
+      while (match(SEMICOLON)) {
+        children.push(parseExpression(options))
+      }
+      require(CLOSING_CURLYBRACKET)
+      e = template({
+        nature,
+        children
+      })
+    }
+
+    else if (match(VALUE_TEMPLATE)) {
+      require(OPENING_CURLYBRACKET)
+      e = template({
+        nature: '$',
+        children: [parseExpression(options)]
+      })
+      require(CLOSING_CURLYBRACKET)
+    }
+     else if (!optional) {
       failure('No valid atom found')
     }
 
