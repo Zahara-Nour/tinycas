@@ -49,7 +49,8 @@ describe('Testing templates generations', () => {
     '$e{1}+$e{2}+$1+$2',
     '$e{1}*$e{3}+$1*$e{3}',
     '$e{1;1}+$e{1;1}',
-    '$e{1;1}=$e{1;1}'
+    '$e{1;1}=$e{1;1}',
+    // '$e{1}+$e{$1+1;$1+1}',
     // '$e{1}+$e{$1;$1}'
 
     // '$d{2:2;4:4}',
@@ -64,7 +65,8 @@ describe('Testing templates generations', () => {
       
       const f = math(e)
       console.log(f.string)
-      console.log(f.generate().string)
+      const g = f.generate().string
+      console.log(g)
       for (let i=0; i<100 ; i++) {
         expect(f.generate().matchTemplate(f)).toBeTruthy()
       }
