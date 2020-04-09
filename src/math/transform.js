@@ -85,14 +85,16 @@ function getIntOfNdigits(nmin, nmax, trailingzero = true) {
   }
   return v
 }
+
 //   La génération d'un template doit retouner une valeur numérique.
 //  Contrairement à la fonction générale "generate", il lfaut dond substituer les variables.
 function generateTemplate(node) {
   const children = node.children.map(child =>
     child.isTemplate()
       ? generateTemplate(child)
-      : generate(child.substitute()).eval(),
+      : generate(Object.assign(child.substitute(), {parent: node})).eval(),   // on a besoin de garder le lien avec root pour récupérer les templates générés
   )
+
   let e
   let value
   let ndigit
@@ -104,14 +106,17 @@ function generateTemplate(node) {
     case '$ep':
     case '$ei':
       if (!children[1].isHole()) {
-        e = number(getIntOfNdigits(children[0].isHole() ? 1 : children[0].value, children[1].value))
-        
+        e = number(
+          getIntOfNdigits(
+            children[0].isHole() ? 1 : children[0].value,
+            children[1].value,
+          ),
+        )
       } else {
         e = number(getRandomIntInclusive(children[2].value, children[3].value))
-        
       }
       if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()
-      
+
       node.root.generated.push(e)
       break
 
@@ -136,14 +141,14 @@ function generateTemplate(node) {
     default:
       // $1....
       ref = parseInt(node.nature.slice(1, node.nature.length), 10)
-      e = node.root.generated[ref-1]
+      e = node.root.generated[ref - 1]
   }
   return e
 }
 
+// génération d'une expression quelconque
 export function generate(node) {
   let e
-  
 
   switch (node.type) {
     case TYPE_TEMPLATE:

@@ -280,20 +280,20 @@ ${msg}`
       let maxDigit = hole()
       let min = hole()
       let max = hole()
-      /*
-        $e : entier positif
-        $en : entier négatif
-        $er : entier relatif
-        $ep : entier pair
-        $ei : entier impair
-        $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
-        $e{2:3} : entre 2 et 3 chiffres
-        $e([ ])
-        dans 'l'expression régulière :
-        _parts[2] renvoie la nature ($e, $er, ouu $en)
-        _parts[4] et _parts[6] : nb chiffres min et max
-        _parts[4] nb chiffres ax si il n'y a pas _parts[6]
-         */
+      
+        // $e : entier positif
+        // $en : entier négatif
+        // $er : entier relatif
+        // $ep : entier pair
+        // $ei : entier impair
+        // $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
+        // $e{2;3} : entre 2 et 3 chiffres
+        // $e([ ])
+        // dans 'l'expression régulière :
+        // _parts[2] renvoie la nature ($e, $er, ouu $en)
+        // _parts[4] et _parts[6] : nb chiffres min et max
+        // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
+         
 
       if (match(OPENING_CURLYBRACKET)) {
         maxDigit = parseExpression(options)
