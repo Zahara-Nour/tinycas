@@ -82,3 +82,31 @@ describe('Testing templates generations', () => {
   //   console.log(e.generate().string)
   // }
 })
+
+describe('Testing templates generations 2', () => {
+  const t = [
+    '1',
+  ]
+
+  test.each(t)(
+    'is %s generation matching initial template',
+    (e) => {
+      // const f = math(e).generate()
+      
+      const f = math('${'+ e +'}')
+      const g = math(e)
+      console.log(f.string)
+      console.log(f.generate().string)
+        expect(f.generate().string).toBe(g.string)
+    },
+  )
+  // let e
+
+  // for (let i = 0; i < 30; i++) {
+  //   e = math(t[9])
+
+  //   // console.log(e.string)
+
+  //   console.log(e.generate().string)
+  // }
+})

@@ -138,6 +138,17 @@ function generateTemplate(node) {
       node.root.generated.push(e)
       break
 
+    case '$l':
+      e = children[Math.floor(Math.random()*children.length)]
+      node.root.generated.push(e)
+      break
+
+    case '$':
+      e = children[0]
+      node.root.generated.push(e)
+      break
+
+
     default:
       // $1....
       ref = parseInt(node.nature.slice(1, node.nature.length), 10)

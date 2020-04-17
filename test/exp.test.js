@@ -100,3 +100,33 @@ describe('Testing equality between two expressions', () => {
     }
   )
 })
+
+
+describe('Testing strict equality between two expressions', () => {
+  const t = [
+    ['x',       'x'],
+    ['2',       '2'],
+    ['13',       '13'],
+
+   
+  ]
+  test.each(t)(
+    '%s is equivalent to %s',
+    (e1, e2) => {
+      expect(math(e1).strictlyEquals(math(e2))).toBeTruthy()
+    }
+  )
+  
+
+  const t2 = [
+    ['x-y', 'y-x'],
+    ['x/y', 'y/x']
+  ]
+
+  test.each(t2)(
+    '%s is not equivalent to %s',
+    (e1, e2) => {
+      expect(math(e1).equals(math(e2))).toBeFalsy()
+    }
+  )
+})

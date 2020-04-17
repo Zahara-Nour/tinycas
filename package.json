@@ -1,8 +1,11 @@
 {
   "name": "tinycas",
   "version": "1.0.0",
-  "description": "A tinycas babe !!!",
+  "description": "A Simple CAS",
+  "keywords":["cas", "math"],
   "main": "build/index.js",
+  "author": "Zahara-Nour",
+  "repository": "github:Zahara-Nour/tinycas",
   "scripts": {
     "build": "babel src -d build",
     "test": "jest --coverage --colors",
@@ -11,9 +14,9 @@
     "coverage": "open coverage/lcov-report/index.html",
     "lint": "eslint",
     "prepush": "npm run lint && npm run test",
-    "precommit": "npm run lint && npm test"
+    "precommit": "npm run lint && npm run test"
   },
-  "author": "David Le Jolly",
+  
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
