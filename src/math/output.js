@@ -89,9 +89,9 @@ export function text(e, displayUnit) {
       s = '?'
       break
 
-    case TYPE_ERROR:
-      s = e
-      break
+      case TYPE_ERROR:
+        s = 'Error'
+        break
 
     case TYPE_NORMAL:
       s = e.n.string + '/' + +e.d.string
@@ -133,7 +133,7 @@ export function text(e, displayUnit) {
           s += '{' + e.children.map(child => child.string).join(';') + '}'
 
           break
-        
+
         case '$':
           s += '{' + e.first.string + '}'
       }
@@ -207,6 +207,10 @@ export function latex(e) {
 
     case TYPE_HOLE:
       s = '\\ldots'
+      break
+
+    case TYPE_ERROR:
+      s = 'Error'
       break
 
     default:
