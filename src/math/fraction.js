@@ -1,5 +1,7 @@
 // const regex = new RegExp('^(\\(?(-?\\d+)(\\.\\d+)?\\)?)(/(-?\\d+))?$')
 
+import Decimal from "decimal.js"
+
 // console.log(regex.exec('123.456'))
 // console.log(regex.exec('-123.456'))
 // console.log(regex.exec('123'))
@@ -74,18 +76,23 @@ function createFraction ({ n, d, s }) {
 }
 
 function removeCommas (n,d) {
+  n = new Decimal(n)
+  d= new Decimal(d)
+  const n1 = n.toNumber()
+  const d1 = d.toNumber()
+
 
   // est-ce que n est un entier?
-  while ((n | 0) !== n) {
-    n *= 10
-    d *= 10
+  while (!n.isInteger()) {
+    n = n.mul(10)
+    d = d.mul(10)
   }
 
-  while ((d | 0) !== d) {
-    n *= 10
-    d *= 10
+  while (!d.isInteger()) {
+    n = n.mul(10)
+    d = d.mul(10)
   }
-  return {n, d}
+  return {n:n.toNumber(), d:d.toNumber()}
 
 }
 
