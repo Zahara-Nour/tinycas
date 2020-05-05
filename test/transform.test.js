@@ -37,6 +37,51 @@ describe('Testing substitutions', () => {
   )
 })
 
+
+describe('Testing template $', () => {
+  const t = [
+    ['${1/3}','1/3'  ]
+  
+  ]
+
+  test.each(t)(
+    ' %s ',
+    (e, expected) => {
+      
+      const f = math(e)
+      
+      const g = f.generate().string
+      
+      
+        expect(f.generate().string).toBe(expected)
+      
+    }
+  )
+ 
+})
+
+describe('Testing template $$', () => {
+  const t = [
+    ['$$2{1/3}','0.33'  ]
+  
+  ]
+
+  test.each(t)(
+    ' %s ',
+    (e, expected) => {
+      
+      const f = math(e)
+      
+      const g = f.generate().string
+      
+      
+        expect(f.generate().string).toBe(expected)
+      
+    }
+  )
+ 
+})
+
 describe('Testing templates generations', () => {
   const t = [
     '$e{3}',

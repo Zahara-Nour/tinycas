@@ -4,6 +4,7 @@ import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
+import {roundDecimal} from '../utils/utils'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -243,6 +244,7 @@ const PNode = {
     // TODO: memoize
     // par défaut on veut une évaluation exacte
     params.decimal = params.decimal || false
+    const precision = params.precision || 10
 
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
@@ -274,7 +276,7 @@ const PNode = {
       const unit = e.unit
 
       // evaluate retourne un objet Decimal
-      e = number(evaluate(e).toString())
+      e = number(roundDecimal(evaluate(e), precision).toString())
 
       //  on remet l'unité qui avait disparu
       if (unit) e.unit = unit
@@ -284,6 +286,7 @@ const PNode = {
 
   // génère des valeurs pour les templates
   generate() {
+    // tableau contenant les valeurs générées pour  $1, $2, ....
     this.root.generated = []
     return generate(this)
   },

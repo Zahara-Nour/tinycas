@@ -105,6 +105,25 @@ describe('Testing evaluation of numerical expression with decimal result', () =>
   )
 })
 
+
+
+describe('Testing evaluation of numerical expression with decimal rounded result', () => {
+
+  const t = [
+    ['1.123',  2,   '1.12'],
+    ['1.1254',  2,   '1.13'],
+    ['1.125',  2,   '1.13'],
+  ]
+   
+
+  test.each(t)(
+    'rounding %s',
+    (e, precision, expected) => {
+      expect(math(e).eval({decimal: true, precision}).string).toBe(expected)
+    },
+  )
+})
+
 describe('Testing evaluation of numerical expression with units', () => {
 
   const t = [

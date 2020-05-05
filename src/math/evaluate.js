@@ -21,7 +21,7 @@ import Decimal from 'decimal.js'
 
 // Evaluation décimale d'une forme normale dont les symboles ont été substitués.
 // Pour éviter les conversions répétées, renvoie un Decimal
-// Les unités ne sont pas gérées ici, mais dans la fonction appelante eval() associé 
+// Les unités ne sont pas gérées ici, mais dans la fonction appelante eval() associée
 // à node
 export default function evaluate (node, params) {
   switch (node.type) {

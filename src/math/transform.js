@@ -89,10 +89,16 @@ function getIntOfNdigits(nmin, nmax, trailingzero = true) {
 //   La génération d'un template doit retouner une valeur numérique.
 //  Contrairement à la fonction générale "generate", il lfaut dond substituer les variables.
 function generateTemplate(node) {
-  const children = node.children.map(child =>
-    child.isTemplate()
-      ? generateTemplate(child)
-      : generate(Object.assign(child.substitute(), {parent: node})).eval(),   // on a besoin de garder le lien avec root pour récupérer les templates générés
+  const decimal = node.nature === '$$'
+  const precision = node.precision
+  const children = node.children.map(
+    child =>
+      child.isTemplate()
+        ? generateTemplate(child)
+        : generate(Object.assign(child.substitute(), { parent: node })).eval({
+            decimal,
+            precision,
+          }), // on a besoin de garder le lien avec root pour récupérer les templates générés
   )
 
   let e
@@ -139,15 +145,15 @@ function generateTemplate(node) {
       break
 
     case '$l':
-      e = children[Math.floor(Math.random()*children.length)]
+      e = children[Math.floor(Math.random() * children.length)]
       node.root.generated.push(e)
       break
 
     case '$':
+    case '$$':
       e = children[0]
       node.root.generated.push(e)
       break
-
 
     default:
       // $1....

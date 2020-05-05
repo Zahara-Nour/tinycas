@@ -45,15 +45,18 @@ const CLOSING_SQUAREBRACKET = token(']')
 const OPENING_CURLYBRACKET = token('{')
 const CLOSING_CURLYBRACKET = token('}')
 // const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
+const VALUE_DECIMAL_TEMPLATE = token('$$')
 const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?')
 const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
+
 const VALUE_TEMPLATE = token('$')
+
 const CONSTANTS = token('@pi')
 const FUNCTION = token('@cos|sin|sqrt')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
-const NUMBER = token('@[\\d]+([,\\.][\\d]+)?') // obligé de doubler les \ sinon ils sont enlevés de la chaine
-// const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
+const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
+const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const UNIT = token(
   '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h',
 )
@@ -240,7 +243,7 @@ ${msg}`
 
   function parseAtom(options, optional = false) {
     let e, func
-    if (match(NUMBER)) {
+    if (match(DECIMAL) || match(INTEGER)) {
       e = number(_lexem)
     } else if (match(HOLE)) {
       e = hole()
@@ -335,6 +338,20 @@ ${msg}`
       })
     }
 
+    
+    else if (match(VALUE_DECIMAL_TEMPLATE)) {
+      let precision = null
+      if (match(INTEGER)) {
+        precision = parseInt(_lexem, 10)
+      }
+      require(OPENING_CURLYBRACKET)
+      e = template({
+        nature: '$$',
+        precision,
+        children: [parseExpression(options)]
+      })
+      require(CLOSING_CURLYBRACKET)
+    }
     else if (match(VALUE_TEMPLATE)) {
       require(OPENING_CURLYBRACKET)
       e = template({
