@@ -89,9 +89,9 @@ export function text(e, displayUnit) {
       s = '?'
       break
 
-      case TYPE_ERROR:
-        s = 'Error'
-        break
+    case TYPE_ERROR:
+      s = 'Error'
+      break
 
     case TYPE_NORMAL:
       s = e.n.string + '/' + +e.d.string
@@ -149,6 +149,14 @@ export function latex(e) {
   let s
 
   switch (e.type) {
+    case TYPE_EQUALITY:
+    case TYPE_INEQUALITY_LESS:
+    case TYPE_INEQUALITY_LESSOREQUAL:
+    case TYPE_INEQUALITY_MORE:
+    case TYPE_INEQUALITY_MOREOREQUAL:
+      s = e.first.latex + e.type + e.last.latex
+      break
+
     case TYPE_POSITIVE:
       s = '+' + e.first.latex
       break

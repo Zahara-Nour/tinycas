@@ -2,7 +2,10 @@
   "name": "tinycas",
   "version": "1.0.0",
   "description": "A Simple CAS",
-  "keywords":["cas", "math"],
+  "keywords": [
+    "cas",
+    "math"
+  ],
   "main": "build/index.js",
   "author": "Zahara-Nour",
   "repository": "github:Zahara-Nour/tinycas",
@@ -16,7 +19,6 @@
     "prepush": "npm run lint && npm run test",
     "precommit": "npm run lint && npm run test"
   },
-  
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
