@@ -1,10 +1,9 @@
-import {math} from '../src/math/math'
 import {Decimal} from 'decimal.js'
 import {roundDecimal} from '../src/utils/utils'
 
 
 
-describe('Testing normalizing unit', () => {
+describe('Testing rounding', () => {
 
   const t = [
     [5.2346, 2, '5.23'],
