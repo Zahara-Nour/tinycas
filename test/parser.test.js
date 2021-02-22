@@ -30,6 +30,12 @@ describe('Parsing', () => {
     expect(e.isNumber()).toBeTruthy()
   })
 
+  test('Parser parses a segment length', () => {
+    const e = p.parse('AB')
+    expect(e.toString()).toEqual('AB')
+    expect(e.isSegmentLength()).toBeTruthy()
+  })
+
   test('Parser parses a symbol', () => {
     const e = p.parse('a')
     expect(e.toString()).toEqual('a')

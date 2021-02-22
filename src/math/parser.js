@@ -18,6 +18,9 @@ import {
   equality,
   inequality,
   TYPE_PRODUCT_IMPLICIT,
+  TYPE_PERCENTAGE,
+  percentage,
+  segmentLength,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -34,6 +37,7 @@ const POW = token('^')
 const HOLE = token('?')
 const PERIOD = token('.')
 const EQUAL = token('=')
+const PERCENT = token('%')
 const COMP = token('@[<>]=?')
 // const ANTISLASH = token('\\')
 // const DIGITS = token('@(\\d)+')
@@ -52,6 +56,7 @@ const LIST_TEMPLATE = token('$l')
 
 const VALUE_TEMPLATE = token('$')
 
+const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const FUNCTION = token('@cos|sin|sqrt')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -243,7 +248,12 @@ ${msg}`
 
   function parseAtom(options, optional = false) {
     let e, func
-    if (match(DECIMAL) || match(INTEGER)) {
+
+    if (match(SEGMENT_LENGTH)) {
+      e  = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
+
+    }
+    else if (match(DECIMAL) || match(INTEGER)) {
       e = number(_lexem)
     } else if (match(HOLE)) {
       e = hole()
@@ -362,6 +372,10 @@ ${msg}`
     }
      else if (!optional) {
       failure('No valid atom found')
+    }
+
+    if (e && match(PERCENT)) {
+      e = percentage([e])
     }
 
     if (e) {

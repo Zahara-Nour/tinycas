@@ -21,6 +21,8 @@ import {
   TYPE_INEQUALITY_LESSOREQUAL,
   TYPE_INEQUALITY_MORE,
   TYPE_INEQUALITY_MOREOREQUAL,
+  TYPE_PERCENTAGE,
+  TYPE_SEGMENT_LENGTH,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -30,12 +32,20 @@ export function text(e, displayUnit) {
   let s
 
   switch (e.type) {
+    case TYPE_SEGMENT_LENGTH:
+      s = e.begin + e.end
+      break
+      
     case TYPE_EQUALITY:
     case TYPE_INEQUALITY_LESS:
     case TYPE_INEQUALITY_LESSOREQUAL:
     case TYPE_INEQUALITY_MORE:
     case TYPE_INEQUALITY_MOREOREQUAL:
       s = e.first.string + e.type + e.last.string
+      break
+
+    case TYPE_PERCENTAGE:
+      s = e.first.string + '%'
       break
 
     case TYPE_POSITIVE:
@@ -149,12 +159,20 @@ export function latex(e) {
   let s
 
   switch (e.type) {
+    case TYPE_SEGMENT_LENGTH:
+      s = e.begin + e.end
+      break
+
     case TYPE_EQUALITY:
     case TYPE_INEQUALITY_LESS:
     case TYPE_INEQUALITY_LESSOREQUAL:
     case TYPE_INEQUALITY_MORE:
     case TYPE_INEQUALITY_MOREOREQUAL:
       s = e.first.latex + e.type + e.last.latex
+      break
+
+    case TYPE_PERCENTAGE:
+      s = e.first.latex + '\\%'
       break
 
     case TYPE_POSITIVE:

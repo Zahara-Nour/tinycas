@@ -18,6 +18,7 @@ export const TYPE_ERROR = '!! Error !!'
 export const TYPE_HOLE = '?'
 export const TYPE_SYMBOL = 'symbol'
 export const TYPE_NUMBER = 'number'
+export const TYPE_PERCENTAGE = 'percentage'
 export const TYPE_OPPOSITE = 'opposite'
 export const TYPE_POSITIVE = 'positive'
 export const TYPE_RADICAL = 'radical'
@@ -30,6 +31,7 @@ export const TYPE_INEQUALITY_LESS = '<'
 export const TYPE_INEQUALITY_LESSOREQUAL = '<='
 export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
+export const TYPE_SEGMENT_LENGTH = 'segment length'
 
 const PNode = {
   [Symbol.iterator]() {
@@ -110,6 +112,9 @@ const PNode = {
   },
   isSymbol() {
     return this.type === TYPE_SYMBOL
+  },
+  isSegmentLength() {
+    return this.type === TYPE_SEGMENT_LENGTH
   },
   isTemplate() {
     return this.type === TYPE_TEMPLATE
@@ -469,11 +474,17 @@ export function bracket(children) {
 export function radical(children) {
   return createNode({ type: TYPE_RADICAL, children })
 }
+export function percentage(children) {
+  return createNode({ type: TYPE_PERCENTAGE, children })
+}
 export function number(value) {
   return createNode({ type: TYPE_NUMBER, value: parseFloat(value) })
 }
 export function symbol(letter) {
   return createNode({ type: TYPE_SYMBOL, letter })
+}
+export function segmentLength(begin,end) {
+  return createNode({ type: TYPE_SEGMENT_LENGTH, begin, end })
 }
 export function notdefined(error) {
   return createNode({ type: TYPE_ERROR, error })

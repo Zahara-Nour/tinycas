@@ -47,7 +47,7 @@ describe.skip('Testing units convertions', () => {
   }
 
   // TODO : division par 0
-  for (let [tested, expected] of Object.entries(exps)) {
+  for (const [tested, expected] of Object.entries(exps)) {
     test(`matching ${tested} against ${expected}`, () => {
       expect(math(tested).match(math(expected))).toBeTruthy()
     })

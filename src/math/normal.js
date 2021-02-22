@@ -18,6 +18,7 @@ import {
   number,
   bracket,
   symbol,
+  TYPE_PERCENTAGE,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -654,6 +655,10 @@ export default function normalize(node) {
         e = math(fraction(node).toString(false)).normal
       }
       
+      break
+
+    case TYPE_PERCENTAGE:
+      e = node.div(100).normal
       break
 
     case TYPE_HOLE:

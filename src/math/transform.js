@@ -6,6 +6,7 @@ import {
   TYPE_TEMPLATE,
   number,
   TYPE_HOLE,
+  TYPE_SEGMENT_LENGTH,
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
@@ -176,6 +177,7 @@ export function generate(node) {
     case TYPE_HOLE:
     case TYPE_NUMBER:
     case TYPE_ERROR:
+    case TYPE_SEGMENT_LENGTH:
       e = node
       break
 
