@@ -51,6 +51,7 @@ const CLOSING_CURLYBRACKET = token('}')
 // const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
 const VALUE_DECIMAL_TEMPLATE = token('$$')
 const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?')
+const DECIMAL_TEMPLATE = token('@\\$d(r)?')
 const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
 
@@ -250,10 +251,8 @@ ${msg}`
     let e, func
 
     if (match(SEGMENT_LENGTH)) {
-      e  = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
-
-    }
-    else if (match(DECIMAL) || match(INTEGER)) {
+      e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
+    } else if (match(DECIMAL) || match(INTEGER)) {
       e = number(_lexem)
     } else if (match(HOLE)) {
       e = hole()
@@ -283,29 +282,29 @@ ${msg}`
       // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
       e = bracket([parseExpression(options)])
       require(CLOSING_BRACKET)
-    } else if (match(INTEGER_TEMPLATE)) {
-  
+    }
+    // integer
+    else if (match(INTEGER_TEMPLATE)) {
       const nature = _parts[2]
       const relative = _parts[3]
-      
+
       let minDigit = hole()
       let maxDigit = hole()
       let min = hole()
       let max = hole()
-      
-        // $e : entier positif
-        // $en : entier négatif
-        // $er : entier relatif
-        // $ep : entier pair
-        // $ei : entier impair
-        // $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
-        // $e{2;3} : entre 2 et 3 chiffres
-        // $e([ ])
-        // dans 'l'expression régulière :
-        // _parts[2] renvoie la nature ($e, $er, ouu $en)
-        // _parts[4] et _parts[6] : nb chiffres min et max
-        // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
-         
+
+      // $e : entier positif
+      // $en : entier négatif
+      // $er : entier relatif
+      // $ep : entier pair
+      // $ei : entier impair
+      // $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
+      // $e{2;3} : entre 2 et 3 chiffres
+      // $e([ ])
+      // dans 'l'expression régulière :
+      // _parts[2] renvoie la nature ($e, $er, ouu $en)
+      // _parts[4] et _parts[6] : nb chiffres min et max
+      // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
 
       if (match(OPENING_CURLYBRACKET)) {
         maxDigit = parseExpression(options)
@@ -320,21 +319,54 @@ ${msg}`
         max = parseExpression(options)
         require(CLOSING_SQUAREBRACKET)
       }
-     
+
       e = template({
         nature: '$' + nature,
         relative,
         children: [minDigit, maxDigit, min, max],
       })
+    } 
+    // decimal
+    else if (match(DECIMAL_TEMPLATE)) {
+      const nature = "d"
+      const relative = _parts[2]
+      let integerPart = hole() // digits number before comma
+      let decimalPart = hole() // digits number after comma
+
+      // $e : entier positif
+      // $en : entier négatif
+      // $er : entier relatif
+      // $ep : entier pair
+      // $ei : entier impair
+      // $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
+      // $e{2;3} : entre 2 et 3 chiffres
+      // $e([ ])
+      // dans 'l'expression régulière :
+      // _parts[2] renvoie la nature ($e, $er, ouu $en)
+      // _parts[4] et _parts[6] : nb chiffres min et max
+      // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
+
+      if (match(OPENING_CURLYBRACKET)) {
+        integerPart = parseExpression(options)
+        if (match(SEMICOLON)) {
+          decimalPart = parseExpression(options)
+        }
+        require(CLOSING_CURLYBRACKET)
+      }
+      e = template({
+        nature: '$' + nature,
+        relative,
+        children: [integerPart, decimalPart],
+      })
     }
+    
     else if (match(VARIABLE_TEMPLATE)) {
       const nature = _parts[2]
       e = template({
         nature: '$' + nature,
-        children: []
+        children: [],
       })
-    }
-    else if (match(LIST_TEMPLATE)) {
+    } else if (match(LIST_TEMPLATE)) {
       const nature = _lexem
       require(OPENING_CURLYBRACKET)
       const children = [parseExpression(options)]
@@ -344,12 +376,9 @@ ${msg}`
       require(CLOSING_CURLYBRACKET)
       e = template({
         nature,
-        children
+        children,
       })
-    }
-
-    
-    else if (match(VALUE_DECIMAL_TEMPLATE)) {
+    } else if (match(VALUE_DECIMAL_TEMPLATE)) {
       let precision = null
       if (match(INTEGER)) {
         precision = parseInt(_lexem, 10)
@@ -358,19 +387,17 @@ ${msg}`
       e = template({
         nature: '$$',
         precision,
-        children: [parseExpression(options)]
+        children: [parseExpression(options)],
       })
       require(CLOSING_CURLYBRACKET)
-    }
-    else if (match(VALUE_TEMPLATE)) {
+    } else if (match(VALUE_TEMPLATE)) {
       require(OPENING_CURLYBRACKET)
       e = template({
         nature: '$',
-        children: [parseExpression(options)]
+        children: [parseExpression(options)],
       })
       require(CLOSING_CURLYBRACKET)
-    }
-     else if (!optional) {
+    } else if (!optional) {
       failure('No valid atom found')
     }
 

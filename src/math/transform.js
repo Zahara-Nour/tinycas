@@ -106,6 +106,7 @@ function generateTemplate(node) {
   let value
   let ndigit
   let decimalPart
+  let integerPart
   let ref
 
   switch (node.nature) {
@@ -129,13 +130,13 @@ function generateTemplate(node) {
 
     case '$d':
       // partie entière
-      value = new Decimal(getIntOfNdigits(children[0], children[1]))
+      integerPart = children[0].generate()
+      decimalPart = children[1].generate()
+      value = new Decimal(getIntOfNdigits(integerPart, integerPart))
 
       //  partie décimale
-
-      ndigit = getRandomIntInclusive(children[2], children[3])
-      decimalPart = new Decimal(getIntOfNdigits(ndigit, ndigit, false)).div(
-        Math.pow(10, ndigit),
+      decimalPart = new Decimal(getIntOfNdigits(decimalPart, decimalPart, false)).div(
+        Math.pow(10, decimalPart),
       )
       value = value.add(decimalPart)
       e = number(parseFloat(value.toString()))

@@ -102,6 +102,19 @@ describe('Testing matching against Templates', () => {
     ['2', '$e[1;2]', true],
     ['4', '$e[2;3]', false],
     ['1', '$e[2;3]', false],
+    
+    ['123.1', '$d{3;1}', true],
+    ['123.12', '$d{3;1}', false],
+    ['12.1', '$d{3;1}', false],
+    ['123.0', '$d{3;1}', false],
+    ['120.1', '$d{3;1}', true],
+    ['0123.1', '$d{3;1}', true],
+    ['123.1', '$d{3;2}', false],
+    ['123.10', '$d{3;2}', false],
+
+
+
+    
   ]
 
   test.each(t)('is %s matching %s', (e, f, expected) => {

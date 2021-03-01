@@ -4,7 +4,7 @@ import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
-import {roundDecimal} from '../utils/utils'
+import { roundDecimal } from '../utils/utils'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -70,7 +70,12 @@ const PNode = {
     return this.type === TYPE_EQUALITY
   },
   isInequality() {
-    return this.type === TYPE_INEQUALITY_LESS || this.type === TYPE_INEQUALITY_LESSOREQUAL || this.type === TYPE_INEQUALITY_MORE || this.type === TYPE_INEQUALITY_MOREOREQUAL
+    return (
+      this.type === TYPE_INEQUALITY_LESS ||
+      this.type === TYPE_INEQUALITY_LESSOREQUAL ||
+      this.type === TYPE_INEQUALITY_MORE ||
+      this.type === TYPE_INEQUALITY_MOREOREQUAL
+    )
   },
 
   isSum() {
@@ -247,7 +252,7 @@ const PNode = {
 
   eval(params = {}) {
     // TODO: memoize
-    // par défaut on veut une évaluation exacte
+    // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 10
 
@@ -320,6 +325,9 @@ const PNode = {
 
   matchTemplate(t) {
     let n
+    let integerPart
+    let decimalPart
+
     function checkChildren(e, t) {
       for (let i = 0; i < t.length; i++) {
         if (!e.children[i].matchTemplate(t.children[i])) return false
@@ -362,21 +370,76 @@ const PNode = {
                 !t.children[0].isHole() ? t.children[0].value : 0,
                 t.children[1].value,
               )
-            )
+            ) {
               return false
+            }
             if (
               !t.children[2].isHole() &&
               !checkLimits(this.value, t.children[2].value, t.children[3].value)
-            )
+            ) {
               return false
+            }
             if (t.nature === '$e') return this.isInt()
             if (t.nature === '$ep') return this.isEven()
             if (t.nature === '$ei') return this.isOdd()
             break
 
-          default: // $1 ....
-              n = parseInt(t.nature.slice(1, t.nature.length),10)
-              return this.matchTemplate(t.root.generated[n-1])
+          case '$d':
+            if (t.relative && this.isOpposite())
+              return this.first.matchTemplate(t)
+            if (!this.isNumber()) return false
+
+            if (this.isInt()) {
+              integerPart = Math.trunc(this.value)
+              return false
+            } else {
+              ;[integerPart, decimalPart] = this.value.toString().split('.')
+              integerPart = parseInt(integerPart, 10)
+              decimalPart = parseInt(decimalPart, 10)
+
+              if (t.children[0].isTemplate()) {
+                if (
+                  !number(
+                    Math.floor(Math.log10(integerPart)) + 1,
+                  ).matchTemplate(t.children[0])
+                ) {
+                  return false
+                }
+              } else if (
+                !checkDigitsNumber(
+                  integerPart,
+                  t.children[0].value,
+                  t.children[0].value,
+                )
+              ) {
+                return false
+              }
+
+              if (t.children[1].isTemplate()) {
+                if (
+                  !number(
+                    Math.floor(Math.log10(decimalPart)) + 1,
+                  ).matchTemplate(t.children[1])
+                )
+                  return false
+              } else if (
+                !checkDigitsNumber(
+                  decimalPart,
+                  t.children[1].value,
+                  t.children[1].value,
+                )
+              ) {
+                return false
+              }
+
+              return true
+            }
+            break
+
+          default:
+            // $1 ....
+            n = parseInt(t.nature.slice(1, t.nature.length), 10)
+            return this.matchTemplate(t.root.generated[n - 1])
         }
         break
       default:
@@ -483,7 +546,7 @@ export function number(value) {
 export function symbol(letter) {
   return createNode({ type: TYPE_SYMBOL, letter })
 }
-export function segmentLength(begin,end) {
+export function segmentLength(begin, end) {
   return createNode({ type: TYPE_SEGMENT_LENGTH, begin, end })
 }
 export function notdefined(error) {
@@ -498,10 +561,9 @@ export function template(params) {
 }
 
 export function equality(children) {
-  return createNode({type: TYPE_EQUALITY, children})
+  return createNode({ type: TYPE_EQUALITY, children })
 }
-  
+
 export function inequality(children, relation) {
-  return createNode({type: relation, children})
-} 
-  
+  return createNode({ type: relation, children })
+}
