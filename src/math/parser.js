@@ -36,6 +36,7 @@ const FRAC = token('/')
 const POW = token('^')
 const HOLE = token('?')
 const PERIOD = token('.')
+const COMMA = token(',')
 const EQUAL = token('=')
 const PERCENT = token('%')
 const COMP = token('@[<>]=?')
@@ -330,33 +331,36 @@ ${msg}`
     else if (match(DECIMAL_TEMPLATE)) {
       const nature = "d"
       const relative = _parts[2]
-      let integerPart = hole() // digits number before comma
-      let decimalPart = hole() // digits number after comma
+      let integerPartN = hole() // digits number before comma
+      let integerPartMin = hole() // digits number before comma
+      let integerPartMax = hole() // digits number before comma
+      let decimalPartN = hole() // digits number after comma
+      let decimalPartMin = hole() // digits number after comma
+      let decimalPartMax = hole() // digits number after comma
 
-      // $e : entier positif
-      // $en : entier négatif
-      // $er : entier relatif
-      // $ep : entier pair
-      // $ei : entier impair
-      // $e{3} : max 3 chiffres                 ** accolades ne passent pas dans les commentaires
-      // $e{2;3} : entre 2 et 3 chiffres
-      // $e([ ])
-      // dans 'l'expression régulière :
-      // _parts[2] renvoie la nature ($e, $er, ouu $en)
-      // _parts[4] et _parts[6] : nb chiffres min et max
-      // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
+    
 
       if (match(OPENING_CURLYBRACKET)) {
-        integerPart = parseExpression(options)
+        integerPartN = parseExpression(options)
+        if(match(DIV)) {
+          integerPartMin=integerPartN
+          integerPartN=null
+          integerPartMax=parseExpression(options)
+        }
         if (match(SEMICOLON)) {
-          decimalPart = parseExpression(options)
+          decimalPartN = parseExpression(options)
+          if(match(DIV)) {
+            decimalPartMin=decimalPartN
+            decimalPartN=null
+            decimalPartMax=parseExpression(options)
+          }
         }
         require(CLOSING_CURLYBRACKET)
       }
       e = template({
         nature: '$' + nature,
         relative,
-        children: [integerPart, decimalPart],
+        children: [integerPartN, decimalPartN, integerPartMin, integerPartMax, decimalPartMin, decimalPartMax],
       })
     }
     

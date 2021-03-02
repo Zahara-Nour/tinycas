@@ -129,16 +129,28 @@ function generateTemplate(node) {
       break
 
     case '$d':
-      // partie entière
-      integerPart = children[0].generate()
-      decimalPart = children[1].generate()
-      value = new Decimal(getIntOfNdigits(integerPart, integerPart))
+      if (children[0]) {
+        // partie entière
+        integerPart = children[0].generate()
+        decimalPart = children[1].generate()
+        value = new Decimal(getIntOfNdigits(integerPart, integerPart))
 
-      //  partie décimale
-      decimalPart = new Decimal(getIntOfNdigits(decimalPart, decimalPart, false)).div(
-        Math.pow(10, decimalPart),
-      )
-      value = value.add(decimalPart)
+        //  partie décimale
+        decimalPart = new Decimal(
+          getIntOfNdigits(decimalPart, decimalPart, false),
+        ).div(Math.pow(10, decimalPart))
+        value = value.add(decimalPart)
+      } else {
+        const integerPartMin = children[2]
+        const integerPartMax = children[3]
+        const decimalPartMin = children[4]
+        const decimalPartMax = children[5]
+        integerPart = getRandomIntInclusive(integerPartMin, integerPartMax)
+        decimalPart = getRandomIntInclusive(decimalPartMin, decimalPartMax)
+        value = new Decimal(integerPart).div(Math.pow(10, decimalPart))
+      }
+
+      // pourquoi aussi compliqué ?
       e = number(parseFloat(value.toString()))
 
       if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()
