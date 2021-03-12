@@ -39,6 +39,10 @@ const PERIOD = token('.')
 const COMMA = token(',')
 const EQUAL = token('=')
 const PERCENT = token('%')
+const EXCLUDE = token('\\')
+const MULTIPLE = token('m')
+const DIVIDER = token('d')
+const COMMON_DIVIDERS = token('cd')
 const COMP = token('@[<>]=?')
 // const ANTISLASH = token('\\')
 // const DIGITS = token('@(\\d)+')
@@ -250,11 +254,12 @@ ${msg}`
 
   function parseAtom(options, optional = false) {
     let e, func
+    let exclude, excludeMin, excludeMax
 
     if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
     } else if (match(DECIMAL) || match(INTEGER)) {
-      e = number(_lexem)
+      e = number(_lexem.replace(',', '.'))
     } else if (match(HOLE)) {
       e = hole()
     } else if ((func = match(FUNCTION))) {
@@ -288,7 +293,10 @@ ${msg}`
     else if (match(INTEGER_TEMPLATE)) {
       const nature = _parts[2]
       const relative = _parts[3]
-
+      exclude = []
+      const excludeMultiple = []
+      const excludeDivider = []
+      const excludeCommonDividersWith = []
       let minDigit = hole()
       let maxDigit = hole()
       let min = hole()
@@ -321,15 +329,45 @@ ${msg}`
         require(CLOSING_SQUAREBRACKET)
       }
 
+      if (match(EXCLUDE)) {
+        if (match(OPENING_CURLYBRACKET)) {
+          exclude = []
+          do {
+            if (match(MULTIPLE)) {
+              excludeMultiple.push(parseExpression(options))
+            } else if (match(DIVIDER)) {
+              excludeDivider.push(parseExpression(options))
+            } else if (match(COMMON_DIVIDERS)) {
+              excludeCommonDividersWith.push(parseExpression(options))
+            } else {
+              exclude.push(parseExpression(options))
+            }
+          } while (match(SEMICOLON))
+          require(CLOSING_CURLYBRACKET)
+        } else {
+          require(OPENING_SQUAREBRACKET)
+          excludeMin = parseExpression(options)
+          require(SEMICOLON)
+          excludeMax = parseExpression(options)
+          require(CLOSING_SQUAREBRACKET)
+        }
+      }
+
       e = template({
         nature: '$' + nature,
         relative,
+        exclude: exclude.length ? exclude : null,
+        excludeMultiple: excludeMultiple.length ? excludeMultiple : null,
+        excludeDivider: excludeDivider.length ? excludeDivider : null,
+        excludeCommonDividersWith: excludeCommonDividersWith.length ? excludeCommonDividersWith : null,
+        excludeMin,
+        excludeMax,
         children: [minDigit, maxDigit, min, max],
       })
-    } 
+    }
     // decimal
     else if (match(DECIMAL_TEMPLATE)) {
-      const nature = "d"
+      const nature = 'd'
       const relative = _parts[2]
       let integerPartN = hole() // digits number before comma
       let integerPartMin = hole() // digits number before comma
@@ -338,21 +376,19 @@ ${msg}`
       let decimalPartMin = hole() // digits number after comma
       let decimalPartMax = hole() // digits number after comma
 
-    
-
       if (match(OPENING_CURLYBRACKET)) {
         integerPartN = parseExpression(options)
-        if(match(DIV)) {
-          integerPartMin=integerPartN
-          integerPartN=null
-          integerPartMax=parseExpression(options)
+        if (match(DIV)) {
+          integerPartMin = integerPartN
+          integerPartN = null
+          integerPartMax = parseExpression(options)
         }
         if (match(SEMICOLON)) {
           decimalPartN = parseExpression(options)
-          if(match(DIV)) {
-            decimalPartMin=decimalPartN
-            decimalPartN=null
-            decimalPartMax=parseExpression(options)
+          if (match(DIV)) {
+            decimalPartMin = decimalPartN
+            decimalPartN = null
+            decimalPartMax = parseExpression(options)
           }
         }
         require(CLOSING_CURLYBRACKET)
@@ -360,27 +396,69 @@ ${msg}`
       e = template({
         nature: '$' + nature,
         relative,
-        children: [integerPartN, decimalPartN, integerPartMin, integerPartMax, decimalPartMin, decimalPartMax],
+        children: [
+          integerPartN,
+          decimalPartN,
+          integerPartMin,
+          integerPartMax,
+          decimalPartMin,
+          decimalPartMax,
+        ],
       })
-    }
-    
-    else if (match(VARIABLE_TEMPLATE)) {
+    } else if (match(VARIABLE_TEMPLATE)) {
       const nature = _parts[2]
       e = template({
         nature: '$' + nature,
         children: [],
       })
-    } else if (match(LIST_TEMPLATE)) {
+    }
+    // List
+    else if (match(LIST_TEMPLATE)) {
       const nature = _lexem
+      const include = []
+      const excludeMultiple = []
+      const excludeDivider = []
+      exclude = []
+      excludeMin = null
+      excludeMax = null
       require(OPENING_CURLYBRACKET)
-      const children = [parseExpression(options)]
+      include.push(parseExpression(options))
       while (match(SEMICOLON)) {
-        children.push(parseExpression(options))
+        include.push(parseExpression(options))
       }
       require(CLOSING_CURLYBRACKET)
+
+      if (match(EXCLUDE)) {
+        if (match(OPENING_CURLYBRACKET)) {
+          exclude = []
+
+          do {
+            if (match(MULTIPLE)) {
+              excludeMultiple.push(parseExpression(options))
+            } else if (match(DIVIDER)) {
+              excludeDivider.push(parseExpression(options))
+            } else {
+              exclude.push(parseExpression(options))
+            }
+          } while (match(SEMICOLON))
+          require(CLOSING_CURLYBRACKET)
+        } else {
+          require(OPENING_SQUAREBRACKET)
+          excludeMin = parseExpression(options)
+          require(SEMICOLON)
+          excludeMax = parseExpression(options)
+          require(CLOSING_SQUAREBRACKET)
+        }
+      }
+
       e = template({
         nature,
-        children,
+        children: include,
+        exclude: exclude.length ? exclude : null,
+        excludeMultiple: excludeMultiple.length ? excludeMultiple : null,
+        excludeDivider: excludeDivider.length ? excludeDivider : null,
+        excludeMin,
+        excludeMax,
       })
     } else if (match(VALUE_DECIMAL_TEMPLATE)) {
       let precision = null

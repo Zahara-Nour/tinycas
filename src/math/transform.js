@@ -16,6 +16,14 @@ const constants = {
   e: '2.7',
 }
 
+const gcd = function(a, b) {
+  if (!b) {
+    return a
+  }
+
+  return gcd(b, a % b)
+}
+
 export function substitute(node, params) {
   let e
 
@@ -73,18 +81,23 @@ function getIntOfNdigits(nmin, nmax, trailingzero = true) {
 
   function getNumber() {
     return getRandomInt(
-      Math.pow(10, nmin - 1),
-      Math.pow(10, getRandomIntInclusive(nmin, nmax)),
+      nmin === 0 ? 0 : Math.pow(10, nmin - 1),
+      nmax === 0 ? 0 : Math.pow(10, getRandomIntInclusive(nmin, nmax)),
     )
   }
   let v = getNumber()
 
-  if (!trailingzero) {
+  if (!trailingzero && nmax !== 0) {
     while (v % 10 === 0) {
       v = getNumber()
     }
   }
+  console.log('v', v)
   return v
+}
+
+function isInSegment(x, a, b) {
+  return x <= b.value && x >= a.value
 }
 
 //   La génération d'un template doit retouner une valeur numérique.
@@ -104,35 +117,76 @@ function generateTemplate(node) {
 
   let e
   let value
-  let ndigit
   let decimalPart
   let integerPart
   let ref
+  let include
+  let exclude
 
   switch (node.nature) {
     case '$e':
     case '$ep':
-    case '$ei':
-      if (!children[1].isHole()) {
-        e = number(
-          getIntOfNdigits(
-            children[0].isHole() ? 1 : children[0].value,
-            children[1].value,
-          ),
-        )
-      } else {
-        e = number(getRandomIntInclusive(children[2].value, children[3].value))
-      }
-      if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()
+    case '$ei': {
+      let doItAgain = false
+      const {
+        excludeMin,
+        excludeMax,
+        exclude,
+        excludeDivider,
+        excludeMultiple,
+        excludeCommonDividersWith,
+      } = node
 
+      do {
+        // whatis children[1] ?
+        if (!children[1].isHole()) {
+          e = number(
+            getIntOfNdigits(
+              children[0].isHole() ? 1 : children[0].value,
+              children[1].value,
+            ),
+          )
+          doItAgain = exclude && exclude.includes(e.string)
+        } else {
+          e = number(
+            getRandomIntInclusive(children[2].value, children[3].value),
+          )
+          doItAgain =
+            (exclude && exclude.map(exp => exp.string).includes(e.string)) ||
+            (excludeMin && isInSegment(e, excludeMin, excludeMax))
+        }
+        if (excludeMultiple) {
+          doItAgain =
+            doItAgain ||
+            (excludeMultiple &&
+              excludeMultiple.some(elt => e.value % elt.eval().value === 0))
+        }
+        if (excludeDivider) {
+          doItAgain =
+            doItAgain ||
+            (excludeDivider &&
+              excludeDivider.some(elt => elt.eval().value % e.value === 0))
+        }
+        if (excludeCommonDividersWith) {
+          doItAgain =
+            doItAgain ||
+            (excludeCommonDividersWith &&
+              excludeCommonDividersWith.some(
+                elt => gcd(elt.eval().value, e.value) !== 1,
+              ))
+        }
+      } while (doItAgain)
+
+      if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()
       node.root.generated.push(e)
       break
-
+    }
     case '$d':
       if (children[0]) {
         // partie entière
-        integerPart = children[0].generate()
-        decimalPart = children[1].generate()
+        integerPart = children[0].generate().value
+        decimalPart = children[1].generate().value
+        console.log('inteferpart', integerPart)
         value = new Decimal(getIntOfNdigits(integerPart, integerPart))
 
         //  partie décimale
@@ -158,11 +212,37 @@ function generateTemplate(node) {
       node.root.generated.push(e)
       break
 
-    case '$l':
-      e = children[Math.floor(Math.random() * children.length)]
+    case '$l': {
+      include = children
+      let doItAgain = false
+      if (node.exclude) {
+        exclude = node.exclude.map(exp => exp.eval().string)
+        console.log('exclude', exclude)
+        include = include.filter(elt => !exclude.includes(elt.string))
+      }
+      do {
+        e = include[Math.floor(Math.random() * include.length)]
+        doItAgain =
+          node.excludeMin && isInSegment(e, node.excludeMin, node.excludeMax)
+        if (node.excludeMultiple) {
+          doItAgain =
+            doItAgain ||
+            (node.excludeMultiple &&
+              node.excludeMultiple.some(
+                elt => e.value % elt.eval().value === 0,
+              ))
+        }
+        if (node.excludeDivider) {
+          doItAgain =
+            doItAgain ||
+            (node.excludeDivider &&
+              node.excludeDivider.some(elt => elt.eval().value % e.value === 0))
+        }
+      } while (doItAgain)
+
       node.root.generated.push(e)
       break
-
+    }
     case '$':
     case '$$':
       e = children[0]
