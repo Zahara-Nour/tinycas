@@ -125,7 +125,7 @@ function fraction (arg) {
     return createFraction({ n: num, d: denom }).reduce()
   } else {
     // console.log('arg ' + arg)
-    return fraction(arg.toString(false))
+    return fraction(arg.toString({displayUnit:false}))
   }
 }
 

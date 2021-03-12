@@ -26,7 +26,13 @@ describe('Parsing', () => {
 
   test('Parser parses a number', () => {
     const e = p.parse('123.45')
-    expect(e.toString()).toEqual('123.45')
+    expect(e.string).toEqual('123.45')
+    expect(e.isNumber()).toBeTruthy()
+  })
+
+  test('Parser parses a decimal number with","', () => {
+    const e = p.parse('123,45')
+    expect(e.toString({comma:true})).toEqual('123,45')
     expect(e.isNumber()).toBeTruthy()
   })
 
@@ -127,6 +133,8 @@ describe('Parsing', () => {
       // '$en',
       // '$d',
       // '$dr',
+
+
       '$e{2}',
       '$ep{2}',
       '$ei{2}',
@@ -145,12 +153,15 @@ describe('Parsing', () => {
       '$epr[2;4]',
       '$ei[2;4]',
       '$eir[2;4]',
+
+      '$e[2;4]\\{3}',
       
       // '$d{2;3}',
-      // '$d{2:4;3:5}'
+      // '$d{2:4;3:5}',
 
       '${1}',
-      '$l{1;2}'
+      '$l{1;2}',
+      '$l{1;2}\\{2;3}'
     ]
     for (const tested of exps) {
       const e = p.parse(tested)

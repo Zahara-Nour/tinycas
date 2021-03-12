@@ -174,8 +174,8 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString(displayUnit = true) {
-    return text(this, displayUnit)
+  toString({displayUnit=true, comma=false}={}) {
+    return text(this, displayUnit, comma)
   },
 
   get string() {
@@ -435,6 +435,9 @@ const PNode = {
               return true
             }
             break
+          case '$l':
+            return true
+            break 
 
           default:
             // $1 ....

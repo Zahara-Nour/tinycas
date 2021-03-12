@@ -647,12 +647,12 @@ export default function normalize(node) {
     case TYPE_NUMBER:
       if (node.isInt()) {
         // il faut se debarasser de l'unité
-        n = nSum([[simpleCoef(number(node.toString(false))), baseOne()]])
+        n = nSum([[simpleCoef(number(node.toString({displayUnit:false}))), baseOne()]])
         d = nSumOne()
       }
       else {
         // on convertit le float en fraction
-        e = math(fraction(node).toString(false)).normal
+        e = math(fraction(node).toString({displayUnit:false})).normal
       }
       
       break
@@ -667,7 +667,7 @@ export default function normalize(node) {
         break
 
     case TYPE_SYMBOL:
-      n = nSum([[coefOne(), createBase(symbol(node.toString(false)))]])
+      n = nSum([[coefOne(), createBase(symbol(node.toString({displayUnit:false})))]])
       d = nSumOne()
       break
 

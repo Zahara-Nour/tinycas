@@ -28,14 +28,14 @@ import {
 import { TYPE_NORMAL } from './normal'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
-export function text(e, displayUnit) {
+export function text(e, displayUnit, comma) {
   let s
 
   switch (e.type) {
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
       break
-      
+
     case TYPE_EQUALITY:
     case TYPE_INEQUALITY_LESS:
     case TYPE_INEQUALITY_LESSOREQUAL:
@@ -93,6 +93,10 @@ export function text(e, displayUnit) {
 
     case TYPE_NUMBER:
       s = e.value.toString()
+      if (comma) {
+        s = s.replace('.', ',')
+      }
+
       break
 
     case TYPE_HOLE:
@@ -121,6 +125,12 @@ export function text(e, displayUnit) {
           } else {
             s += `[${e.children[2].string};${e.children[3].string}]`
           }
+          if (e.exclude) {
+            s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
+          }
+          if (e.excludeMin) {
+            s += '\\[' + e.excludeMin+';'+e.excludeMax + ']'
+          }
           break
 
         case '$d':
@@ -141,6 +151,12 @@ export function text(e, displayUnit) {
           break
         case '$l':
           s += '{' + e.children.map(child => child.string).join(';') + '}'
+          if (e.exclude) {
+            s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
+          }
+          if (e.excludeMin) {
+            s += '\\[' + e.excludeMin+';'+e.excludeMax + ']'
+          }
 
           break
 
@@ -204,7 +220,12 @@ export function latex(e) {
       break
 
     case TYPE_QUOTIENT:
-      s = '\\frac{' + e.first.latex + '}{' + e.last.latex + '}'
+      s =
+        '\\frac{' +
+        (e.first.isBracket() ? e.first.first.latex : e.first.latex) +
+        '}{' +
+        (e.last.isBracket() ? e.last.first.latex : e.last.latex) +
+        '}'
       break
 
     case TYPE_SUM:
@@ -228,7 +249,11 @@ export function latex(e) {
       break
 
     case TYPE_NUMBER:
-      s = e.value.toString()
+      s = parseFloat(e.value, 10)
+        .toLocaleString('en')
+        .replace(',', '\\,')
+        .replace('.', '{,}')
+      // s = e.value.toString().replace('.', '{,}')
       break
 
     case TYPE_HOLE:
