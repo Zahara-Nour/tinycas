@@ -21,6 +21,7 @@ import {
   TYPE_PERCENTAGE,
   percentage,
   segmentLength,
+  pgcd,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -64,7 +65,7 @@ const VALUE_TEMPLATE = token('$')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
-const FUNCTION = token('@cos|sin|sqrt')
+const FUNCTION = token('@cos|sin|sqrt|pgcd')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -269,6 +270,14 @@ ${msg}`
           e = radical([parseExpression(options)])
           break
 
+        case 'pgcd': {
+          const a = parseExpression(options)
+          require(SEMICOLON)
+          const b = parseExpression(options)
+          e = pgcd([a, b])
+          break
+        }
+
         default:
           e = null
       }
@@ -359,7 +368,9 @@ ${msg}`
         exclude: exclude.length ? exclude : null,
         excludeMultiple: excludeMultiple.length ? excludeMultiple : null,
         excludeDivider: excludeDivider.length ? excludeDivider : null,
-        excludeCommonDividersWith: excludeCommonDividersWith.length ? excludeCommonDividersWith : null,
+        excludeCommonDividersWith: excludeCommonDividersWith.length
+          ? excludeCommonDividersWith
+          : null,
         excludeMin,
         excludeMax,
         children: [minDigit, maxDigit, min, max],

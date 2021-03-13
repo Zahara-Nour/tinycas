@@ -47,4 +47,12 @@ function roundDecimal(num, dec) {
     .div(Decimal.pow(10, dec))
 }
 
+export const gcd = function(a, b) {
+  if (!b) {
+    return a
+  }
+
+  return gcd(b, a % b)
+}
+
 export { round, binarySearchCmp, roundNumber, roundDecimal }

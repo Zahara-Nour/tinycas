@@ -10,19 +10,14 @@ import {
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
+import {gcd} from '../utils/utils'
 
 const constants = {
   pi: '3.14',
   e: '2.7',
 }
 
-const gcd = function(a, b) {
-  if (!b) {
-    return a
-  }
 
-  return gcd(b, a % b)
-}
 
 export function substitute(node, params) {
   let e

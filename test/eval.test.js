@@ -196,3 +196,12 @@ describe('Testing evaluation of litteral expressions with units', () => {
   )
 })
 
+
+describe('Test functions evaluation', () => {
+ 
+
+  test('Function pgcd', () => {
+    const e = math('pgcd(12;18)')
+    expect(e.eval().string).toEqual('6')
+  })
+})

@@ -23,6 +23,7 @@ import {
   TYPE_INEQUALITY_MOREOREQUAL,
   TYPE_PERCENTAGE,
   TYPE_SEGMENT_LENGTH,
+  TYPE_GCD,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -109,6 +110,10 @@ export function text(e, displayUnit, comma) {
 
     case TYPE_NORMAL:
       s = e.n.string + '/' + +e.d.string
+      break
+
+    case TYPE_GCD:
+      s = 'pgcd('+e.first.string+';'+e.last.string+')'
       break
 
     case TYPE_TEMPLATE:

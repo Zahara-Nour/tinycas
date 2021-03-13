@@ -5,6 +5,7 @@ import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
 import { roundDecimal } from '../utils/utils'
+import {gcd} from '../utils/utils'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -32,6 +33,7 @@ export const TYPE_INEQUALITY_LESSOREQUAL = '<='
 export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
+export const TYPE_GCD = 'gcd'
 
 const PNode = {
   [Symbol.iterator]() {
@@ -109,6 +111,9 @@ const PNode = {
   isRadical() {
     return this.type === TYPE_RADICAL
   },
+  isPGCD() {
+    return this.type === TYPE_GCD
+  },
   isNumber() {
     return this.type === TYPE_NUMBER
   },
@@ -131,7 +136,7 @@ const PNode = {
     return !!this.parent
   },
   isFunction() {
-    return this.isRadical()
+    return this.isRadical() || this.isPGCD()
   },
   compareTo(e) {
     return compare(this, e)
@@ -174,7 +179,7 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({displayUnit=true, comma=false}={}) {
+  toString({ displayUnit = true, comma = false } = {}) {
     return text(this, displayUnit, comma)
   },
 
@@ -255,24 +260,32 @@ const PNode = {
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 10
-
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
-    // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
-    e = e.normal
+    // fonctions
+    if (this.type === TYPE_GCD) {
 
-    // si on doit faire une conversion
-    if (params.unit) {
-      if (!e.unit) {
-        throw new Error("calcul avec unité d'une expression sans unité")
+
+      e =number(gcd(e.first.eval().value, e.last.eval().value))
+    } else {
+      
+
+      // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+      e = e.normal
+
+      // si on doit faire une conversion
+      if (params.unit) {
+        if (!e.unit) {
+          throw new Error("calcul avec unité d'une expression sans unité")
+        }
+        const coef = e.unit.getCoefTo(params.unit.normal)
+        e = e.mult(coef)
       }
-      const coef = e.unit.getCoefTo(params.unit.normal)
-      e = e.mult(coef)
-    }
 
-    // on retourne à la forme naturelle
-    e = e.node
+      // on retourne à la forme naturelle
+      e = e.node
+    }
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
     //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
@@ -437,7 +450,7 @@ const PNode = {
             break
           case '$l':
             return true
-            break 
+            break
 
           default:
             // $1 ....
@@ -540,6 +553,11 @@ export function bracket(children) {
 export function radical(children) {
   return createNode({ type: TYPE_RADICAL, children })
 }
+
+export function pgcd(children) {
+  return createNode({ type: TYPE_GCD, children })
+}
+
 export function percentage(children) {
   return createNode({ type: TYPE_PERCENTAGE, children })
 }

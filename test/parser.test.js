@@ -126,6 +126,13 @@ describe('Parsing', () => {
     expect(e.isInequality()).toBeTruthy()
   })
 
+  test('Parser parses functions', () => {
+    const e = p.parse('pgcd(12;18)')
+    console.log("e", e)
+    expect(e.string).toEqual('pgcd(12;18)')
+    expect(e.isFunction()).toBeTruthy()
+  })
+
   test('Parser parses templates', () => {
     const exps = [
       // '$e',

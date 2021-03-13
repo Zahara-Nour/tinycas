@@ -14,6 +14,7 @@ import {
   TYPE_RADICAL,
   TYPE_SUM,
   TYPE_SYMBOL,
+  TYPE_GCD,
 } from './node'
 
 
@@ -23,6 +24,7 @@ import Decimal from 'decimal.js'
 // Pour éviter les conversions répétées, renvoie un Decimal
 // Les unités ne sont pas gérées ici, mais dans la fonction appelante eval() associée
 // à node
+// ???  est ce que les children ont déjà été évalué ?
 export default function evaluate (node, params) {
   switch (node.type) {
     case TYPE_NUMBER:
@@ -67,7 +69,7 @@ export default function evaluate (node, params) {
         (sum, child) => sum.mul(evaluate(child)),
         new Decimal(1)
       )
-
+      
     default:
       return node
   }
