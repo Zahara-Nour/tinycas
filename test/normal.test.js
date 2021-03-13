@@ -1,6 +1,6 @@
 import {math} from '../src/math/math'
 
-describe('Testing normal forms for numerical expressions', () => {
+describe.skip('Testing normal forms for numerical expressions', () => {
   // test('Root is set on children', () => {
   //   const e = math('2*3+4')
   //   expect(e.normal.string).toBe('2+3*4')
@@ -49,7 +49,7 @@ describe('Testing normal forms for numerical expressions', () => {
   )
 })
 
-describe('Testing normal forms for litteral expressions', () => {
+describe.skip('Testing normal forms for litteral expressions', () => {
   // test('Root is set on children', () => {
   //   const e = math('2*3+4')
   //   expect(e.normal.string).toBe('2+3*4')

@@ -14,6 +14,7 @@ describe('Parsing', () => {
 
   test('Parser parses a hole', () => {
     const e = p.parse('?')
+    console.log("e",e)
     expect(e.toString()).toEqual('?')
     expect(e.isHole()).toBeTruthy()
   })
@@ -60,6 +61,12 @@ describe('Parsing', () => {
     expect(e.isPositive()).toBeTruthy()
   })
 
+  test('Parser parses multiple signs', () => {
+    const e = p.parse('+-++-----1')
+    expect(e.toString()).toEqual('+-++-----1')
+    expect(e.isPositive()).toBeTruthy()
+  })
+
   test('Parser parses a bracket', () => {
     const e = p.parse('(3)')
     expect(e.toString()).toEqual('(3)')
@@ -78,9 +85,20 @@ describe('Parsing', () => {
     expect(e.isSum()).toBeTruthy()
   })
 
+  test('Parser parses an addition', () => {
+    const e = p.parse('1+-1')
+    expect(e.toString()).toEqual('1+-1')
+    expect(e.isSum()).toBeTruthy()
+  })
+
   test('Parser parses a difference', () => {
     const e = p.parse('1-1')
     expect(e.toString()).toEqual('1-1')
+    expect(e.isDifference()).toBeTruthy()
+  })
+  test('Parser parses a difference', () => {
+    const e = p.parse('+1-+1')
+    expect(e.toString()).toEqual('+1-+1')
     expect(e.isDifference()).toBeTruthy()
   })
 
@@ -90,15 +108,32 @@ describe('Parsing', () => {
     expect(e.isProduct()).toBeTruthy()
   })
 
+  test('Parser parses a product', () => {
+    const e = p.parse('-1*+1')
+    expect(e.toString()).toEqual('-1*+1')
+    expect(e.isProduct()).toBeTruthy()
+  })
+
   test('Parser parses a division', () => {
     const e = p.parse('1:1')
     expect(e.toString()).toEqual('1:1')
     expect(e.isDivision()).toBeTruthy()
   })
 
+  test('Parser parses a division', () => {
+    const e = p.parse('-1:+1')
+    expect(e.toString()).toEqual('-1:+1')
+    expect(e.isDivision()).toBeTruthy()
+  })
+
   test('Parser parses a quotient', () => {
     const e = p.parse('1/1')
     expect(e.toString()).toEqual('1/1')
+    expect(e.isQuotient()).toBeTruthy()
+  })
+  test('Parser parses a quotient', () => {
+    const e = p.parse('-1/+1')
+    expect(e.toString()).toEqual('-1/+1')
     expect(e.isQuotient()).toBeTruthy()
   })
 
@@ -128,7 +163,7 @@ describe('Parsing', () => {
 
   test('Parser parses functions', () => {
     const e = p.parse('pgcd(12;18)')
-    console.log("e", e)
+ 
     expect(e.string).toEqual('pgcd(12;18)')
     expect(e.isFunction()).toBeTruthy()
   })
@@ -419,39 +454,73 @@ describe('Parsing', () => {
   })
 })
 
-describe.skip('Implicit products', () => {
+describe('Implicit products', () => {
   const p = parser()
 
   test('Parser recognises a simple implicit product', () => {
-    const e = p.parse('2ab')
-    const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
+    const e = p.parse('2abc')
+    // const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
     expect(e.isProduct()).toBeTruthy()
-    expect(e.toString()).toEqual('2*a*b')
-    expect(e.showShallowStructure()).toEqual(structure)
+    expect(e.toString()).toEqual('2abc')
+    // expect(e.showShallowStructure()).toEqual(structure)
+  })
+
+  test('Parser recognises a simple implicit product with +', () => {
+    const e = p.parse('2ab*cab')
+    // const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
+    expect(e.isProduct()).toBeTruthy()
+    expect(e.toString()).toEqual('2ab*cab')
+    // expect(e.showShallowStructure()).toEqual(structure)
+  })
+
+  test('Parser recognises a simple implicit product with +', () => {
+    const e = p.parse('2ab+cab')
+    // const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
+    expect(e.isSum()).toBeTruthy()
+    expect(e.toString()).toEqual('2ab+cab')
+    // expect(e.showShallowStructure()).toEqual(structure)
+  })
+
+  test('Parser recognises a simple implicit product with -', () => {
+    const e = p.parse('2ab-cab')
+    // const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
+    expect(e.isDifference()).toBeTruthy()
+    expect(e.toString()).toEqual('2ab-cab')
+    // expect(e.showShallowStructure()).toEqual(structure)
   })
 
   test('Parser recognises an implicit product with :', () => {
-    const e = p.parse('ab:bc')
-    const structure = { children: ['*', '*'], nature: ':' }
-    expect(e.isDivision()).toBeTruthy()
-    expect(e.toString()).toEqual('a*b:(b*c)')
-    expect(e.showShallowStructure()).toEqual(structure)
+    const e = p.parse('ab:b*cad')
+    // const structure = { children: ['*', '*'], nature: ':' }
+    expect(e.isProduct()).toBeTruthy()
+    expect(e.toString()).toEqual('ab:b*cad')
+    // expect(e.showShallowStructure()).toEqual(structure)
   })
 
   test('Parser recognises an implicit product with /', () => {
-    const e = p.parse('ab/bc')
-    const structure = { children: ['*', '*'], nature: '/' }
-    expect(e.isQuotient()).toBeTruthy()
-    expect(e.toString()).toEqual('(a*b)/(b*c)')
-    expect(e.showShallowStructure()).toEqual(structure)
+    const e = p.parse('ab/b*c')
+    // const structure = { children: ['*', '*'], nature: '/' }
+    expect(e.isProduct()).toBeTruthy()
+    expect(e.toString()).toEqual('ab/b*c')
+    // expect(e.showShallowStructure()).toEqual(structure)
   })
+
+  test('Parser recognises an implicit product with all', () => {
+    const e = p.parse('ab/b*c:f*ra')
+    // const structure = { children: ['*', '*'], nature: '/' }
+    expect(e.isProduct()).toBeTruthy()
+    expect(e.toString()).toEqual('ab/b*c:f*ra')
+    // expect(e.showShallowStructure()).toEqual(structure)
+  })
+
+ 
 
   test('Parser recognises an implicit product with ^', () => {
     const e = p.parse('2x^3y')
-    const structure = { children: ['number', '^', 'symbol'], nature: '*' }
+    // const structure = { children: ['number', '^', 'symbol'], nature: '*' }
     expect(e.isProduct()).toBeTruthy()
-    expect(e.toString()).toEqual('2*x^3*y')
-    expect(e.showShallowStructure()).toEqual(structure)
+    expect(e.toString()).toEqual('2x^3y')
+    // expect(e.showShallowStructure()).toEqual(structure)
   })
 })
 

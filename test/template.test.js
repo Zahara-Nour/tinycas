@@ -1,6 +1,6 @@
 import { math } from '../src/math/math'
 
-describe('Testing matching against Templates', () => {
+describe.skip('Testing matching against Templates', () => {
   const t = [
     ['2', '2', true],
     ['2', '3', false],

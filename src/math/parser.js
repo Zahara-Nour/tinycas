@@ -73,6 +73,7 @@ const UNIT = token(
   '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h',
 )
 
+const ERROR_NO_VALID_ATOM = 'no valid atom found'
 // const TEMPLATE = token(`@${regexBase}|${regexInteger}|${regexDecimal}`)
 
 // const LENGTH = token('@km|hm|dam|dm|cm|mm|m')
@@ -109,9 +110,14 @@ const SYMBOL = token('@[a-z]{1}')
 //  <Unit'> ::= .<ComposedUnit> | $
 //  <Composed=unit> ::= <SimpleUnit> (^(Integer | -Integer) | $)
 
-class ParsingError extends Error {}
+class ParsingError extends Error {
+  constructor(msg, type) {
+    super(msg)
+    this.type = type
+  }
+}
 
-function parser() {
+function parser({ implicit = true, allowDoubleSign = true } = {}) {
   let _lex
   let _lexem
   let _input
@@ -123,7 +129,7 @@ function parser() {
     const text = `${_input}
 ${place}
 ${msg}`
-    throw new ParsingError(text)
+    throw new ParsingError(text, msg)
   }
 
   function match(t) {
@@ -139,58 +145,42 @@ ${msg}`
     if (!match(t)) throw new ParsingError(`${t.pattern} required`)
   }
 
-  function parseExpression(options) {
-    return parseRelation(options)
+  function parseExpression() {
+    return parseRelation()
   }
 
-  function parseRelation(options) {
-    let e = parseMember(options)
+  function parseRelation() {
+    let e = parseMember()
     let relation
     if (match(EQUAL) || match(COMP)) {
       relation = _lexem
     }
     switch (relation) {
       case '=':
-        e = equality([e, parseMember(options)])
+        e = equality([e, parseMember()])
         break
 
       case '<':
       case '>':
       case '<=':
       case '>=':
-        e = inequality([e, parseMember(options)], relation)
+        e = inequality([e, parseMember()], relation)
     }
 
     return e
   }
 
-  function parseMember(options) {
-    let e
+  function parseMember() {
+    let e = parseTerm()
     let term
-    let unit = { string: baseUnits.noUnit[1] }
+    let unit = e.unit ? e.unit : { string: baseUnits.noUnit[1] }
     let sign
-
-    if (match(MINUS) || match(PLUS)) {
-      sign = _lexem
-    }
-    term = parseTerm(options)
-    switch (sign) {
-      case '-':
-        e = opposite([term])
-        break
-
-      case '+':
-        e = positive([term])
-        break
-
-      default:
-        e = term
-    }
-    if (term.unit) unit = term.unit
 
     while (match(PLUS) || match(MINUS)) {
       sign = _lexem
-      term = parseTerm(options)
+
+      term = parseTerm()
+
       if (
         (!term.unit && unit.string !== baseUnits.noUnit[1]) ||
         (term.unit && unit.string === baseUnits.noUnit[1]) ||
@@ -198,62 +188,79 @@ ${msg}`
       ) {
         failure("Erreur d'unité")
       }
+      if (!unit) unit = term.unit
+
       e = sign === '+' ? sum([e, term]) : difference([e, term])
     }
     return e
   }
 
-  function parseTerm(options) {
-    let e = parseFraction(options)
+  function parseTerm() {
+    let e = parseRelative()
 
-    while (match(TIMES) || match(DIV)) {
+    while (match(TIMES) || match(DIV) || match(FRAC)) {
       if (_lexem === '*') {
-        e = product([e, parseFraction(options)])
+        e = product([e, parseRelative()])
+      } else if (_lexem === ':') {
+        e = division([e, parseRelative({ localImplicit: false })])
       } else {
-        e = division([e, parseFraction(options)])
+        e = quotient([e, parseRelative({ localImplicit: false })])
       }
     }
     return e
   }
 
-  function parseFraction(options) {
-    let e = parseImplicitFactors(options)
-    while (match(FRAC)) {
-      e = quotient([e, parseImplicitFactors(options)])
+  function parseRelative(options) {
+    let e
+    if (match(MINUS) || match(PLUS)) {
+      const sign = _lexem
+      const term = parseRelative(options)
+      e = sign === '-' ? opposite([term]) : positive([term])
+    } else {
+      e = parseImplicitFactors(options)
     }
     return e
   }
 
-  function parseImplicitFactors(options) {
-    const e = parsePower(options)
-    const factors = [e]
-
-    if (options && options.implicit) {
-      let next
-      while ((next = parsePower(options, true))) {
-        if (next.isNumber()) {
-          failure('Number must be placed in fronthead')
-        } else {
-          factors.push(next)
+  function parseImplicitFactors({ localImplicit=true }={}) {
+    let e = parsePower()
+    let next
+    // produit implicite
+    if (implicit && localImplicit) {
+      do {
+        try {
+          next = parsePower()
+        } catch (error) {
+          if (error.type === ERROR_NO_VALID_ATOM) {
+            next = null
+          } else {
+            throw new ParsingError(error.message, error.type)
+          }
         }
-      }
+        if (next && next.isNumber()) {
+          failure('Number must be placed in fronthead')
+        } else if (next) {
+          e = product([e, next], TYPE_PRODUCT_IMPLICIT)
+        }
+      } while (next)
     }
-    return factors.length === 1 ? e : product(factors, TYPE_PRODUCT_IMPLICIT)
-  }
 
-  function parsePower(options, optional = false) {
-    let e = parseAtom(options, optional)
-    // parseAtom peut retrouner undefined dans le cas d'une recherche infructueuse  de produit implicite
-    if (e) {
-      while (match(POW)) {
-        // TODO : vérifier qu'il n'y a pas d'unité dans l'exposant
-        e = power([e, parseAtom(options)])
-      }
-    }
     return e
   }
 
-  function parseAtom(options, optional = false) {
+  function parsePower() {
+    let e = parseAtom()
+
+    while (match(POW)) {
+      // TODO : vérifier qu'il n'y a pas d'unité dans l'exposant
+
+      e = power([e, parseAtom()])
+    }
+
+    return e
+  }
+
+  function parseAtom() {
     let e, func
     let exclude, excludeMin, excludeMax
 
@@ -267,13 +274,13 @@ ${msg}`
       require(OPENING_BRACKET)
       switch (func) {
         case 'sqrt':
-          e = radical([parseExpression(options)])
+          e = radical([parseExpression()])
           break
 
         case 'pgcd': {
-          const a = parseExpression(options)
+          const a = parseExpression()
           require(SEMICOLON)
-          const b = parseExpression(options)
+          const b = parseExpression()
           e = pgcd([a, b])
           break
         }
@@ -295,7 +302,7 @@ ${msg}`
       }
     } else if (match(OPENING_BRACKET)) {
       // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
-      e = bracket([parseExpression(options)])
+      e = bracket([parseExpression()])
       require(CLOSING_BRACKET)
     }
     // integer
@@ -325,16 +332,16 @@ ${msg}`
       // _parts[4] nb chiffres ax si il n'y a pas _parts[6]
 
       if (match(OPENING_CURLYBRACKET)) {
-        maxDigit = parseExpression(options)
+        maxDigit = parseExpression()
         if (match(SEMICOLON)) {
           minDigit = maxDigit
-          maxDigit = parseExpression(options)
+          maxDigit = parseExpression()
         }
         require(CLOSING_CURLYBRACKET)
       } else if (match(OPENING_SQUAREBRACKET)) {
-        min = parseExpression(options)
+        min = parseExpression()
         require(SEMICOLON)
-        max = parseExpression(options)
+        max = parseExpression()
         require(CLOSING_SQUAREBRACKET)
       }
 
@@ -343,21 +350,21 @@ ${msg}`
           exclude = []
           do {
             if (match(MULTIPLE)) {
-              excludeMultiple.push(parseExpression(options))
+              excludeMultiple.push(parseExpression())
             } else if (match(DIVIDER)) {
-              excludeDivider.push(parseExpression(options))
+              excludeDivider.push(parseExpression())
             } else if (match(COMMON_DIVIDERS)) {
-              excludeCommonDividersWith.push(parseExpression(options))
+              excludeCommonDividersWith.push(parseExpression())
             } else {
-              exclude.push(parseExpression(options))
+              exclude.push(parseExpression())
             }
           } while (match(SEMICOLON))
           require(CLOSING_CURLYBRACKET)
         } else {
           require(OPENING_SQUAREBRACKET)
-          excludeMin = parseExpression(options)
+          excludeMin = parseExpression()
           require(SEMICOLON)
-          excludeMax = parseExpression(options)
+          excludeMax = parseExpression()
           require(CLOSING_SQUAREBRACKET)
         }
       }
@@ -388,18 +395,18 @@ ${msg}`
       let decimalPartMax = hole() // digits number after comma
 
       if (match(OPENING_CURLYBRACKET)) {
-        integerPartN = parseExpression(options)
+        integerPartN = parseExpression()
         if (match(DIV)) {
           integerPartMin = integerPartN
           integerPartN = null
-          integerPartMax = parseExpression(options)
+          integerPartMax = parseExpression()
         }
         if (match(SEMICOLON)) {
-          decimalPartN = parseExpression(options)
+          decimalPartN = parseExpression()
           if (match(DIV)) {
             decimalPartMin = decimalPartN
             decimalPartN = null
-            decimalPartMax = parseExpression(options)
+            decimalPartMax = parseExpression()
           }
         }
         require(CLOSING_CURLYBRACKET)
@@ -433,9 +440,9 @@ ${msg}`
       excludeMin = null
       excludeMax = null
       require(OPENING_CURLYBRACKET)
-      include.push(parseExpression(options))
+      include.push(parseExpression())
       while (match(SEMICOLON)) {
-        include.push(parseExpression(options))
+        include.push(parseExpression())
       }
       require(CLOSING_CURLYBRACKET)
 
@@ -445,19 +452,19 @@ ${msg}`
 
           do {
             if (match(MULTIPLE)) {
-              excludeMultiple.push(parseExpression(options))
+              excludeMultiple.push(parseExpression())
             } else if (match(DIVIDER)) {
-              excludeDivider.push(parseExpression(options))
+              excludeDivider.push(parseExpression())
             } else {
-              exclude.push(parseExpression(options))
+              exclude.push(parseExpression())
             }
           } while (match(SEMICOLON))
           require(CLOSING_CURLYBRACKET)
         } else {
           require(OPENING_SQUAREBRACKET)
-          excludeMin = parseExpression(options)
+          excludeMin = parseExpression()
           require(SEMICOLON)
-          excludeMax = parseExpression(options)
+          excludeMax = parseExpression()
           require(CLOSING_SQUAREBRACKET)
         }
       }
@@ -480,18 +487,18 @@ ${msg}`
       e = template({
         nature: '$$',
         precision,
-        children: [parseExpression(options)],
+        children: [parseExpression()],
       })
       require(CLOSING_CURLYBRACKET)
     } else if (match(VALUE_TEMPLATE)) {
       require(OPENING_CURLYBRACKET)
       e = template({
         nature: '$',
-        children: [parseExpression(options)],
+        children: [parseExpression()],
       })
       require(CLOSING_CURLYBRACKET)
-    } else if (!optional) {
-      failure('No valid atom found')
+    } else {
+      failure(ERROR_NO_VALID_ATOM)
     }
 
     if (e && match(PERCENT)) {
@@ -509,6 +516,7 @@ ${msg}`
     function getUnit() {
       let u = unit(_lexem)
       if (match(POW)) {
+        console.log('match POW')
         const n = parseAtom()
         if (
           !(
@@ -539,12 +547,12 @@ ${msg}`
   }
 
   return {
-    parse(input, options = { implicit: true }) {
+    parse(input) {
       _input = input
       _lex = lexer(input)
       let e
       try {
-        e = parseExpression(options)
+        e = parseExpression()
       } catch (error) {
         e = notdefined({ message: error.message })
       }

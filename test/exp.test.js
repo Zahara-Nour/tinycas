@@ -1,6 +1,6 @@
 import {math} from '../src/math/math'
 
-describe('Testing tree', () => {
+describe.skip('Testing tree', () => {
   test('Root is set on children', () => {
     const e = math('2*3+4')
     expect(e.first.first.root).toBe(e)
@@ -54,7 +54,7 @@ describe.skip('Testing units convertions', () => {
   }
 })
 
-describe('Testing equality between two expressions', () => {
+describe.skip('Testing equality between two expressions', () => {
   const t = [
     ['x+x',       '2x'],
     ['2*x',       '2x'],
@@ -102,7 +102,7 @@ describe('Testing equality between two expressions', () => {
 })
 
 
-describe('Testing strict equality between two expressions', () => {
+describe.skip('Testing strict equality between two expressions', () => {
   const t = [
     ['x',       'x'],
     ['2',       '2'],
