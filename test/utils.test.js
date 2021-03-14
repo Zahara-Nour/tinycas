@@ -3,7 +3,7 @@ import {roundDecimal} from '../src/utils/utils'
 
 
 
-describe.skip('Testing rounding', () => {
+describe('Testing rounding', () => {
 
   const t = [
     [5.2346, 2, '5.23'],

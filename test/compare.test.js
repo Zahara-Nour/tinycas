@@ -1,7 +1,7 @@
 import {math} from '../src/math/math'
 import compare from '../src/math/compare'
 
-describe.skip('Testing comparison between 2 nodes', () => {
+describe('Testing comparison between 2 nodes', () => {
   // test('Root is set on children', () => {
   //   const e = math('2*3+4')
   //   expect(e.normal.string).toBe('2+3*4')

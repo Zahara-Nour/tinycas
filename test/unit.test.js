@@ -2,7 +2,7 @@ import {math} from '../src/math/math'
 import {unit} from '../src/math/unit'
 
 
-describe.skip('Testing normalizing unit', () => {
+describe('Testing normalizing unit', () => {
 
   const t = [
     ['1 km', '1000 m'],
@@ -23,7 +23,7 @@ describe.skip('Testing normalizing unit', () => {
   )
 })
 
-describe.skip('Testing convertible units', () => {
+describe('Testing convertible units', () => {
 
   const t = [
     ['km', 'km'],
@@ -51,7 +51,7 @@ describe.skip('Testing convertible units', () => {
 })
 
 
-describe.skip('Testing units convertions', () => {
+describe('Testing units convertions', () => {
   const t = [
     ['1 km','m', '1000 m'],
     ['3 km','cm', '300000 cm'],
@@ -68,7 +68,7 @@ describe.skip('Testing units convertions', () => {
   )
 })
 
-describe.skip('Testing calculus with units', () => {
+describe('Testing calculus with units', () => {
   const t = [
     ['1 cm + 1 cm',       '0.02 m'],
     ['1 cm + 1 cm + 1cm', '0.03 m'],

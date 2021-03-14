@@ -1,6 +1,6 @@
 import { math } from '../src/math/math'
 
-describe.skip('Testing substitutions', () => {
+describe('Testing substitutions', () => {
   const t = [
     ['a', '1', 'a', '1'],
     ['a', '1/2', 'a', '1/2'],
@@ -38,7 +38,7 @@ describe.skip('Testing substitutions', () => {
 })
 
 
-describe.skip('Testing template $', () => {
+describe('Testing template $', () => {
   const t = [
     ['${1/3}','1/3'  ]
   
@@ -60,7 +60,7 @@ describe.skip('Testing template $', () => {
  
 })
 
-describe.skip('Testing template $$', () => {
+describe('Testing template $$', () => {
   const t = [
     ['$$2{1/3}','0.33'  ]
   
@@ -82,7 +82,7 @@ describe.skip('Testing template $$', () => {
  
 })
 
-describe.skip('Testing templates generations', () => {
+describe('Testing templates generations', () => {
   const t = [
     // '$e{3}',
     // '$e[15;19]',
@@ -147,7 +147,7 @@ describe.skip('Testing templates generations', () => {
   // }
 })
 
-describe.skip('Testing templates generations 2', () => {
+describe('Testing templates generations 2', () => {
   const t = [
     '1',
   ]

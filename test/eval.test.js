@@ -1,7 +1,7 @@
 import {math} from '../src/math/math'
 
 
-describe.skip('Testing evaluation of numerical expression ', () => {
+describe('Testing evaluation of numerical expression ', () => {
 
   const t = [
     ['0', '0'],
@@ -61,7 +61,7 @@ describe.skip('Testing evaluation of numerical expression ', () => {
   )
 })
 
-describe.skip('Testing evaluation of numerical expression with decimal result', () => {
+describe('Testing evaluation of numerical expression with decimal result', () => {
 
   const t = [
     ['1.0',     '1'],
@@ -107,7 +107,7 @@ describe.skip('Testing evaluation of numerical expression with decimal result', 
 
 
 
-describe.skip('Testing evaluation of numerical expression with decimal rounded result', () => {
+describe('Testing evaluation of numerical expression with decimal rounded result', () => {
 
   const t = [
     ['1.123',  2,   '1.12'],
@@ -124,7 +124,7 @@ describe.skip('Testing evaluation of numerical expression with decimal rounded r
   )
 })
 
-describe.skip('Testing evaluation of numerical expression with units', () => {
+describe('Testing evaluation of numerical expression with units', () => {
 
   const t = [
     ['1 km','dam', '100 dam'],
@@ -147,7 +147,7 @@ describe.skip('Testing evaluation of numerical expression with units', () => {
   )
 })
 
-describe.skip('Testing evaluation of litteral expressions', () => {
+describe('Testing evaluation of litteral expressions', () => {
 
   const t = [ 
     ['a+b', 'a', '1', 'b', '2', '3'],
@@ -164,7 +164,7 @@ describe.skip('Testing evaluation of litteral expressions', () => {
 })
 
 
-describe.skip('Testing constants', () => {
+describe('Testing constants', () => {
 
   const t = [ 
     ['a+pi', 'a', '1', '4.14'],
@@ -180,7 +180,7 @@ describe.skip('Testing constants', () => {
   )
 })
 
-describe.skip('Testing evaluation of litteral expressions with units', () => {
+describe('Testing evaluation of litteral expressions with units', () => {
 
   const t = [ 
     
@@ -197,7 +197,7 @@ describe.skip('Testing evaluation of litteral expressions with units', () => {
 })
 
 
-describe.skip('Test functions evaluation', () => {
+describe('Test functions evaluation', () => {
  
 
   test('Function pgcd', () => {

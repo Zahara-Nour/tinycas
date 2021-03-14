@@ -1,6 +1,6 @@
 import { math } from '../src/math/math'
 
-describe.skip('Testing asciimath export', () => {
+describe('Testing asciimath export', () => {
 
   const t = [ 
   //   ['3/4', '\\frac{3}{4}'],
@@ -16,7 +16,7 @@ describe.skip('Testing asciimath export', () => {
   )
 })
 
-describe.skip('Testing latex export', () => {
+describe('Testing latex export', () => {
 
     const t = [ 
       ['(3/4)', '\\left(\\frac{3}{4}\\right)'],

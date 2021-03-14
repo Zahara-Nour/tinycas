@@ -4,8 +4,8 @@ import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
-import { roundDecimal } from '../utils/utils'
-import {gcd} from '../utils/utils'
+import { roundDecimal, gcd } from '../utils/utils'
+
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -474,22 +474,23 @@ La forme normale utilise une forme propre.
  */
 export function createNode(params) {
   // dans le cas des sommes et des produits, on applatit d'abord les fils qui auraient la même structure
-  if (
-    params.type === TYPE_SUM ||
-    params.type === TYPE_PRODUCT ||
-    params.type === TYPE_PRODUCT_IMPLICIT ||
-    params.type === TYPE_PRODUCT_POINT
-  ) {
-    let t = []
-    for (const child of params.children) {
-      if (params.type === child.type) {
-        t = t.concat(child.children)
-      } else {
-        t.push(child)
-      }
-    }
-    params.children = t
-  }
+  // FINALEMENT  NON
+  // if (
+  //   params.type === TYPE_SUM ||
+  //   params.type === TYPE_PRODUCT ||
+  //   params.type === TYPE_PRODUCT_IMPLICIT ||
+  //   params.type === TYPE_PRODUCT_POINT
+  // ) {
+  //   let t = []
+  //   for (const child of params.children) {
+  //     if (params.type === child.type) {
+  //       t = t.concat(child.children)
+  //     } else {
+  //       t.push(child)
+  //     }
+  //   }
+  //   params.children = t
+  // }
 
   const node = Object.create(PNode)
   Object.assign(node, params)

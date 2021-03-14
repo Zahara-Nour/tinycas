@@ -1,6 +1,6 @@
 import {math} from '../src/math/math'
 
-describe.skip('Testing tree', () => {
+describe('Testing tree', () => {
   test('Root is set on children', () => {
     const e = math('2*3+4')
     expect(e.first.first.root).toBe(e)
@@ -10,23 +10,33 @@ describe.skip('Testing tree', () => {
     let e = math('1+2')
     expect(e.first.string).toBe('1')
     expect(e.first.parent).toBe(e)
+    expect(e.last.parent).toBe(e)
 
     e = math('1*2')
     expect(e.first.string).toBe('1')
+    expect(e.last.string).toBe('2')
     expect(e.first.parent).toBe(e)
+    expect(e.last.parent).toBe(e)
 
     e = math('1*2*3*4')
-    expect(e.first.string).toBe('1')
+    expect(e.first.string).toBe('1*2*3')
     expect(e.first.parent).toBe(e)
-    expect(e.first.parent).toBe(e)
+    expect(e.first.root).toBe(e)
+    expect(e.first.first.parent).toBe(e.first)
+    expect(e.first.first.root).toBe(e)
+    expect(e.first.last.parent).toBe(e.first)
+    expect(e.first.last.root).toBe(e)
+    
+    expect(e.last.parent).toBe(e)
 
     e = math('1+2+3+4')
-    expect(e.first.string).toBe('1')
+    expect(e.first.string).toBe('1+2+3')
     expect(e.first.parent).toBe(e)
+    expect(e.last.parent).toBe(e)
   })
 })
 
-describe.skip('Testing units convertions', () => {
+describe.skip('Testing formats', () => {
   const exps = {
     '3':        '$e',
     '2':        '$er',
@@ -54,7 +64,7 @@ describe.skip('Testing units convertions', () => {
   }
 })
 
-describe.skip('Testing equality between two expressions', () => {
+describe('Testing equality between two expressions', () => {
   const t = [
     ['x+x',       '2x'],
     ['2*x',       '2x'],
@@ -102,7 +112,7 @@ describe.skip('Testing equality between two expressions', () => {
 })
 
 
-describe.skip('Testing strict equality between two expressions', () => {
+describe('Testing strict equality between two expressions', () => {
   const t = [
     ['x',       'x'],
     ['2',       '2'],
@@ -119,14 +129,14 @@ describe.skip('Testing strict equality between two expressions', () => {
   
 
   const t2 = [
-    ['x-y', 'y-x'],
-    ['x/y', 'y/x']
+    ['x+y', 'y+x'],
+    ['x*y', 'y*x']
   ]
 
   test.each(t2)(
     '%s is not equivalent to %s',
     (e1, e2) => {
-      expect(math(e1).equals(math(e2))).toBeFalsy()
+      expect(math(e1).strictlyEquals(math(e2))).toBeFalsy()
     }
   )
 })
