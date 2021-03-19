@@ -155,15 +155,50 @@ describe('Parsing', () => {
   })
 
   test('Parser parses an equality', () => {
-    const e = p.parse('1<1')
+    let e = p.parse('1<1')
     expect(e.toString()).toEqual('1<1')
+    expect(e.isInequality()).toBeTruthy()
+
+     e = p.parse('1<=1')
+    expect(e.toString()).toEqual('1<=1')
+    expect(e.isInequality()).toBeTruthy()
+
+     e = p.parse('1>1')
+    expect(e.toString()).toEqual('1>1')
+    expect(e.isInequality()).toBeTruthy()
+
+     e = p.parse('1>=1')
+    expect(e.toString()).toEqual('1>=1')
     expect(e.isInequality()).toBeTruthy()
   })
 
   test('Parser parses functions', () => {
-    const e = p.parse('pgcd(12;18)')
- 
+    let e = p.parse('pgcd(12;18)')
     expect(e.string).toEqual('pgcd(12;18)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('cos(5)')
+    expect(e.string).toEqual('cos(5)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('sin(5)')
+    expect(e.string).toEqual('sin(5)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('tan(5)')
+    expect(e.string).toEqual('tan(5)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('ln(5)')
+    expect(e.string).toEqual('ln(5)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('log(5)')
+    expect(e.string).toEqual('log(5)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('exp(5)')
+    expect(e.string).toEqual('exp(5)')
     expect(e.isFunction()).toBeTruthy()
   })
 

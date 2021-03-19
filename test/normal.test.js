@@ -90,3 +90,46 @@ describe('Testing normal forms for litteral expressions', () => {
     },
   )
 })
+
+describe('Testing normal forms for functions', () => {
+  // test('Root is set on children', () => {
+  //   const e = math('2*3+4')
+  //   expect(e.normal.string).toBe('2+3*4')
+  // })
+  const t = [
+    ['cos(1+2)', 'cos(3)'],
+    ['cos(cos(1+2))', 'cos(cos(3))'],
+
+    ['sin(1+2)', 'sin(3)'],
+    ['sin(sin(1+2))', 'sin(sin(3))'],
+
+    ['tan(1+2)', 'tan(3)'],
+    ['tan(tan(1+2))', 'tan(tan(3))'],
+
+    ['ln(1+2)', 'ln(3)'],
+    ['ln(ln (1+2))', 'ln(ln(3))'],
+
+    ['log(1+2)', 'log(3)'],
+    ['log(log(1+2))', 'log(log(3))'],
+
+    ['exp(1+2)', 'exp(3)'],
+    ['exp(exp(1+2))', 'exp(exp(3))'],
+
+    ['cos(1)+cos(2)', 'cos(1)+cos(2)'],
+    ['cos(2)+cos(1)', 'cos(1)+cos(2)'],
+    ['sin(1)+cos(2)', 'cos(2)+sin(1)'],
+    ['cos(2)+cos(2)', '2*cos(2)'],
+    ['cos(2)*cos(2)', 'cos(2)^2'],
+  ]
+
+
+  test.each(t)(
+    'normal form of %s',
+    (e, expected) => {
+      // e = math(e)
+      // console.log("e", e, e.string)
+      // console.log("normal e", e.normal.n.children[0][1].children[0], e.normal.n.children[0][1].children[0])
+      expect(math(e).normal.string).toBe(expected)
+    },
+  )
+})

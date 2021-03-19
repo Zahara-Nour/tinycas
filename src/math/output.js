@@ -25,6 +25,13 @@ import {
   TYPE_SEGMENT_LENGTH,
   TYPE_GCD,
   TYPE_BOOLEAN,
+  TYPE_COS,
+  TYPE_SIMPLE_UNIT,
+  TYPE_SIN,
+  TYPE_TAN,
+  TYPE_LN,
+  TYPE_EXP,
+  TYPE_LOG,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -59,7 +66,13 @@ export function text(e, { displayUnit, comma, addBrackets }) {
       break
 
     case TYPE_RADICAL:
-      s = 'sqrt' + e.first.string
+    case TYPE_COS:
+    case TYPE_SIN:
+    case TYPE_TAN:
+    case TYPE_LN:
+    case TYPE_LOG:
+    case TYPE_EXP:
+      s = e.type + '(' + e.first.string + ')'
       break
 
     case TYPE_BRACKET:
@@ -231,7 +244,7 @@ export function latex(e, options) {
           e.first.isDifference() ||
           e.first.isOpposite() ||
           e.first.isPositive())
-          
+
       s = '-'
       if (needBrackets) {
         s += '\\left('

@@ -6,7 +6,6 @@ import compare from './compare'
 import { substitute, generate } from './transform'
 import { roundDecimal, gcd } from '../utils/utils'
 
-
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
 export const TYPE_PRODUCT = '*'
@@ -35,6 +34,12 @@ export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
 export const TYPE_BOOLEAN = 'boolean'
+export const TYPE_COS = 'cos'
+export const TYPE_SIN = 'sin'
+export const TYPE_TAN = 'tan'
+export const TYPE_LN = 'ln'
+export const TYPE_LOG = 'log'
+export const TYPE_EXP = 'exp'
 
 const PNode = {
   [Symbol.iterator]() {
@@ -82,9 +87,9 @@ const PNode = {
   },
 
   isBoolean() {
-    return this.type===TYPE_BOOLEAN
+    return this.type === TYPE_BOOLEAN
   },
-  
+
   isTrue() {
     return this.isBoolean() && this.value
   },
@@ -92,7 +97,6 @@ const PNode = {
   isFalse() {
     return this.isBoolean() && !this.value
   },
-
 
   isSum() {
     return this.type === TYPE_SUM
@@ -128,6 +132,24 @@ const PNode = {
   isPGCD() {
     return this.type === TYPE_GCD
   },
+  isCos() {
+    return this.type === TYPE_COS
+  },
+  isSin() {
+    return this.type === TYPE_SIN
+  },
+  isTan() {
+    return this.type === TYPE_TAN
+  },
+  isLn() {
+    return this.type === TYPE_LN
+  },
+  isLog() {
+    return this.type === TYPE_LOG
+  },
+  isExp() {
+    return this.type === TYPE_EXP
+  },
   isNumber() {
     return this.type === TYPE_NUMBER
   },
@@ -150,7 +172,16 @@ const PNode = {
     return !!this.parent
   },
   isFunction() {
-    return this.isRadical() || this.isPGCD()
+    return (
+      this.isRadical() ||
+      this.isPGCD() ||
+      this.isCos() ||
+      this.isSin() ||
+      this.isTan() ||
+      this.isLog() ||
+      this.isLn() ||
+      this.isExp()
+    )
   },
   compareTo(e) {
     return compare(this, e)
@@ -174,7 +205,57 @@ const PNode = {
     return this.string === e.string
   },
   equals(e) {
-    return this.normal.string === e.normal.string
+    switch (this.type) {
+      case TYPE_EQUALITY:
+        return (
+          e.type === TYPE_EQUALITY &&
+          ((this.first.equals(e.first) && this.last.equals(e.last)) ||
+            (this.first.equals(e.last) && this.last.equals(e.first)))
+        )
+
+      case TYPE_INEQUALITY_LESS:
+        return (
+          (e.type === TYPE_INEQUALITY_LESS &&
+            this.first.equals(e.first) &&
+            this.last.equals(e.last)) ||
+          (e.type === TYPE_INEQUALITY_MORE &&
+            this.first.equals(e.last) &&
+            this.last.equals(e.first))
+        )
+
+      case TYPE_INEQUALITY_LESSOREQUAL:
+        return (
+          (e.type === TYPE_INEQUALITY_LESSOREQUAL &&
+            this.first.equals(e.first) &&
+            this.last.equals(e.last)) ||
+          (e.type === TYPE_INEQUALITY_MOREOREQUAL &&
+            this.first.equals(e.last) &&
+            this.last.equals(e.first))
+        )
+
+      case TYPE_INEQUALITY_MORE:
+        return (
+          (e.type === TYPE_INEQUALITY_MORE &&
+            this.first.equals(e.first) &&
+            this.last.equals(e.last)) ||
+          (e.type === TYPE_INEQUALITY_LESS &&
+            this.first.equals(e.last) &&
+            this.last.equals(e.first))
+        )
+
+      case TYPE_INEQUALITY_MOREOREQUAL:
+        return (
+          (e.type === TYPE_INEQUALITY_MOREOREQUAL &&
+            this.first.equals(e.first) &&
+            this.last.equals(e.last)) ||
+          (e.type === TYPE_INEQUALITY_LESSOREQUAL &&
+            this.first.equals(e.last) &&
+            this.last.equals(e.first))
+        )
+
+      default:
+        return this.normal.string === e.normal.string
+    }
   },
 
   get pos() {
@@ -193,16 +274,16 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ displayUnit = true, comma = false, addBrackets=false } = {}) {
-    return text(this, {displayUnit, comma, addBrackets})
+  toString({ displayUnit = true, comma = false, addBrackets = false } = {}) {
+    return text(this, { displayUnit, comma, addBrackets })
   },
 
   get string() {
     return this.toString()
   },
 
-  toLatex({addBrackets=false } = {}) {
-    return latex(this, {addBrackets})
+  toLatex({ addBrackets = false } = {}) {
+    return latex(this, { addBrackets })
   },
 
   get latex() {
@@ -281,37 +362,37 @@ const PNode = {
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
-
-    switch(this.type) {
+    switch (this.type) {
       case TYPE_GCD: {
         let a = e.first.eval()
         let b = e.last.eval()
-        a = a.isOpposite() ? a.first.value : a.value 
-        b = b.isOpposite() ? b.first.value : b.value 
-        e =number(gcd(a,b))
-      break
+        a = a.isOpposite() ? a.first.value : a.value
+        b = b.isOpposite() ? b.first.value : b.value
+        e = number(gcd(a, b))
+        break
       }
-      case TYPE_EQUALITY: {
-        let a = e.first.eval()
-        let b = e.last.eval()
-      }
-      break;
+      case TYPE_EQUALITY:
+        {
+          let a = e.first.eval()
+          let b = e.last.eval()
+        }
+        break
 
-      default :
-       // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
-       e = e.normal
+      default:
+        // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+        e = e.normal
 
-       // si on doit faire une conversion
-       if (params.unit) {
-         if (!e.unit) {
-           throw new Error("calcul avec unité d'une expression sans unité")
-         }
-         const coef = e.unit.getCoefTo(params.unit.normal)
-         e = e.mult(coef)
-       }
- 
-       // on retourne à la forme naturelle
-       e = e.node
+        // si on doit faire une conversion
+        if (params.unit) {
+          if (!e.unit) {
+            throw new Error("calcul avec unité d'une expression sans unité")
+          }
+          const coef = e.unit.getCoefTo(params.unit.normal)
+          e = e.mult(coef)
+        }
+
+        // on retourne à la forme naturelle
+        e = e.node
     }
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
@@ -582,6 +663,30 @@ export function radical(children) {
   return createNode({ type: TYPE_RADICAL, children })
 }
 
+export function cos(children) {
+  return createNode({ type: TYPE_COS, children })
+}
+
+export function sin(children) {
+  return createNode({ type: TYPE_SIN, children })
+}
+
+export function tan(children) {
+  return createNode({ type: TYPE_TAN, children })
+}
+
+export function ln(children) {
+  return createNode({ type: TYPE_LN, children })
+}
+
+export function log(children) {
+  return createNode({ type: TYPE_LOG, children })
+}
+
+export function exp(children) {
+  return createNode({ type: TYPE_EXP, children })
+}
+
 export function pgcd(children) {
   return createNode({ type: TYPE_GCD, children })
 }
@@ -593,7 +698,7 @@ export function number(value) {
   return createNode({ type: TYPE_NUMBER, value: parseFloat(value) })
 }
 export function boolean(value) {
-  return createNode({ type: TYPE_BOOLEAN, value})
+  return createNode({ type: TYPE_BOOLEAN, value })
 }
 export function symbol(letter) {
   return createNode({ type: TYPE_SYMBOL, letter })

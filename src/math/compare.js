@@ -1,21 +1,36 @@
-
-import { TYPE_HOLE, TYPE_NUMBER, TYPE_SYMBOL, TYPE_TEMPLATE } from './node'
+import {
+  TYPE_COS,
+  TYPE_EQUALITY,
+  TYPE_EXP,
+  TYPE_HOLE,
+  TYPE_INEQUALITY_LESS,
+  TYPE_INEQUALITY_LESSOREQUAL,
+  TYPE_INEQUALITY_MORE,
+  TYPE_INEQUALITY_MOREOREQUAL,
+  TYPE_LN,
+  TYPE_LOG,
+  TYPE_NUMBER,
+  TYPE_SIN,
+  TYPE_SYMBOL,
+  TYPE_TAN,
+  TYPE_TEMPLATE,
+} from './node'
 import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal'
 /**
  * Un ordre doit être défini sur les expressions afin de créer les formes normales, qui permettent d'identifier
  * deux expressions équiavalentes
  * ordre choisi:
- * 2 < a < ? < template
+ * 2 < a < ? < template < function <  "<" , "<=" , ">" , ">=" , "="
  * pour les autres type, on compare les formes normales, termes à termes
  * renvoie 1 si node1 > node2
  * renvoie 0 si node1 = node2
  * renvoie -1 si node1 < node2
  */
 
-export default function compare (node1, node2) {
+export default function compare(node1, node2) {
   let result
-  let i1, i2, next1,next2
-  
+  let i1, i2, next1, next2
+
   switch (node1.type) {
     case TYPE_HOLE:
       switch (node2.type) {
@@ -27,6 +42,17 @@ export default function compare (node1, node2) {
           return 0
 
         case TYPE_TEMPLATE:
+        case TYPE_COS:
+        case TYPE_SIN:
+        case TYPE_TAN:
+        case TYPE_LN:
+        case TYPE_LOG:
+        case TYPE_EXP:
+        case TYPE_INEQUALITY_LESS:
+        case TYPE_INEQUALITY_LESSOREQUAL:
+        case TYPE_INEQUALITY_MORE:
+        case TYPE_INEQUALITY_MOREOREQUAL:
+        case TYPE_EQUALITY:
           return -1
 
         default:
@@ -40,6 +66,17 @@ export default function compare (node1, node2) {
 
         case TYPE_HOLE:
         case TYPE_TEMPLATE:
+        case TYPE_COS:
+        case TYPE_SIN:
+        case TYPE_TAN:
+        case TYPE_LN:
+        case TYPE_LOG:
+        case TYPE_EXP:
+        case TYPE_INEQUALITY_LESS:
+        case TYPE_INEQUALITY_LESSOREQUAL:
+        case TYPE_INEQUALITY_MORE:
+        case TYPE_INEQUALITY_MOREOREQUAL:
+        case TYPE_EQUALITY:
           return -1
 
         case TYPE_SYMBOL:
@@ -68,7 +105,92 @@ export default function compare (node1, node2) {
         case TYPE_HOLE:
         case TYPE_SYMBOL:
         case TYPE_TEMPLATE:
+        case TYPE_COS:
+        case TYPE_SIN:
+        case TYPE_TAN:
+        case TYPE_LN:
+        case TYPE_LOG:
+        case TYPE_EXP:
+        case TYPE_INEQUALITY_LESS:
+        case TYPE_INEQUALITY_LESSOREQUAL:
+        case TYPE_INEQUALITY_MORE:
+        case TYPE_INEQUALITY_MOREOREQUAL:
+        case TYPE_EQUALITY:
           return -1
+
+        default:
+          return node1.normal.compareTo(node2.normal)
+      }
+
+    case TYPE_COS:
+    case TYPE_SIN:
+    case TYPE_TAN:
+    case TYPE_LN:
+    case TYPE_LOG:
+    case TYPE_EXP:
+      switch (node2.type) {
+        case TYPE_NUMBER:
+        case TYPE_SYMBOL:
+        case TYPE_HOLE:
+        case TYPE_TEMPLATE:
+          return 1
+
+        case TYPE_COS:
+        case TYPE_SIN:
+        case TYPE_TAN:
+        case TYPE_LN:
+        case TYPE_LOG:
+        case TYPE_EXP:
+          if (node1.type < node2.type) {
+            return -1
+          } else if (node1.type > node2.type) {
+            return 1
+          } else {
+            return compare(node1.first, node2.first)
+          }
+
+        case TYPE_INEQUALITY_LESS:
+        case TYPE_INEQUALITY_LESSOREQUAL:
+        case TYPE_INEQUALITY_MORE:
+        case TYPE_INEQUALITY_MOREOREQUAL:
+        case TYPE_EQUALITY:
+          return -1
+
+        default:
+          return node1.normal.compareTo(node2.normal)
+      }
+
+    case TYPE_INEQUALITY_LESS:
+    case TYPE_INEQUALITY_LESSOREQUAL:
+    case TYPE_INEQUALITY_MORE:
+    case TYPE_INEQUALITY_MOREOREQUAL:
+    case TYPE_EQUALITY:
+      switch (node2.type) {
+        case TYPE_NUMBER:
+        case TYPE_SYMBOL:
+        case TYPE_HOLE:
+        case TYPE_TEMPLATE:
+        case TYPE_COS:
+        case TYPE_SIN:
+        case TYPE_TAN:
+        case TYPE_LN:
+        case TYPE_LOG:
+        case TYPE_EXP:
+          return 1
+
+        case TYPE_INEQUALITY_LESS:
+        case TYPE_INEQUALITY_LESSOREQUAL:
+        case TYPE_INEQUALITY_MORE:
+        case TYPE_INEQUALITY_MOREOREQUAL:
+        case TYPE_EQUALITY:
+          if (node1.type < node2.type) {
+            return -1
+          } else if (node1.type > node2.type) {
+            return 1
+          } else {
+            const left = compare(node1.first, node2.first)
+            return left === 0 ? compare(node1.last, node2.last) : left
+          }
 
         default:
           return node1.normal.compareTo(node2.normal)
@@ -76,7 +198,7 @@ export default function compare (node1, node2) {
 
     case TYPE_NORMAL:
       result = node1.n.mult(node2.d).compareTo(node2.n.mult(node1.d))
-      
+
       if (result === 0) {
         //  on doit comparer les unités
         if (node1.unit && node2.unit) {
@@ -91,8 +213,7 @@ export default function compare (node1, node2) {
 
     case TYPE_NSUM:
     case TYPE_NPRODUCT:
-      
-        // !!!!! attention avec les crochets en début de ligne !!!!!!!!!!
+      // !!!!! attention avec les crochets en début de ligne !!!!!!!!!!
       ;[i1, i2] = [node1[Symbol.iterator](), node2[Symbol.iterator]()]
       ;[next1, next2] = [i1.next(), i2.next()]
 
@@ -104,7 +225,7 @@ export default function compare (node1, node2) {
         const [base1, base2] = [child1[1], child2[1]]
         result = base1.compareTo(base2)
         if (result !== 0) return result
-        
+
         // ce n'est pas concluant, on passe aux coefs
         const [coef1, coef2] = [child1[0], child2[0]]
         if (coef1.type === TYPE_NSUM) {

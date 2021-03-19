@@ -23,6 +23,12 @@ import {
   segmentLength,
   pgcd,
   boolean,
+  cos,
+  sin,
+  tan,
+  ln,
+  log,
+  exp,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -67,7 +73,7 @@ const VALUE_TEMPLATE = token('$')
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
-const FUNCTION = token('@cos|sin|sqrt|pgcd')
+const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -224,7 +230,7 @@ ${msg}`
     return e
   }
 
-  function parseImplicitFactors({ localImplicit=true }={}) {
+  function parseImplicitFactors({ localImplicit = true } = {}) {
     let e = parsePower()
     let next
     // produit implicite
@@ -267,9 +273,8 @@ ${msg}`
     let exclude, excludeMin, excludeMax
 
     if (match(BOOLEAN)) {
-      e=boolean(_lexem==="true")
-    }
-    else if (match(SEGMENT_LENGTH)) {
+      e = boolean(_lexem === 'true')
+    } else if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
     } else if (match(DECIMAL) || match(INTEGER)) {
       e = number(_lexem.replace(',', '.'))
@@ -290,6 +295,30 @@ ${msg}`
           break
         }
 
+        case 'cos':
+          e = cos([parseExpression()])
+          break
+
+        case 'sin':
+          e = sin([parseExpression()])
+          break
+
+        case 'tan':
+          e = tan([parseExpression()])
+          break
+
+        case 'ln':
+          e = ln([parseExpression()])
+          break
+
+        case 'log':
+          e = log([parseExpression()])
+          break
+
+        case 'exp':
+          e = exp([parseExpression()])
+          break
+          
         default:
           e = null
       }

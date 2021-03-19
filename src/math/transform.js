@@ -87,7 +87,7 @@ function getIntOfNdigits(nmin, nmax, trailingzero = true) {
       v = getNumber()
     }
   }
-  console.log('v', v)
+  // console.log('v', v)
   return v
 }
 
@@ -181,7 +181,7 @@ function generateTemplate(node) {
         // partie entière
         integerPart = children[0].generate().value
         decimalPart = children[1].generate().value
-        console.log('inteferpart', integerPart)
+        // console.log('inteferpart', integerPart)
         value = new Decimal(getIntOfNdigits(integerPart, integerPart))
 
         //  partie décimale
@@ -212,7 +212,7 @@ function generateTemplate(node) {
       let doItAgain = false
       if (node.exclude) {
         exclude = node.exclude.map(exp => exp.eval().string)
-        console.log('exclude', exclude)
+        // console.log('exclude', exclude)
         include = include.filter(elt => !exclude.includes(elt.string))
       }
       do {
