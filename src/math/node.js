@@ -34,6 +34,7 @@ export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
+export const TYPE_BOOLEAN = 'boolean'
 
 const PNode = {
   [Symbol.iterator]() {
@@ -79,6 +80,19 @@ const PNode = {
       this.type === TYPE_INEQUALITY_MOREOREQUAL
     )
   },
+
+  isBoolean() {
+    return this.type===TYPE_BOOLEAN
+  },
+  
+  isTrue() {
+    return this.isBoolean() && this.value
+  },
+
+  isFalse() {
+    return this.isBoolean() && !this.value
+  },
+
 
   isSum() {
     return this.type === TYPE_SUM
@@ -179,16 +193,20 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ displayUnit = true, comma = false } = {}) {
-    return text(this, displayUnit, comma)
+  toString({ displayUnit = true, comma = false, addBrackets=false } = {}) {
+    return text(this, {displayUnit, comma, addBrackets})
   },
 
   get string() {
     return this.toString()
   },
 
+  toLatex({addBrackets=false } = {}) {
+    return latex(this, {addBrackets})
+  },
+
   get latex() {
-    return latex(this)
+    return this.toLatex()
   },
 
   get root() {
@@ -263,28 +281,37 @@ const PNode = {
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
-    // fonctions
-    if (this.type === TYPE_GCD) {
 
-
-      e =number(gcd(e.first.eval().value, e.last.eval().value))
-    } else {
-      
-
-      // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
-      e = e.normal
-
-      // si on doit faire une conversion
-      if (params.unit) {
-        if (!e.unit) {
-          throw new Error("calcul avec unité d'une expression sans unité")
-        }
-        const coef = e.unit.getCoefTo(params.unit.normal)
-        e = e.mult(coef)
+    switch(this.type) {
+      case TYPE_GCD: {
+        let a = e.first.eval()
+        let b = e.last.eval()
+        a = a.isOpposite() ? a.first.value : a.value 
+        b = b.isOpposite() ? b.first.value : b.value 
+        e =number(gcd(a,b))
+      break
       }
+      case TYPE_EQUALITY: {
+        let a = e.first.eval()
+        let b = e.last.eval()
+      }
+      break;
 
-      // on retourne à la forme naturelle
-      e = e.node
+      default :
+       // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+       e = e.normal
+
+       // si on doit faire une conversion
+       if (params.unit) {
+         if (!e.unit) {
+           throw new Error("calcul avec unité d'une expression sans unité")
+         }
+         const coef = e.unit.getCoefTo(params.unit.normal)
+         e = e.mult(coef)
+       }
+ 
+       // on retourne à la forme naturelle
+       e = e.node
     }
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
@@ -564,6 +591,9 @@ export function percentage(children) {
 }
 export function number(value) {
   return createNode({ type: TYPE_NUMBER, value: parseFloat(value) })
+}
+export function boolean(value) {
+  return createNode({ type: TYPE_BOOLEAN, value})
 }
 export function symbol(letter) {
   return createNode({ type: TYPE_SYMBOL, letter })

@@ -167,6 +167,18 @@ describe('Parsing', () => {
     expect(e.isFunction()).toBeTruthy()
   })
 
+  test('Parser parses booleans', () => {
+    let e = p.parse('true')
+    expect(e.string).toEqual('true')
+    expect(e.isBoolean()).toBeTruthy()
+    expect(e.isTrue()).toBeTruthy()
+
+    e = p.parse('false')
+    expect(e.string).toEqual('false')
+    expect(e.isBoolean()).toBeTruthy()
+    expect(e.isFalse()).toBeTruthy()
+  })
+
   test('Parser parses templates', () => {
     const exps = [
       // '$e',

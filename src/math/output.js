@@ -24,12 +24,13 @@ import {
   TYPE_PERCENTAGE,
   TYPE_SEGMENT_LENGTH,
   TYPE_GCD,
+  TYPE_BOOLEAN,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
-export function text(e, displayUnit, comma) {
+export function text(e, { displayUnit, comma, addBrackets }) {
   let s
 
   switch (e.type) {
@@ -113,7 +114,11 @@ export function text(e, displayUnit, comma) {
       break
 
     case TYPE_GCD:
-      s = 'pgcd('+e.first.string+';'+e.last.string+')'
+      s = 'pgcd(' + e.first.string + ';' + e.last.string + ')'
+      break
+
+    case TYPE_BOOLEAN:
+      s = e.value.toString()
       break
 
     case TYPE_TEMPLATE:
@@ -134,7 +139,7 @@ export function text(e, displayUnit, comma) {
             s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
           }
           if (e.excludeMin) {
-            s += '\\[' + e.excludeMin+';'+e.excludeMax + ']'
+            s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
           }
           break
 
@@ -160,7 +165,7 @@ export function text(e, displayUnit, comma) {
             s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
           }
           if (e.excludeMin) {
-            s += '\\[' + e.excludeMin+';'+e.excludeMax + ']'
+            s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
           }
 
           break
@@ -176,7 +181,7 @@ export function text(e, displayUnit, comma) {
   return s
 }
 
-export function latex(e) {
+export function latex(e, options) {
   let s
 
   switch (e.type) {
@@ -196,14 +201,6 @@ export function latex(e) {
       s = e.first.latex + '\\%'
       break
 
-    case TYPE_POSITIVE:
-      s = '+' + e.first.latex
-      break
-
-    case TYPE_OPPOSITE:
-      s = '-' + e.first.latex
-      break
-
     case TYPE_RADICAL:
       s = '\\sqrt{' + e.first.latex + '}'
       break
@@ -212,9 +209,75 @@ export function latex(e) {
       s = '\\left(' + e.first.latex + '\\right)'
       break
 
-    case TYPE_DIFFERENCE:
-      s = e.first.latex + '-' + e.last.latex
+    case TYPE_POSITIVE: {
+      const needBrackets =
+        options.addBrackets && (e.first.isOpposite() || e.first.isPositive())
+
+      s = '+'
+      if (needBrackets) {
+        s += '\\left('
+      }
+      s += e.first.latex
+      if (needBrackets) {
+        s += '\\right)'
+      }
       break
+    }
+
+    case TYPE_OPPOSITE: {
+      const needBrackets =
+        options.addBrackets &&
+        (e.first.isSum() ||
+          e.first.isDifference() ||
+          e.first.isOpposite() ||
+          e.first.isPositive())
+          
+      s = '-'
+      if (needBrackets) {
+        s += '\\left('
+      }
+
+      s += e.first.latex
+      if (needBrackets) {
+        s += '\\right)'
+      }
+
+      break
+    }
+    case TYPE_DIFFERENCE: {
+      const needBrackets =
+        options.addBrackets &&
+        (e.last.isSum() ||
+          e.last.isDifference() ||
+          e.last.isOpposite() ||
+          e.last.isPositive())
+
+      s = e.first.toLatex(options) + '-'
+
+      if (needBrackets) {
+        s += '\\left('
+      }
+      s += e.last.toLatex(options)
+      if (needBrackets) {
+        s += '\\right)'
+      }
+      break
+    }
+    case TYPE_SUM: {
+      const needBrackets =
+        options.addBrackets && (e.last.isOpposite() || e.last.isPositive())
+
+      s = e.first.toLatex(options) + '+'
+
+      if (needBrackets) {
+        s += '\\left('
+      }
+      s += e.last.toLatex(options)
+      if (needBrackets) {
+        s += '\\right)'
+      }
+      break
+    }
 
     case TYPE_POWER:
       s = e.first.latex + '^' + e.last.latex
@@ -231,10 +294,6 @@ export function latex(e) {
         '}{' +
         (e.last.isBracket() ? e.last.first.latex : e.last.latex) +
         '}'
-      break
-
-    case TYPE_SUM:
-      s = e.children.map(child => child.latex).join('+')
       break
 
     case TYPE_PRODUCT:

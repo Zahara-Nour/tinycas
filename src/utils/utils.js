@@ -48,11 +48,24 @@ function roundDecimal(num, dec) {
 }
 
 export const gcd = function(a, b) {
+  // b= Math.abs(b)
+  //  a= Math.abs(a)
+  if (!b) {
+    return a
+  }
+  const result = gcd2(b, a % b)
+ 
+  return result
+}
+
+const gcd2 = function(a, b) {
+  
   if (!b) {
     return a
   }
 
-  return gcd(b, a % b)
+  return gcd2(b, a % b)
 }
+
 
 export { round, binarySearchCmp, roundNumber, roundDecimal }

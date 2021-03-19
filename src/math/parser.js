@@ -22,6 +22,7 @@ import {
   percentage,
   segmentLength,
   pgcd,
+  boolean,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -65,6 +66,7 @@ const VALUE_TEMPLATE = token('$')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
+const BOOLEAN = token('@false|true')
 const FUNCTION = token('@cos|sin|sqrt|pgcd')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -264,7 +266,10 @@ ${msg}`
     let e, func
     let exclude, excludeMin, excludeMax
 
-    if (match(SEGMENT_LENGTH)) {
+    if (match(BOOLEAN)) {
+      e=boolean(_lexem==="true")
+    }
+    else if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
     } else if (match(DECIMAL) || match(INTEGER)) {
       e = number(_lexem.replace(',', '.'))
@@ -516,7 +521,6 @@ ${msg}`
     function getUnit() {
       let u = unit(_lexem)
       if (match(POW)) {
-        console.log('match POW')
         const n = parseAtom()
         if (
           !(
