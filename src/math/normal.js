@@ -25,6 +25,7 @@ import {
   TYPE_LN,
   TYPE_LOG,
   TYPE_EXP,
+  TYPE_GCD,
   createNode,
   TYPE_EQUALITY,
   TYPE_INEQUALITY_MOREOREQUAL,
@@ -34,7 +35,7 @@ import {
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
-import { binarySearchCmp } from '../utils/utils'
+import { binarySearchCmp, gcd } from '../utils/utils'
 import compare from './compare'
 
 export const TYPE_NORMAL = 'normal'
@@ -670,6 +671,15 @@ export default function normalize(node) {
       }
 
       break
+
+    case TYPE_GCD: {
+      let a = node.first.eval()
+      let b = node.last.eval()
+      a = a.isOpposite() ? a.first.value : a.value
+      b = b.isOpposite() ? b.first.value : b.value
+      e = number(gcd(a, b)).normal
+      break
+    }
 
     case TYPE_COS:
     case TYPE_SIN:

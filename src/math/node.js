@@ -4,7 +4,7 @@ import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
-import { roundDecimal, gcd } from '../utils/utils'
+import { roundDecimal } from '../utils/utils'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -363,20 +363,25 @@ const PNode = {
     let e = this.substitute(params)
 
     switch (this.type) {
-      case TYPE_GCD: {
-        let a = e.first.eval()
-        let b = e.last.eval()
-        a = a.isOpposite() ? a.first.value : a.value
-        b = b.isOpposite() ? b.first.value : b.value
-        e = number(gcd(a, b))
-        break
-      }
       case TYPE_EQUALITY:
-        {
-          let a = e.first.eval()
-          let b = e.last.eval()
-        }
-        break
+        e = e.normal.node
+        return boolean(e.equals(zero()))
+
+      case TYPE_INEQUALITY_LESS:
+        e = e.normal.node
+        return boolean(e.isLowerThan(zero()))
+
+      case TYPE_INEQUALITY_MORE:
+        e = e.normal.node
+        return boolean(e.isGreaterThan(zero()))
+
+      case TYPE_INEQUALITY_LESSOREQUAL:
+        e = e.normal.node
+        return boolean(e.isLowerThan(zero()) || e.equals(zero()))
+
+      case TYPE_INEQUALITY_MOREOREQUAL:
+        e = e.normal.node
+        return boolean(e.isGreaterThan(zero()) || e.equals(zero()))
 
       default:
         // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
@@ -555,10 +560,9 @@ const PNode = {
 
               return true
             }
-            break
+
           case '$l':
             return true
-            break
 
           default:
             // $1 ....
