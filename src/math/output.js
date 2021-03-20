@@ -236,7 +236,7 @@ export function latex(e, options) {
       s = '\\left('
       s += e.first.latex
       // if (!quotient) {
-        s += '\\right)'
+      s += '\\right)'
       // }
       break
     }
@@ -312,13 +312,14 @@ export function latex(e, options) {
     }
 
     case TYPE_POWER:
-      console.log("e", e.string)
-      console.log("e.first", e.first.latex)
+      console.log('e', e.string)
+      console.log('e.first', e.first.latex)
       s =
-        e.first.latex + '^{' + (e.last.isBracket()
-          ? e.last.first.latex
-          : e.last.latex) + '}'
-      console.log("s", s)
+        e.first.latex +
+        '^{' +
+        (e.last.isBracket() ? e.last.first.latex : e.last.latex) +
+        '}'
+      console.log('s', s)
       break
 
     case TYPE_DIVISION:
@@ -334,9 +335,16 @@ export function latex(e, options) {
         '}'
       break
 
-    case TYPE_PRODUCT:
-      s = e.children.map(child => child.latex).join(' \\times ')
+    case TYPE_PRODUCT: {
+      let a = e.first
+      let b = e.last
+      if (a.isBracket() && a.first.isQuotient()) a = a.first
+      if (b.isBracket() && b.first.isQuotient()) b = b.first
+      console.log("a", a)
+      console.log("b", b)
+      s = a.latex + '\\times' + b.latex
       break
+    }
 
     case TYPE_PRODUCT_IMPLICIT:
       s = e.children.map(child => child.latex).join('')
