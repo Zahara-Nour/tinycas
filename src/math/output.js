@@ -61,9 +61,21 @@ export function text(e, { displayUnit, comma, addBrackets }) {
       s = '+' + e.first.string
       break
 
-    case TYPE_OPPOSITE:
-      s = '-' + e.first.string
+    case TYPE_OPPOSITE: {
+      const needBrackets =
+        addBrackets && (e.first.isOpposite() || e.first.isPositive())
+
+      s = '-'
+      if (needBrackets) {
+        s += '('
+      }
+      s += e.first.string
+      if (needBrackets) {
+        s += ')'
+      }
+
       break
+    }
 
     case TYPE_RADICAL:
     case TYPE_COS:
@@ -218,9 +230,16 @@ export function latex(e, options) {
       s = '\\sqrt{' + e.first.latex + '}'
       break
 
-    case TYPE_BRACKET:
-      s = '\\left(' + e.first.latex + '\\right)'
+    case TYPE_BRACKET: {
+      // const quotient = e.first.isQuotient()
+      // s = !quotient ? '\\left(' : ''
+      s = '\\left('
+      s += e.first.latex
+      // if (!quotient) {
+        s += '\\right)'
+      // }
       break
+    }
 
     case TYPE_POSITIVE: {
       const needBrackets =
@@ -293,7 +312,13 @@ export function latex(e, options) {
     }
 
     case TYPE_POWER:
-      s = e.first.latex + '^' + e.last.latex
+      console.log("e", e.string)
+      console.log("e.first", e.first.latex)
+      s =
+        e.first.latex + '^{' + (e.last.isBracket()
+          ? e.last.first.latex
+          : e.last.latex) + '}'
+      console.log("s", s)
       break
 
     case TYPE_DIVISION:

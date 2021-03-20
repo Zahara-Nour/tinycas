@@ -54,8 +54,11 @@ const PFraction = {
   },
 
   toString () {
-    let str = this.s < 0 ? '-' : ''
+    let str = this.s < 0 ? '-(' : ''
     str += this.d === 1 ? this.n : this.n + '/' + this.d
+    if (this.s<0) {
+      str +=')'
+    }
     return str
   }
 }

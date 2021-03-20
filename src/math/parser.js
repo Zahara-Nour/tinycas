@@ -18,7 +18,6 @@ import {
   equality,
   inequality,
   TYPE_PRODUCT_IMPLICIT,
-  TYPE_PERCENTAGE,
   percentage,
   segmentLength,
   pgcd,

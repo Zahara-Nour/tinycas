@@ -342,6 +342,10 @@ const PNode = {
     return opposite([this])
   },
 
+  bracket() {
+    return bracket([this])
+  },
+
   pow(e) {
     return power([this, e])
   },

@@ -10,14 +10,12 @@ import {
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
-import {gcd} from '../utils/utils'
+import { gcd } from '../utils/utils'
 
 const constants = {
   pi: '3.14',
   e: '2.7',
 }
-
-
 
 export function substitute(node, params) {
   let e
@@ -131,7 +129,6 @@ function generateTemplate(node) {
         excludeMultiple,
         excludeCommonDividersWith,
       } = node
-
       do {
         // whatis children[1] ?
         if (!children[1].isHole()) {
@@ -166,10 +163,16 @@ function generateTemplate(node) {
           doItAgain =
             doItAgain ||
             (excludeCommonDividersWith &&
-              excludeCommonDividersWith.some(
-                elt => gcd(elt.eval().value, e.value) !== 1,
-              ))
+              excludeCommonDividersWith.some(elt => {
+                let a = elt.eval()
+                a = a.isOpposite() ? a.first.value : a.value
+                let b = e.eval()
+                b = b.isOpposite() ? b.first.value : b.value
+                return gcd(a, b) !== 1
+                
+              }))
         }
+     
       } while (doItAgain)
 
       if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()

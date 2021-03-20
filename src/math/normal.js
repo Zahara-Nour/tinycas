@@ -92,8 +92,13 @@ const PNormal = {
     function test(e) {
       return e.isNumber() || (e.isOpposite() && e.first.isNumber())
     }
-
+    // console.log("reduce")
     if (test(this.n.node) && test(this.d.node)) {
+      // const negative = (this.n.isOpposite && !this.d.isOpposite) || (this.d.isOpposite && !this.n.isOpposite)
+      // const n = this.n.isOpposite() ? this.n.first :this.n
+      // const d = this.d.isOpposite() ? this.d.first :this.d
+        
+      
       const f = fraction(this.n.string)
         .div(fraction(this.d.string))
         .reduce()
@@ -218,7 +223,7 @@ const PNormal = {
         d = bracket([d])
       }
       e = n.frac(d)
-      if (!positive) e = e.oppose()
+      if (!positive) e = e.bracket().oppose()
     }
 
     e.unit = this.unit

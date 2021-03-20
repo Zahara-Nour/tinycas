@@ -120,6 +120,7 @@ describe('Testing templates generations', () => {
     '$e[2;4]\\{m(1+1)}', // 5 multiples
     '$e[2;4]\\{d(2+4)}', // 6 dividers
     '$e[2;6]\\{cd(6)}', // 6 dividers
+    '$er[2;6]\\{cd(6)}', // 6 dividers
 
   ]
 
