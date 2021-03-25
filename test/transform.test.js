@@ -122,6 +122,10 @@ describe('Testing templates generations', () => {
     '$e[2;6]\\{cd(6)}', // 6 dividers
     '$er[2;6]\\{cd(6)}', // 6 dividers
 
+    '$l{a;b;c}\\{a;b}',
+    '$ers[1;2]}'
+
+
   ]
 
   test.each(t)(
@@ -131,7 +135,7 @@ describe('Testing templates generations', () => {
       
       const f = math(e)
       const g = f.generate()
-      // console.log(f.string, g.string)
+      console.log(f.string, g.string)
       // for (let i=0; i<100 ; i++) {
         expect(g.matchTemplate(f)).toBeTruthy()
       // }

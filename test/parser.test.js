@@ -154,7 +154,13 @@ describe('Parsing', () => {
     expect(e.isEquality()).toBeTruthy()
   })
 
-  test('Parser parses an equality', () => {
+  test('Parser parses an unequality', () => {
+    const e = p.parse('1!=1')
+    expect(e.toString()).toEqual('1!=1')
+    expect(e.isUnequality()).toBeTruthy()
+  })
+
+  test('Parser parses an inequality', () => {
     let e = p.parse('1<1')
     expect(e.toString()).toEqual('1<1')
     expect(e.isInequality()).toBeTruthy()

@@ -32,6 +32,7 @@ import {
   TYPE_INEQUALITY_MORE,
   TYPE_INEQUALITY_LESS,
   TYPE_INEQUALITY_LESSOREQUAL,
+  TYPE_UNEQUALITY,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -762,6 +763,7 @@ export default function normalize(node) {
       break
 
     case TYPE_EQUALITY:
+    case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_MORE:
     case TYPE_INEQUALITY_MOREOREQUAL:
     case TYPE_INEQUALITY_LESS:

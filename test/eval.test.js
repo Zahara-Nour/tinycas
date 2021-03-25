@@ -207,6 +207,8 @@ describe('Test relations evaluation', () => {
   ['2>=1', 'true'],
 
   ['pgcd(6;10)=2', 'true'],
+  ['1!=1', 'false'],
+  ['1!=2', 'true'],
 
   
 

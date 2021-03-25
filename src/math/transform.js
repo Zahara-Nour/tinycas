@@ -18,15 +18,20 @@ const constants = {
 }
 
 export function substitute(node, params) {
-  let e
+  let e = node
+  if (!params) return e
 
   switch (node.type) {
     case TYPE_SYMBOL:
-      if (!constants[node.letter] && !params[node.letter])
-        throw new Error(
-          `Le symbole ${node.letter} n'a pas de valeur de substitution`,
-        )
-      if (constants[node.letter]) {
+      if (!constants[node.letter] && !params[node.letter]) {
+        // throw new Error(
+        // console.log(
+        //   `Le symbole ${node.letter} n'a pas de valeur de substitution`,
+        // )
+        return e
+      }
+      // )
+      else if (constants[node.letter]) {
         e = math(constants[node.letter])
       } else {
         e = math(params[node.letter])
@@ -98,6 +103,7 @@ function isInSegment(x, a, b) {
 function generateTemplate(node) {
   const decimal = node.nature === '$$'
   const precision = node.precision
+
   const children = node.children.map(
     child =>
       child.isTemplate()
@@ -169,13 +175,18 @@ function generateTemplate(node) {
                 let b = e.eval()
                 b = b.isOpposite() ? b.first.value : b.value
                 return gcd(a, b) !== 1
-                
               }))
         }
-     
       } while (doItAgain)
 
-      if (node.relative && getRandomIntInclusive(0, 1)) e = e.oppose()
+      if (node.relative) {
+        if ( getRandomIntInclusive(0, 1)) {
+          e = e.oppose()
+        } else  if (node.signed) {
+          e=e.positive()
+        }
+      }
+
       node.root.generated.push(e)
       break
     }
@@ -212,6 +223,7 @@ function generateTemplate(node) {
 
     case '$l': {
       include = children
+
       let doItAgain = false
       if (node.exclude) {
         exclude = node.exclude.map(exp => exp.eval().string)
@@ -219,6 +231,7 @@ function generateTemplate(node) {
         include = include.filter(elt => !exclude.includes(elt.string))
       }
       do {
+        doItAgain = false
         e = include[Math.floor(Math.random() * include.length)]
         doItAgain =
           node.excludeMin && isInSegment(e, node.excludeMin, node.excludeMax)
@@ -277,6 +290,7 @@ export function generate(node) {
         type: node.type,
         children: node.children.map(child => generate(child)),
       })
+     
   }
   return e
 }

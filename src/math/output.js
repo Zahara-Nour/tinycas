@@ -26,18 +26,18 @@ import {
   TYPE_GCD,
   TYPE_BOOLEAN,
   TYPE_COS,
-  TYPE_SIMPLE_UNIT,
   TYPE_SIN,
   TYPE_TAN,
   TYPE_LN,
   TYPE_EXP,
   TYPE_LOG,
+  TYPE_UNEQUALITY,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
-export function text(e, { displayUnit, comma, addBrackets }) {
+export function text(e, options) {
   let s
 
   switch (e.type) {
@@ -46,30 +46,31 @@ export function text(e, { displayUnit, comma, addBrackets }) {
       break
 
     case TYPE_EQUALITY:
+    case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_LESS:
     case TYPE_INEQUALITY_LESSOREQUAL:
     case TYPE_INEQUALITY_MORE:
     case TYPE_INEQUALITY_MOREOREQUAL:
-      s = e.first.string + e.type + e.last.string
+      s = e.first.toString(options) + e.type + e.last.toString(options)
       break
 
     case TYPE_PERCENTAGE:
-      s = e.first.string + '%'
+      s = e.first.toString(options) + '%'
       break
 
     case TYPE_POSITIVE:
-      s = '+' + e.first.string
+      s = '+' + e.first.toString(options)
       break
 
     case TYPE_OPPOSITE: {
       const needBrackets =
-        addBrackets && (e.first.isOpposite() || e.first.isPositive())
+        options.addBrackets && (e.first.isOpposite() || e.first.isPositive())
 
       s = '-'
       if (needBrackets) {
         s += '('
       }
-      s += e.first.string
+      s += e.first.toString(options)
       if (needBrackets) {
         s += ')'
       }
@@ -84,34 +85,34 @@ export function text(e, { displayUnit, comma, addBrackets }) {
     case TYPE_LN:
     case TYPE_LOG:
     case TYPE_EXP:
-      s = e.type + '(' + e.first.string + ')'
+      s = e.type + '(' + e.first.toString(options) + ')'
       break
 
     case TYPE_BRACKET:
-      s = '(' + e.first.string + ')'
+      s = '(' + e.first.toString(options) + ')'
       break
 
     case TYPE_DIFFERENCE:
-      s = e.first.string + '-' + e.last.string
+      s = e.first.toString(options) + '-' + e.last.toString(options)
       break
 
     case TYPE_POWER:
-      s = e.first.string + '^' + e.last.string
+      s = e.first.toString(options) + '^' + e.last.toString(options)
       break
 
     case TYPE_DIVISION:
-      s = e.first.string + ':' + e.last.string
+      s = e.first.toString(options) + ':' + e.last.toString(options)
       break
 
     case TYPE_QUOTIENT:
-      s = e.first.string + '/' + e.last.string
+      s = e.first.toString(options) + '/' + e.last.toString(options)
       break
 
     case TYPE_SUM:
     case TYPE_PRODUCT:
     case TYPE_PRODUCT_IMPLICIT:
     case TYPE_PRODUCT_POINT:
-      s = e.children.map(child => child.toString()).join(e.type)
+      s = e.children.map(child => child.toString()).join(options.implicit ? '' : e.type)
       break
 
     case TYPE_SYMBOL:
@@ -120,7 +121,7 @@ export function text(e, { displayUnit, comma, addBrackets }) {
 
     case TYPE_NUMBER:
       s = e.value.toString()
-      if (comma) {
+      if (options.comma) {
         s = s.replace('.', ',')
       }
 
@@ -139,7 +140,7 @@ export function text(e, { displayUnit, comma, addBrackets }) {
       break
 
     case TYPE_GCD:
-      s = 'pgcd(' + e.first.string + ';' + e.last.string + ')'
+      s = 'pgcd(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
       break
 
     case TYPE_BOOLEAN:
@@ -149,19 +150,20 @@ export function text(e, { displayUnit, comma, addBrackets }) {
     case TYPE_TEMPLATE:
       s = e.nature
       if (e.relative) s += 'r'
+      if (e.signed) s += 's'
       switch (e.nature) {
         case '$e':
         case '$ep':
         case '$ei':
           if (!(e.children[0].isHole() && e.children[1].isHole())) {
             s += `{${
-              !e.children[0].isHole() ? e.children[0].string + ';' : ''
-            }${e.children[1].string}}`
+              !e.children[0].isHole() ? e.children[0].toString(options) + ';' : ''
+            }${e.children[1].toString(options)}}`
           } else {
-            s += `[${e.children[2].string};${e.children[3].string}]`
+            s += `[${e.children[2].toString(options)};${e.children[3].toString(options)}]`
           }
           if (e.exclude) {
-            s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
+            s += '\\{' + e.exclude.map(child => child.toString(options)).join(';') + '}'
           }
           if (e.excludeMin) {
             s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
@@ -185,9 +187,9 @@ export function text(e, { displayUnit, comma, addBrackets }) {
           }
           break
         case '$l':
-          s += '{' + e.children.map(child => child.string).join(';') + '}'
+          s += '{' + e.children.map(child => child.toString(options)).join(';') + '}'
           if (e.exclude) {
-            s += '\\{' + e.exclude.map(child => child.string).join(';') + '}'
+            s += '\\{' + e.exclude.map(child => child.toString(options)).join(';') + '}'
           }
           if (e.excludeMin) {
             s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
@@ -196,13 +198,13 @@ export function text(e, { displayUnit, comma, addBrackets }) {
           break
 
         case '$':
-          s += '{' + e.first.string + '}'
+          s += '{' + e.first.toString(options) + '}'
       }
       break
 
     default:
   }
-  if (e.unit && displayUnit) s += ' ' + e.unit.string
+  if (e.unit && options.displayUnit) s += ' ' + e.unit.string
   return s
 }
 
@@ -215,26 +217,27 @@ export function latex(e, options) {
       break
 
     case TYPE_EQUALITY:
+    case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_LESS:
     case TYPE_INEQUALITY_LESSOREQUAL:
     case TYPE_INEQUALITY_MORE:
     case TYPE_INEQUALITY_MOREOREQUAL:
-      s = e.first.latex + e.type + e.last.latex
+      s = e.first.toLatex(options) + e.type + e.last.toLatex(options)
       break
 
     case TYPE_PERCENTAGE:
-      s = e.first.latex + '\\%'
+      s = e.first.toLatex(options) + '\\%'
       break
 
     case TYPE_RADICAL:
-      s = '\\sqrt{' + e.first.latex + '}'
+      s = '\\sqrt{' + e.first.toLatex(options) + '}'
       break
 
     case TYPE_BRACKET: {
       // const quotient = e.first.isQuotient()
       // s = !quotient ? '\\left(' : ''
       s = '\\left('
-      s += e.first.latex
+      s += e.first.toLatex(options)
       // if (!quotient) {
       s += '\\right)'
       // }
@@ -249,7 +252,7 @@ export function latex(e, options) {
       if (needBrackets) {
         s += '\\left('
       }
-      s += e.first.latex
+      s += e.first.toLatex(options)
       if (needBrackets) {
         s += '\\right)'
       }
@@ -269,7 +272,7 @@ export function latex(e, options) {
         s += '\\left('
       }
 
-      s += e.first.latex
+      s += e.first.toLatex(options)
       if (needBrackets) {
         s += '\\right)'
       }
@@ -313,45 +316,53 @@ export function latex(e, options) {
 
     case TYPE_POWER:
       console.log('e', e.string)
-      console.log('e.first', e.first.latex)
+      console.log('e.first', e.first.toLatex(options))
       s =
-        e.first.latex +
+        e.first.toLatex(options) +
         '^{' +
-        (e.last.isBracket() ? e.last.first.latex : e.last.latex) +
+        (e.last.isBracket()
+          ? e.last.first.toLatex(options)
+          : e.last.toLatex(options)) +
         '}'
       console.log('s', s)
       break
 
     case TYPE_DIVISION:
-      s = e.first.latex + '\\div' + e.last.latex
+      s = e.first.toLatex(options) + '\\div' + e.last.toLatex(options)
       break
 
     case TYPE_QUOTIENT:
       s =
         '\\frac{' +
-        (e.first.isBracket() ? e.first.first.latex : e.first.latex) +
+        (e.first.isBracket()
+          ? e.first.first.toLatex(options)
+          : e.first.toLatex(options)) +
         '}{' +
-        (e.last.isBracket() ? e.last.first.latex : e.last.latex) +
+        (e.last.isBracket()
+          ? e.last.first.toLatex(options)
+          : e.last.toLatex(options)) +
         '}'
       break
 
     case TYPE_PRODUCT: {
+      console.log('options', options)
       let a = e.first
       let b = e.last
       if (a.isBracket() && a.first.isQuotient()) a = a.first
       if (b.isBracket() && b.first.isQuotient()) b = b.first
-      console.log("a", a)
-      console.log("b", b)
-      s = a.latex + '\\times' + b.latex
+      s =
+        a.toLatex(options) +
+        (options.implicit ? '' : '\\times ') +
+        b.toLatex(options)
       break
     }
 
     case TYPE_PRODUCT_IMPLICIT:
-      s = e.children.map(child => child.latex).join('')
+      s = e.children.map(child => child.toLatex(options)).join('')
       break
 
     case TYPE_PRODUCT_POINT:
-      s = e.children.map(child => child.latex).join(' \\cdot ')
+      s = e.children.map(child => child.toLatex(options)).join(' \\cdot ')
       break
 
     case TYPE_SYMBOL:

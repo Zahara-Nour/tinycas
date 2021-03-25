@@ -28,6 +28,7 @@ import {
   ln,
   log,
   exp,
+  unequality,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -45,6 +46,7 @@ const HOLE = token('?')
 const PERIOD = token('.')
 const COMMA = token(',')
 const EQUAL = token('=')
+const NOTEQUAL = token('!=')
 const PERCENT = token('%')
 const EXCLUDE = token('\\')
 const MULTIPLE = token('m')
@@ -62,7 +64,7 @@ const OPENING_CURLYBRACKET = token('{')
 const CLOSING_CURLYBRACKET = token('}')
 // const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
 const VALUE_DECIMAL_TEMPLATE = token('$$')
-const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(r)?')
+const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(rs?)?')
 const DECIMAL_TEMPLATE = token('@\\$d(r)?')
 const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
@@ -159,10 +161,13 @@ ${msg}`
   function parseRelation() {
     let e = parseMember()
     let relation
-    if (match(EQUAL) || match(COMP)) {
+    if (match(EQUAL) || match(NOTEQUAL) || match(COMP)) {
       relation = _lexem
     }
     switch (relation) {
+      case "!=":
+        e = unequality([e, parseMember()])
+        break
       case '=':
         e = equality([e, parseMember()])
         break
@@ -342,6 +347,7 @@ ${msg}`
     else if (match(INTEGER_TEMPLATE)) {
       const nature = _parts[2]
       const relative = _parts[3]
+      const signed = relative && relative.includes('s')
       exclude = []
       const excludeMultiple = []
       const excludeDivider = []
@@ -405,6 +411,7 @@ ${msg}`
       e = template({
         nature: '$' + nature,
         relative,
+        signed,
         exclude: exclude.length ? exclude : null,
         excludeMultiple: excludeMultiple.length ? excludeMultiple : null,
         excludeDivider: excludeDivider.length ? excludeDivider : null,
@@ -501,7 +508,7 @@ ${msg}`
           require(CLOSING_SQUAREBRACKET)
         }
       }
-
+      console.log('include parser:',include)
       e = template({
         nature,
         children: include,

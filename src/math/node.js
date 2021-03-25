@@ -27,6 +27,7 @@ export const TYPE_SIMPLE_UNIT = 'simple unit'
 export const TYPE_UNIT = 'unit'
 export const TYPE_BRACKET = 'bracket'
 export const TYPE_EQUALITY = '='
+export const TYPE_UNEQUALITY = '!='
 export const TYPE_INEQUALITY_LESS = '<'
 export const TYPE_INEQUALITY_LESSOREQUAL = '<='
 export const TYPE_INEQUALITY_MORE = '>'
@@ -76,6 +77,9 @@ const PNode = {
   },
   isEquality() {
     return this.type === TYPE_EQUALITY
+  },
+  isUnequality() {
+    return this.type === TYPE_UNEQUALITY
   },
   isInequality() {
     return (
@@ -274,16 +278,16 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ displayUnit = true, comma = false, addBrackets = false } = {}) {
-    return text(this, { displayUnit, comma, addBrackets })
+  toString({ displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
+    return text(this, { displayUnit, comma, addBrackets,  implicit })
   },
 
   get string() {
     return this.toString()
   },
 
-  toLatex({ addBrackets = false } = {}) {
-    return latex(this, { addBrackets })
+  toLatex({ addBrackets = false, implicit = false } = {}) {
+    return latex(this, { addBrackets, implicit })
   },
 
   get latex() {
@@ -342,6 +346,10 @@ const PNode = {
     return opposite([this])
   },
 
+  positive() {
+    return positive([this])
+  },
+
   bracket() {
     return bracket([this])
   },
@@ -367,6 +375,12 @@ const PNode = {
     let e = this.substitute(params)
 
     switch (this.type) {
+      
+      case TYPE_UNEQUALITY:
+        e = e.normal.node
+        return boolean(!e.equals(zero()))
+
+      
       case TYPE_EQUALITY:
         e = e.normal.node
         return boolean(e.equals(zero()))
@@ -485,11 +499,15 @@ const PNode = {
         return this.isSymbol() && this.letter === t.letter
 
       case TYPE_TEMPLATE:
+       
         switch (t.nature) {
           case '$e':
           case '$ep':
           case '$ei':
-            if (t.relative && this.isOpposite())
+            if (
+              (t.signed && (this.isOpposite() || this.isPositive())) ||
+              (t.relative && this.isOpposite())
+            )
               return this.first.matchTemplate(
                 template({ nature: t.nature, children: t.children }),
               )
@@ -727,6 +745,10 @@ export function template(params) {
 
 export function equality(children) {
   return createNode({ type: TYPE_EQUALITY, children })
+}
+
+export function unequality(children) {
+  return createNode({ type: TYPE_UNEQUALITY, children })
 }
 
 export function inequality(children, relation) {
