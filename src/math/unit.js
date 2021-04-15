@@ -7,11 +7,11 @@ const TYPE_UNIT = 'type unit'
 // une unité simple ou composée
 const PUnit = {
   mult (u) {
-    return unit(this.u.mult(u, TYPE_PRODUCT_POINT), this.normal.mult(u.normal))
+    return  unit(this.u.mult(u.u, TYPE_PRODUCT_POINT), this.normal.mult(u.normal) )
   },
 
   div (u) {
-    return unit(this.u.div(u), this.normal.div(u.normal))
+    return unit(this.u.div(u.u), this.normal.div(u.normal))
   },
   pow (n) {
     //  n doit être un entier relatif
@@ -19,7 +19,8 @@ const PUnit = {
   },
 
   toString () {
-    return this.u.string
+    // console.log('u', this.u)
+    return this.u.toString({isUnit:true})
   },
 
   get string () {
@@ -53,7 +54,7 @@ function unit (u, normal) {
   const e = Object.create(PUnit)
   Object.assign(e,  {
     type:    TYPE_UNIT,
-    u: symbol(u),
+    u: (typeof u === 'string' || u instanceof String ) ? symbol(u) : u,
     normal
   })
   return e

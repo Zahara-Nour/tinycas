@@ -108,26 +108,7 @@ describe('Testing evaluation of numerical expression with decimal rounded result
   })
 })
 
-describe('Testing evaluation of numerical expression with units', () => {
-  const t = [
-    ['1 km', 'dam', '100 dam'],
-    ['(1) km', 'dam', '100 dam'],
-    ['-1 km', 'dam', '-100 dam'],
-    ['-(1 km)', 'dam', '-100 dam'],
-    ['+1 km', 'dam', '100 dam'],
-    ['+(1 km)', 'dam', '100 dam'],
-    ['1 km+ 1hm', 'dam', '110 dam'],
-    ['(1+1) km', 'dam', '200 dam'],
-    ['2 km * 3 km', 'dam^2', '60000 dam^2'],
-    ['2 km * 3', 'dam', '600 dam'],
-  ]
 
-  test.each(t)('converting %s in %s :', (e, u, expected) => {
-    expect(
-      math(e).eval({ unit: math('1' + u).unit, decimal: true }).string,
-    ).toBe(expected)
-  })
-})
 
 describe('Testing evaluation of litteral expressions', () => {
   const t = [
@@ -161,22 +142,7 @@ describe('Testing constants', () => {
   )
 })
 
-describe('Testing evaluation of litteral expressions with units', () => {
-  const t = [
-    ['a cm +b cm', 'a', 'b', 'b', '2', '0.04 m'],
-    ['(a + b ) cm', 'a', 'b', 'b', '2', '0.04 m'],
-  ]
 
-  test.each(t)(
-    'evaluating %s with %s as %s and %s as %s',
-    (e, symbol1, value1, symbol2, value2, expected) => {
-      expect(
-        math(e).eval({ [symbol1]: value1, [symbol2]: value2, decimal: true })
-          .string,
-      ).toBe(expected)
-    },
-  )
-})
 
 describe('Test functions evaluation', () => {
   test('Function pgcd', () => {
@@ -217,3 +183,5 @@ describe('Test relations evaluation', () => {
     expect(math(e1).eval().string).toEqual(e2)
   })
 })
+
+

@@ -118,8 +118,12 @@ function fraction (arg) {
     })
 
   } else if (typeof arg === 'string') {
+    
     const regex = new RegExp('^(\\(?(-?\\d+)(\\.\\d+)?\\)?)(\\/(-?\\d+))?$')
     const result = regex.exec(arg)
+    if (!result) {
+      console.log('arg', arg)
+    }
     // let num = parseFloat(result[1])
     // let denom = result[5] ? parseFloat(result[5]) : null
     const removedCommas = removeCommas(parseFloat(result[1]), result[5] ? parseFloat(result[5]) : 1)

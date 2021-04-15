@@ -203,7 +203,7 @@ const PNode = {
     return this.string === '-1'
   },
   isZero() {
-    return this.string === '0'
+    return this.toString({displayUnit:false}) === '0'
   },
   strictlyEquals(e) {
     return this.string === e.string
@@ -278,8 +278,8 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
-    return text(this, { displayUnit, comma, addBrackets,  implicit })
+  toString({ isUnit=false, displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
+    return text(this, { displayUnit, comma, addBrackets,  implicit, isUnit })
   },
 
   get string() {
@@ -378,12 +378,12 @@ const PNode = {
       
       case TYPE_UNEQUALITY:
         e = e.normal.node
-        return boolean(!e.equals(zero()))
+        return boolean(!e.isZero())
 
       
       case TYPE_EQUALITY:
         e = e.normal.node
-        return boolean(e.equals(zero()))
+        return boolean(e.isZero())
 
       case TYPE_INEQUALITY_LESS:
         e = e.normal.node
@@ -395,11 +395,11 @@ const PNode = {
 
       case TYPE_INEQUALITY_LESSOREQUAL:
         e = e.normal.node
-        return boolean(e.isLowerThan(zero()) || e.equals(zero()))
+        return boolean(e.isLowerThan(zero()) || e.isZero())
 
       case TYPE_INEQUALITY_MOREOREQUAL:
         e = e.normal.node
-        return boolean(e.isGreaterThan(zero()) || e.equals(zero()))
+        return boolean(e.isGreaterThan(zero()) || e.isZero())
 
       default:
         // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités

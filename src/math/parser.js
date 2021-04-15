@@ -508,7 +508,7 @@ ${msg}`
           require(CLOSING_SQUAREBRACKET)
         }
       }
-      console.log('include parser:',include)
+      // console.log('include parser:',include)
       e = template({
         nature,
         children: include,
@@ -547,7 +547,10 @@ ${msg}`
 
     if (e) {
       const unit = parseUnit()
-      if (unit) e.unit = unit
+      if (unit) {
+        e.unit = unit
+        // console.log('unit parsed', unit.string)
+      } 
     }
     return e
   }
@@ -574,7 +577,7 @@ ${msg}`
       let result = getUnit()
       while (match(PERIOD)) {
         if (match(UNIT)) {
-          result = product([result, getUnit()], '.')
+          result = result.mult(getUnit())
         } else {
           failure('Unit required')
         }

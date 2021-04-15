@@ -40,6 +40,8 @@ Doit produire la même chaîne que celle qui été utilisée pour créer l'expre
 export function text(e, options) {
   let s
 
+  // console.log('isUnit', options.isUnit)
+
   switch (e.type) {
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
@@ -109,10 +111,20 @@ export function text(e, options) {
       break
 
     case TYPE_SUM:
+      s = e.children.map(child => child.toString(options)).join(e.type)
+      break
+
     case TYPE_PRODUCT:
+      s = e.children.map(child => child.toString(options)).join(options.isUnit ? '.' : options.implicit ? '' : e.type)
+      // console.log('isunit PRODUCT', options.isUnit, s)
+      break
+
     case TYPE_PRODUCT_IMPLICIT:
     case TYPE_PRODUCT_POINT:
-      s = e.children.map(child => child.toString()).join(options.implicit ? '' : e.type)
+
+      s = e.children.map(child => child.toString(options)).join(e.type)
+      // console.log('isunit IMPLCITI POINT', options.isUnit, s)
+
       break
 
     case TYPE_SYMBOL:
@@ -144,7 +156,7 @@ export function text(e, options) {
       break
 
     case TYPE_BOOLEAN:
-      s = e.value.toString()
+      s = e.value.toString(options)
       break
 
     case TYPE_TEMPLATE:
@@ -156,9 +168,8 @@ export function text(e, options) {
         case '$ep':
         case '$ei':
           if (!(e.children[0].isHole() && e.children[1].isHole())) {
-            s += `{${
-              !e.children[0].isHole() ? e.children[0].toString(options) + ';' : ''
-            }${e.children[1].toString(options)}}`
+            s += `{${!e.children[0].isHole() ? e.children[0].toString(options) + ';' : ''
+              }${e.children[1].toString(options)}}`
           } else {
             s += `[${e.children[2].toString(options)};${e.children[3].toString(options)}]`
           }
@@ -204,7 +215,9 @@ export function text(e, options) {
 
     default:
   }
+
   if (e.unit && options.displayUnit) s += ' ' + e.unit.string
+  // if (options.isUnit) console.log('-> isUnit', s)
   return s
 }
 
@@ -345,7 +358,6 @@ export function latex(e, options) {
       break
 
     case TYPE_PRODUCT: {
-      console.log('options', options)
       let a = e.first
       let b = e.last
       if (a.isBracket() && a.first.isQuotient()) a = a.first
@@ -388,5 +400,7 @@ export function latex(e, options) {
     default:
       s = e.string
   }
+  // if (e.unit && options.displayUnit) s += ' ' + e.unit.string
+  if (e.unit) s += '\\, \\text{' + e.unit.string + '}'
   return s
 }

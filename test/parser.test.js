@@ -142,6 +142,12 @@ describe('Parsing', () => {
     expect(e.isPower()).toBeTruthy()
   })
 
+  test('Parser parses ...', () => {
+    const e = p.parse('1/2^3')
+    expect(e.toString()).toEqual('1/2^3')
+    expect(e.isQuotient()).toBeTruthy()
+  })
+
   test('Parser parses a complex expression', () => {
     const e = p.parse('-(((+3.4+4/3)*2:(-4-5^2)))')
     expect(e.toString()).toEqual('-(((+3.4+4/3)*2:(-4-5^2)))')
@@ -679,7 +685,8 @@ describe('Testing parsing units', () => {
     '1:(2 cm)':           '1:(2 cm)',
     '1 cm:2':             '1 cm:2',
     '(1/2) cm':           '(1/2) cm',
-    'a cm':               'a cm'
+    'a cm':               'a cm',
+    '1 km = 1000 m':      '1 km=1000 m'
   }
 
   // TODO : division par 0
