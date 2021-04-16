@@ -7,12 +7,6 @@ import { substitute, generate } from './transform'
 import { roundDecimal } from '../utils/utils'
 import Decimal from 'decimal.js'
 
-Decimal.set({
-  toExpPos: 12,
-  toExpNeg: -12
-})
-
-
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
 export const TYPE_PRODUCT = '*'
@@ -48,6 +42,14 @@ export const TYPE_TAN = 'tan'
 export const TYPE_LN = 'ln'
 export const TYPE_LOG = 'log'
 export const TYPE_EXP = 'exp'
+
+
+
+Decimal.set({
+  toExpPos: 12,
+  toExpNeg: -12
+})
+
 
 const PNode = {
   [Symbol.iterator]() {

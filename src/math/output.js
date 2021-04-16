@@ -383,11 +383,14 @@ export function latex(e, options) {
 
     case TYPE_NUMBER:
       // s = parseFloat(e.value, 10)
-      s = e.value.toNumber()
-        .toLocaleString('en')
-        .replace(',', '\\,')
-        .replace('.', '{,}')
+      
+      // s = e.value.toNumber()
+      //   .toLocaleString('en',{maximumSignificantDigits:20} )
+      //   .replace(/,/g, '\\,')
+      //   .replace('.', '{,}')
       // s = e.value.toString().replace('.', '{,}')
+
+      s = formatNumber(e.value.toNumber())
       break
 
     case TYPE_HOLE:
@@ -404,4 +407,12 @@ export function latex(e, options) {
   // if (e.unit && options.displayUnit) s += ' ' + e.unit.string
   if (e.unit) s += '\\,' + e.unit.string
   return s
+}
+
+function formatNumber(num) {
+  
+  ;let [int,dec] = num.toString().split('.')
+  int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1\\,')
+  if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')
+  return dec ? int+','+dec : int 
 }
