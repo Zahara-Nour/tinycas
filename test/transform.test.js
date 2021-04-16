@@ -60,7 +60,9 @@ describe('Testing template $', () => {
  
 })
 
-describe('Testing template $$', () => {
+
+//  TODO : est-ce bien utile comme template ?
+describe.skip('Testing template $$', () => {
   const t = [
     ['$$2{1/3}','0.33'  ]
   
@@ -84,19 +86,20 @@ describe('Testing template $$', () => {
 
 describe('Testing templates generations', () => {
   const t = [
-    // '$e{3}',
-    // '$e[15;19]',
-    // '$e{2;3}',
-    // '$er{3}',
-    // '-$e{3}',
-    // '$e{1}+$e{3}',
-    // '$e{1;1}*$e{3}+3:?-a',
-    // '$e{1}+$1',
-    // '$e{1}+$e{2}+$1+$2',
-    // '$e{1}*$e{3}+$1*$e{3}',
-    // '$e{1;1}+$e{1;1}',
-    // '$e{1;1}=$e{1;1}',
+    '$e{3}',
+    '$e[15;19]',
+    '$e{2;3}',
+    '$er{3}',
+    '-$e{3}',
+    '$e{1}+$e{3}',
+    '$e{1;1}*$e{3}+3:?-a',
+    '$e{1}+$1',
+    '$e{1}+$e{2}+$1+$2',
+    '$e{1}*$e{3}+$1*$e{3}',
+    '$e{1;1}+$e{1;1}',
+    '$e{1;1}=$e{1;1}',
 
+    // TODO : ne marche pas
     // '$e{1}+$e{$1+1;$1+1}',
     // '$e{1}+$e{$1;$1}',
 
@@ -123,11 +126,15 @@ describe('Testing templates generations', () => {
     '$er[2;6]\\{cd(6)}', // 6 dividers
 
     '$l{a;b;c}\\{a;b}',
-    '$ers[1;2]}'
+    '$ers[1;2]}'  // avec le signe + ou -
 
 
   ]
-
+  console.log('$e[2;9] km : ', math('$e[2;9] km').generate().string)
+  console.log('$l{3 km; 2m} : ', math('$l{3 km; 2m}').generate().string)
+  console.log('$l{$e[2;9] km; $e[2;9] m} : ', math('$l{$e[2;9] km ; $e[2;9] m}').generate().string)
+  
+  // console.log('$l{km; m} : ', math('$l{km ; m}').generate().string)
   test.each(t)(
     'is %s generation matching initial template',
     (e) => {
@@ -135,7 +142,8 @@ describe('Testing templates generations', () => {
       
       const f = math(e)
       const g = f.generate()
-      console.log(f.string, g.string)
+
+      // console.log(f.string, g.string)
       // for (let i=0; i<100 ; i++) {
         expect(g.matchTemplate(f)).toBeTruthy()
       // }

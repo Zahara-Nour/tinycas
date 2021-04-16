@@ -60,8 +60,11 @@ describe('Testing matching against Templates', () => {
 
 
     ['2', '$e', true],
+    ['2.2', '$e', false],
     ['2', '$er', true],
     ['-2', '$er', true],
+    ['-2.2', '$er', false],
+    ['2.2', '$er', false],
     ['0', '$e', true],
     ['0', '$er', true],
     ['2', '$ep', true],
@@ -76,7 +79,7 @@ describe('Testing matching against Templates', () => {
     ['-3', '$epr', false],
     ['-2', '$eir', false],
     ['-3', '$eir', true],
-    ['2.4', '$e', false],
+    
 
     ['0', '$e{0}', true],
     ['0', '$e{0;0}', true],

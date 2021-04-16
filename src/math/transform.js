@@ -104,14 +104,22 @@ function generateTemplate(node) {
   const decimal = node.nature === '$$'
   const precision = node.precision
 
+  // est ce bien raisonnable de mélanger génération et évaluation ?
+  // const children = node.children.map(
+  //   child =>
+  //     child.isTemplate()
+  //       ? generateTemplate(child)
+  //       : generate(Object.assign(child.substitute(), { parent: node })).eval({
+  //           decimal,
+  //           precision,
+  //         }), 
+  // )
+
   const children = node.children.map(
     child =>
       child.isTemplate()
         ? generateTemplate(child)
-        : generate(Object.assign(child.substitute(), { parent: node })).eval({
-            decimal,
-            precision,
-          }), // on a besoin de garder le lien avec root pour récupérer les templates générés
+        : generate(Object.assign(child.substitute(), { parent: node }))  // on a besoin de garder le lien avec root pour récupérer les templates générés
   )
 
   let e
@@ -265,6 +273,8 @@ function generateTemplate(node) {
       ref = parseInt(node.nature.slice(1, node.nature.length), 10)
       e = node.root.generated[ref - 1]
   }
+
+  if (node.unit) e.unit = node.unit
   return e
 }
 

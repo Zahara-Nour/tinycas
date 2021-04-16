@@ -125,6 +125,7 @@ describe('Test relations evaluation with units', () => {
   ['1 cm = 2 cm', 'false'],
   ['1 cm = 1 m', 'false'],
   ['100 cm = 1 m', 'true'],
+  ['1 cm + 1 dm = 0.11 m', 'true'],
   
 
   

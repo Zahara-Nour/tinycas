@@ -686,7 +686,8 @@ describe('Testing parsing units', () => {
     '1 cm:2':             '1 cm:2',
     '(1/2) cm':           '(1/2) cm',
     'a cm':               'a cm',
-    '1 km = 1000 m':      '1 km=1000 m'
+    '1 km = 1000 m':      '1 km=1000 m',
+    '$e[2;9] km':         '$e[2;9] km'
   }
 
   // TODO : division par 0
