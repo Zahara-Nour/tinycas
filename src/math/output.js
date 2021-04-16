@@ -401,6 +401,6 @@ export function latex(e, options) {
       s = e.string
   }
   // if (e.unit && options.displayUnit) s += ' ' + e.unit.string
-  if (e.unit) s += '\\, \\text{' + e.unit.string + '}'
+  if (e.unit) s += '\\,' + e.unit.string
   return s
 }
