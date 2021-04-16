@@ -382,7 +382,8 @@ export function latex(e, options) {
       break
 
     case TYPE_NUMBER:
-      s = parseFloat(e.value, 10)
+      // s = parseFloat(e.value, 10)
+      s = e.value.toNumber()
         .toLocaleString('en')
         .replace(',', '\\,')
         .replace('.', '{,}')

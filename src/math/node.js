@@ -5,6 +5,13 @@ import { text, latex } from './output'
 import compare from './compare'
 import { substitute, generate } from './transform'
 import { roundDecimal } from '../utils/utils'
+import Decimal from 'decimal.js'
+
+Decimal.set({
+  toExpPos: 12,
+  toExpNeg: -12
+})
+
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -304,15 +311,16 @@ const PNode = {
 
   isInt() {
     // trick pour tester si un nombre est un entier
-    return this.isNumber() && (this.value | 0) === this.value
+    // return this.isNumber() && (this.value | 0) === this.value
+    return this.isNumber() && this.value.isInt()
   },
 
   isEven() {
-    return this.isInt() && this.value % 2 === 0
+    return this.isInt() && this.value.mod(2).equals(0)
   },
 
   isOdd() {
-    return this.isInt() && this.value % 2 === 1
+    return this.isInt() && this.value.mod(2).equals(1)
   },
 
   isNumeric() {
@@ -370,7 +378,7 @@ const PNode = {
     // TODO: memoize
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
-    const precision = params.precision || 10
+    const precision = params.precision || 12
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
@@ -490,7 +498,7 @@ const PNode = {
 
     switch (t.type) {
       case TYPE_NUMBER:
-        return this.isNumber() && this.value === t.value
+        return this.isNumber() && this.value.equals(t.value)
 
       case TYPE_HOLE:
         return this.isHole()
@@ -514,16 +522,16 @@ const PNode = {
             if (
               !t.children[1].isHole() &&
               !checkDigitsNumber(
-                this.value,
-                !t.children[0].isHole() ? t.children[0].value : 0,
-                t.children[1].value,
+                this.value.toNumber(),
+                !t.children[0].isHole() ? t.children[0].value.toNumber() : 0,
+                t.children[1].value.toNumber(),
               )
             ) {
               return false
             }
             if (
               !t.children[2].isHole() &&
-              !checkLimits(this.value, t.children[2].value, t.children[3].value)
+              !checkLimits(this.value.toNumber(), t.children[2].value.toNumber(), t.children[3].value.toNumber())
             ) {
               return false
             }
@@ -538,7 +546,7 @@ const PNode = {
             if (!this.isNumber()) return false
 
             if (this.isInt()) {
-              integerPart = Math.trunc(this.value)
+              integerPart = this.value.trunc()
               return false
             } else {
               ;[integerPart, decimalPart] = this.value.toString().split('.')
@@ -556,8 +564,8 @@ const PNode = {
               } else if (
                 !checkDigitsNumber(
                   integerPart,
-                  t.children[0].value,
-                  t.children[0].value,
+                  t.children[0].value.toNumber(),
+                  t.children[0].value.toNumber(),
                 )
               ) {
                 return false
@@ -573,8 +581,8 @@ const PNode = {
               } else if (
                 !checkDigitsNumber(
                   decimalPart,
-                  t.children[1].value,
-                  t.children[1].value,
+                  t.children[1].value.toNumber(),
+                  t.children[1].value.toNumber(),
                 )
               ) {
                 return false
@@ -721,7 +729,7 @@ export function percentage(children) {
   return createNode({ type: TYPE_PERCENTAGE, children })
 }
 export function number(value) {
-  return createNode({ type: TYPE_NUMBER, value: parseFloat(value) })
+  return createNode({ type: TYPE_NUMBER, value: new Decimal(value) })
 }
 export function boolean(value) {
   return createNode({ type: TYPE_BOOLEAN, value })

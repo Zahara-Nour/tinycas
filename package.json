@@ -37,6 +37,6 @@
     "prettier": "^1.19.1"
   },
   "dependencies": {
-    "decimal.js": "^10.2.0"
+    "decimal.js": "^10.2.1"
   }
 }

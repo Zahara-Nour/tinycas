@@ -166,14 +166,14 @@ const PNormal = {
 
     if (e.isInt()) {
       result = this
-      for (let i = 1; i < e.node.value; i++) {
+      for (let i = 1; i < e.node.value.toNumber(); i++) {
         result = result.mult(this)
       }
     } else if (e.isMinusOne()) {
      result = this.invert()
   
     } else if (e.node.isOpposite() && e.node.first.isInt()) {
-      const n = e.node.first.value
+      const n = e.node.first.value.toNumber()
       result = this
       for (let i = 1; i < n; i++) {
         result = result.mult(this)
@@ -706,8 +706,8 @@ export default function normalize(node) {
     case TYPE_GCD: {
       let a = node.first.eval()
       let b = node.last.eval()
-      a = a.isOpposite() ? a.first.value : a.value
-      b = b.isOpposite() ? b.first.value : b.value
+      a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+      b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
       e = number(gcd(a, b)).normal
       break
     }

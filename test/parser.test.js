@@ -1,4 +1,6 @@
 import parser from '../src/math/parser'
+import { math } from '../src/math/math'
+import Decimal from 'decimal.js'
 
 describe('Parser interface', () => {
   const p = parser()
@@ -32,7 +34,7 @@ describe('Parsing', () => {
 
   test('Parser parses a decimal number with","', () => {
     const e = p.parse('123,45')
-    expect(e.toString({comma:true})).toEqual('123,45')
+    expect(e.toString({ comma: true })).toEqual('123,45')
     expect(e.isNumber()).toBeTruthy()
   })
 
@@ -151,7 +153,7 @@ describe('Parsing', () => {
   test('Parser parses a complex expression', () => {
     const e = p.parse('-(((+3.4+4/3)*2:(-4-5^2)))')
     expect(e.toString()).toEqual('-(((+3.4+4/3)*2:(-4-5^2)))')
-    
+
   })
 
   test('Parser parses an equality', () => {
@@ -171,15 +173,15 @@ describe('Parsing', () => {
     expect(e.toString()).toEqual('1<1')
     expect(e.isInequality()).toBeTruthy()
 
-     e = p.parse('1<=1')
+    e = p.parse('1<=1')
     expect(e.toString()).toEqual('1<=1')
     expect(e.isInequality()).toBeTruthy()
 
-     e = p.parse('1>1')
+    e = p.parse('1>1')
     expect(e.toString()).toEqual('1>1')
     expect(e.isInequality()).toBeTruthy()
 
-     e = p.parse('1>=1')
+    e = p.parse('1>=1')
     expect(e.toString()).toEqual('1>=1')
     expect(e.isInequality()).toBeTruthy()
   })
@@ -255,7 +257,7 @@ describe('Parsing', () => {
       '$eir[2;4]',
 
       '$e[2;4]\\{3}',
-      
+
       // '$d{2;3}',
       // '$d{2:4;3:5}',
 
@@ -273,68 +275,68 @@ describe('Parsing', () => {
   // {nature:, children:}
   test('Parser creates AST', () => {
     const exps = {
-      '1+1+1':   { children: ['+', 'number'], nature: '+' },
+      '1+1+1': { children: ['+', 'number'], nature: '+' },
       '1+(1+1)': { children: ['number', 'bracket'], nature: '+' },
       '(1+1)+1': { children: ['bracket', 'number'], nature: '+' },
       '1-(1+1)': { children: ['number', 'bracket'], nature: '-' },
-      '1+1-1':   { children: ['+', 'number'], nature: '-' },
+      '1+1-1': { children: ['+', 'number'], nature: '-' },
       '(1+1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1+1*1':   { children: ['number', '*'], nature: '+' },
+      '1+1*1': { children: ['number', '*'], nature: '+' },
       '1+(1*1)': { children: ['number', 'bracket'], nature: '+' },
-      '1*1+1':   { children: ['*', 'number'], nature: '+' },
+      '1*1+1': { children: ['*', 'number'], nature: '+' },
       '(1*1)+1': { children: ['bracket', 'number'], nature: '+' },
-      '1+1:1':   { children: ['number', ':'], nature: '+' },
+      '1+1:1': { children: ['number', ':'], nature: '+' },
       '1+(1:1)': { children: ['number', 'bracket'], nature: '+' },
-      '1:1+1':   { children: [':', 'number'], nature: '+' },
+      '1:1+1': { children: [':', 'number'], nature: '+' },
       '(1:1)+1': { children: ['bracket', 'number'], nature: '+' },
-      '1+1/1':   { children: ['number', '/'], nature: '+' },
+      '1+1/1': { children: ['number', '/'], nature: '+' },
       '1+(1/1)': { children: ['number', 'bracket'], nature: '+' },
-      '1/1+1':   { children: ['/', 'number'], nature: '+' },
+      '1/1+1': { children: ['/', 'number'], nature: '+' },
       '(1/1)+1': { children: ['bracket', 'number'], nature: '+' },
-      '1^1+1':   { children: ['^', 'number'], nature: '+' },
+      '1^1+1': { children: ['^', 'number'], nature: '+' },
       '(1^1)+1': { children: ['bracket', 'number'], nature: '+' },
-      '1+1^1':   { children: ['number', '^'], nature: '+' },
+      '1+1^1': { children: ['number', '^'], nature: '+' },
       '1+(1^1)': { children: ['number', 'bracket'], nature: '+' },
 
       // '1-(1+1)':'1-(1+1)', duplicate
       // '1+1-1':'1+1-1', duplicate
       '1-(1-1)': { children: ['number', 'bracket'], nature: '-' },
-      '1-1-1':   { children: ['-', 'number'], nature: '-' },
+      '1-1-1': { children: ['-', 'number'], nature: '-' },
       '(1-1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1*1-1':   { children: ['*', 'number'], nature: '-' },
+      '1*1-1': { children: ['*', 'number'], nature: '-' },
       '(1*1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1-1*1':   { children: ['number', '*'], nature: '-' },
+      '1-1*1': { children: ['number', '*'], nature: '-' },
       '1-(1*1)': { children: ['number', 'bracket'], nature: '-' },
-      '1-1:1':   { children: ['number', ':'], nature: '-' },
+      '1-1:1': { children: ['number', ':'], nature: '-' },
       '1-(1:1)': { children: ['number', 'bracket'], nature: '-' },
-      '1:1-1':   { children: [':', 'number'], nature: '-' },
+      '1:1-1': { children: [':', 'number'], nature: '-' },
       '(1:1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1-1/1':   { children: ['number', '/'], nature: '-' },
+      '1-1/1': { children: ['number', '/'], nature: '-' },
       '1-(1/1)': { children: ['number', 'bracket'], nature: '-' },
-      '1/1-1':   { children: ['/', 'number'], nature: '-' },
+      '1/1-1': { children: ['/', 'number'], nature: '-' },
       '(1/1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1^1-1':   { children: ['^', 'number'], nature: '-' },
+      '1^1-1': { children: ['^', 'number'], nature: '-' },
       '(1^1)-1': { children: ['bracket', 'number'], nature: '-' },
-      '1-1^1':   { children: ['number', '^'], nature: '-' },
+      '1-1^1': { children: ['number', '^'], nature: '-' },
       '1-(1^1)': { children: ['number', 'bracket'], nature: '-' },
 
       '1*(1+1)': { children: ['number', 'bracket'], nature: '*' },
       '(1+1)*1': { children: ['bracket', 'number'], nature: '*' },
       '1*(1-1)': { children: ['number', 'bracket'], nature: '*' },
       '(1-1)*1': { children: ['bracket', 'number'], nature: '*' },
-      '1*1*1':   { children: ['*', 'number'], nature: '*' },
+      '1*1*1': { children: ['*', 'number'], nature: '*' },
       '1*(1*1)': { children: ['number', 'bracket'], nature: '*' },
       '(1*1)*1': { children: ['bracket', 'number'], nature: '*' },
-      '1:1*1':   { children: [':', 'number'], nature: '*' },
+      '1:1*1': { children: [':', 'number'], nature: '*' },
       '(1:1)*1': { children: ['bracket', 'number'], nature: '*' },
       '1*(1:1)': { children: ['number', 'bracket'], nature: '*' },
-      '1*1/1':   { children: ['*', 'number'], nature: '/' },
+      '1*1/1': { children: ['*', 'number'], nature: '/' },
       '1*(1/1)': { children: ['number', 'bracket'], nature: '*' },
-      '1/1*1':   { children: ['/', 'number'], nature: '*' },
+      '1/1*1': { children: ['/', 'number'], nature: '*' },
       '(1/1)*1': { children: ['bracket', 'number'], nature: '*' },
-      '1^1*1':   { children: ['^', 'number'], nature: '*' },
+      '1^1*1': { children: ['^', 'number'], nature: '*' },
       '(1^1)*1': { children: ['bracket', 'number'], nature: '*' },
-      '1*1^1':   { children: ['number', '^'], nature: '*' },
+      '1*1^1': { children: ['number', '^'], nature: '*' },
       '1*(1^1)': { children: ['number', 'bracket'], nature: '*' },
 
       '1:(1+1)': { children: ['number', 'bracket'], nature: ':' },
@@ -342,18 +344,18 @@ describe('Parsing', () => {
       '1:(1-1)': { children: ['number', 'bracket'], nature: ':' },
       '(1-1):1': { children: ['bracket', 'number'], nature: ':' },
       '1:(1*1)': { children: ['number', 'bracket'], nature: ':' },
-      '1*1:1':   { children: ['*', 'number'], nature: ':' },
+      '1*1:1': { children: ['*', 'number'], nature: ':' },
       '(1*1):1': { children: ['bracket', 'number'], nature: ':' },
-      '1:1:1':   { children: [':', 'number'], nature: ':' },
+      '1:1:1': { children: [':', 'number'], nature: ':' },
       '1:(1:1)': { children: ['number', 'bracket'], nature: ':' },
       '(1:1):1': { children: ['bracket', 'number'], nature: ':' },
       '1:(1/1)': { children: ['number', 'bracket'], nature: ':' },
-      '1:1/1':   { children: [':', 'number'], nature: '/' },
-      '1/1:1':   { children: ['/', 'number'], nature: ':' },
+      '1:1/1': { children: [':', 'number'], nature: '/' },
+      '1/1:1': { children: ['/', 'number'], nature: ':' },
       '(1/1):1': { children: ['bracket', 'number'], nature: ':' },
-      '1^1:1':   { children: ['^', 'number'], nature: ':' },
+      '1^1:1': { children: ['^', 'number'], nature: ':' },
       '(1^1):1': { children: ['bracket', 'number'], nature: ':' },
-      '1:1^1':   { children: ['number', '^'], nature: ':' },
+      '1:1^1': { children: ['number', '^'], nature: ':' },
       '1:(1^1)': { children: ['number', 'bracket'], nature: ':' },
 
       '1/(1+1)': { children: ['number', 'bracket'], nature: '/' },
@@ -365,11 +367,11 @@ describe('Parsing', () => {
       '1/(1:1)': { children: ['number', 'bracket'], nature: '/' },
       '(1:1)/1': { children: ['bracket', 'number'], nature: '/' },
       '1/(1/1)': { children: ['number', 'bracket'], nature: '/' },
-      '1/1/1':   { children: ['/', 'number'], nature: '/' },
+      '1/1/1': { children: ['/', 'number'], nature: '/' },
       '(1/1)/1': { children: ['bracket', 'number'], nature: '/' },
-      '1^1/1':   { children: ['^', 'number'], nature: '/' },
+      '1^1/1': { children: ['^', 'number'], nature: '/' },
       '(1^1)/1': { children: ['bracket', 'number'], nature: '/' },
-      '1/1^1':   { children: ['number', '^'], nature: '/' },
+      '1/1^1': { children: ['number', '^'], nature: '/' },
       '1/(1^1)': { children: ['number', 'bracket'], nature: '/' },
 
       '1^(1+1)': { children: ['number', 'bracket'], nature: '^' },
@@ -381,10 +383,10 @@ describe('Parsing', () => {
       '1^(1:1)': { children: ['number', 'bracket'], nature: '^' },
       '(1:1)^1': { children: ['bracket', 'number'], nature: '^' },
       '1^(1/1)': { children: ['number', 'bracket'], nature: '^' },
-      '1^1^1':   { children: ['^', 'number'], nature: '^' },
+      '1^1^1': { children: ['^', 'number'], nature: '^' },
       '1^(1^1)': { children: ['number', 'bracket'], nature: '^' },
       '(1^1)^1': { children: ['bracket', 'number'], nature: '^' },
-      
+
       '-1+2': { children: ['opposite', 'number'], nature: '+' },
       '(-1)+2': { children: ['bracket', 'number'], nature: '+' },
       '-(1+2)': { children: ['bracket'], nature: 'opposite' },
@@ -396,7 +398,7 @@ describe('Parsing', () => {
       '-(1-2)': { children: ['bracket'], nature: 'opposite' },
       '1--2': { children: ['number', 'opposite'], nature: '-' },
       '1-(-2)': { children: ['number', 'bracket'], nature: '-' },
-      
+
       '-1*2': { children: ['opposite', 'number'], nature: '*' },
       '(-1)*2': { children: ['bracket', 'number'], nature: '*' },
       '-(1*2)': { children: ['bracket'], nature: 'opposite' },
@@ -414,7 +416,7 @@ describe('Parsing', () => {
       '-(1/2)': { children: ['bracket'], nature: 'opposite' },
       '1/-2': { children: ['number', 'opposite'], nature: '/' },
       '1/(-2)': { children: ['number', 'bracket'], nature: '/' },
-      
+
 
       'abc': { children: ['', 'symbol'], nature: '' },
       'ab:c': { children: ['', 'symbol'], nature: ':' },
@@ -435,68 +437,68 @@ describe('Parsing', () => {
   // a Tester quand la fonction de simplification de fonction sera réécrite
   test.skip('Parser puts brackets where it is needed', () => {
     const exps = {
-      '1+1+1':   '1+1+1',
+      '1+1+1': '1+1+1',
       '1+(1+1)': '1+1+1',
       '(1+1)+1': '1+1+1',
       '1-(1+1)': '1-(1+1)',
-      '1+1-1':   '1+1-1',
+      '1+1-1': '1+1-1',
       '(1+1)-1': '1+1-1',
-      '1+1*1':   '1+1*1',
+      '1+1*1': '1+1*1',
       '1+(1*1)': '1+1*1',
-      '1*1+1':   '1*1+1',
+      '1*1+1': '1*1+1',
       '(1*1)+1': '1*1+1',
-      '1+1:1':   '1+1:1',
+      '1+1:1': '1+1:1',
       '1+(1:1)': '1+1:1',
-      '1:1+1':   '1:1+1',
+      '1:1+1': '1:1+1',
       '(1:1)+1': '1:1+1',
-      '1+1/1':   '1+1/1',
+      '1+1/1': '1+1/1',
       '1+(1/1)': '1+1/1',
-      '1/1+1':   '1/1+1',
+      '1/1+1': '1/1+1',
       '(1/1)+1': '1/1+1',
-      '1^1+1':   '1^1+1',
+      '1^1+1': '1^1+1',
       '(1^1)+1': '1^1+1',
-      '1+1^1':   '1+1^1',
+      '1+1^1': '1+1^1',
       '1+(1^1)': '1+1^1',
 
       // '1-(1+1)':'1-(1+1)', duplicate
       // '1+1-1':'1+1-1', duplicate
       '1-(1-1)': '1-(1-1)',
-      '1-1-1':   '1-1-1',
+      '1-1-1': '1-1-1',
       '(1-1)-1': '1-1-1',
-      '1*1-1':   '1*1-1',
+      '1*1-1': '1*1-1',
       '(1*1)-1': '1*1-1',
-      '1-1*1':   '1-1*1',
+      '1-1*1': '1-1*1',
       '1-(1*1)': '1-1*1',
-      '1-1:1':   '1-1:1',
+      '1-1:1': '1-1:1',
       '1-(1:1)': '1-1:1',
-      '1:1-1':   '1:1-1',
+      '1:1-1': '1:1-1',
       '(1:1)-1': '1:1-1',
-      '1-1/1':   '1-1/1',
+      '1-1/1': '1-1/1',
       '1-(1/1)': '1-1/1',
-      '1/1-1':   '1/1-1',
+      '1/1-1': '1/1-1',
       '(1/1)-1': '1/1-1',
-      '1^1-1':   '1^1-1',
+      '1^1-1': '1^1-1',
       '(1^1)-1': '1^1-1',
-      '1-1^1':   '1-1^1',
+      '1-1^1': '1-1^1',
       '1-(1^1)': '1-1^1',
 
       '1*(1+1)': '1*(1+1)',
       '(1+1)*1': '(1+1)*1',
       '1*(1-1)': '1*(1-1)',
       '(1-1)*1': '(1-1)*1',
-      '1*1*1':   '1*1*1',
+      '1*1*1': '1*1*1',
       '1*(1*1)': '1*1*1',
       '(1*1)*1': '1*1*1',
-      '1:1*1':   '1:1*1',
+      '1:1*1': '1:1*1',
       '(1:1)*1': '1:1*1',
       '1*(1:1)': '1*1:1',
-      '1*1/1':   '1*1/1',
+      '1*1/1': '1*1/1',
       '1*(1/1)': '1*1/1',
-      '1/1*1':   '1/1*1',
+      '1/1*1': '1/1*1',
       '(1/1)*1': '1/1*1',
-      '1^1*1':   '1^1*1',
+      '1^1*1': '1^1*1',
       '(1^1)*1': '1^1*1',
-      '1*1^1':   '1*1^1',
+      '1*1^1': '1*1^1',
       '1*(1^1)': '1*1^1',
 
       '1:(1+1)': '1:(1+1)',
@@ -504,18 +506,18 @@ describe('Parsing', () => {
       '1:(1-1)': '1:(1-1)',
       '(1-1):1': '(1-1):1',
       '1:(1*1)': '1:(1*1)',
-      '1*1:1':   '1*1:1',
+      '1*1:1': '1*1:1',
       '(1*1):1': '1*1:1',
-      '1:1:1':   '1:1:1',
+      '1:1:1': '1:1:1',
       '1:(1:1)': '1:(1:1)',
       '(1:1):1': '1:1:1',
       '1:(1/1)': '1:1/1',
-      '1:1/1':   '1:1/1',
-      '1/1:1':   '1/1:1',
+      '1:1/1': '1:1/1',
+      '1/1:1': '1/1:1',
       '(1/1):1': '1/1:1',
-      '1^1:1':   '1^1:1',
+      '1^1:1': '1^1:1',
       '(1^1):1': '1^1:1',
-      '1:1^1':   '1:1^1',
+      '1:1^1': '1:1^1',
       '1:(1^1)': '1:1^1',
 
       '1/(1+1)': '1/(1+1)',
@@ -527,11 +529,11 @@ describe('Parsing', () => {
       '1/(1:1)': '1/(1:1)',
       '(1:1)/1': '(1:1)/1',
       '1/(1/1)': '1/(1/1)',
-      '1/1/1':   '1/1/1',
+      '1/1/1': '1/1/1',
       '(1/1)/1': '1/1/1',
-      '1^1/1':   '1^1/1',
+      '1^1/1': '1^1/1',
       '(1^1)/1': '1^1/1',
-      '1/1^1':   '1/1^1',
+      '1/1^1': '1/1^1',
       '1/(1^1)': '1/1^1',
 
       '1^(1+1)': '1^(1+1)',
@@ -543,7 +545,7 @@ describe('Parsing', () => {
       '1^(1:1)': '1^(1:1)',
       '(1:1)^1': '(1:1)^1',
       '1^(1/1)': '1^(1/1)',
-      '1^1^1':   '1^1^1',
+      '1^1^1': '1^1^1',
       '1^(1^1)': '1^(1^1)',
       '(1^1)^1': '1^1^1'
     }
@@ -613,7 +615,7 @@ describe('Implicit products', () => {
     // expect(e.showShallowStructure()).toEqual(structure)
   })
 
- 
+
 
   test('Parser recognises an implicit product with ^', () => {
     const e = p.parse('2x^3y')
@@ -687,8 +689,14 @@ describe('Testing parsing units', () => {
     '(1/2) cm':           '(1/2) cm',
     'a cm':               'a cm',
     '1 km = 1000 m':      '1 km=1000 m',
-    '$e[2;9] km':         '$e[2;9] km'
+    '$e[2;9] km':         '$e[2;9] km',
+    '0.000001': '0.000001',
+    '0.0000001': '0.0000001',
   }
+
+  
+  
+
 
   // TODO : division par 0
   for (const [tested, expected] of Object.entries(exps)) {

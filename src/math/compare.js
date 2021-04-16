@@ -95,9 +95,9 @@ export default function compare(node1, node2) {
     case TYPE_NUMBER:
       switch (node2.type) {
         case TYPE_NUMBER:
-          if (node1.value < node2.value) {
+          if (node1.value.lt(node2.value)) {
             return -1
-          } else if (node1.value > node2.value) {
+          } else if (node1.value.gt(node2.value)) {
             return 1
           }
           return 0

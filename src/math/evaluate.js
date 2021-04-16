@@ -28,7 +28,7 @@ import Decimal from 'decimal.js'
 export default function evaluate (node, params) {
   switch (node.type) {
     case TYPE_NUMBER:
-      return new Decimal(node.value)
+      return node.value
 
     case TYPE_SYMBOL:
       throw new Error(`Le symbole ${node.letter} doit être substitué`)

@@ -95,7 +95,7 @@ function getIntOfNdigits(nmin, nmax, trailingzero = true) {
 }
 
 function isInSegment(x, a, b) {
-  return x <= b.value && x >= a.value
+  return b.value.gte(x.value) && a.value.lte(x.value)
 }
 
 //   La génération d'un template doit retouner une valeur numérique.
@@ -139,14 +139,14 @@ function generateTemplate(node) {
         if (!children[1].isHole()) {
           e = number(
             getIntOfNdigits(
-              children[0].isHole() ? 1 : children[0].value,
-              children[1].value,
+              children[0].isHole() ? 1 : children[0].value.toNumber(),
+              children[1].value.toNumber(),
             ),
           )
           doItAgain = exclude && exclude.includes(e.string)
         } else {
           e = number(
-            getRandomIntInclusive(children[2].value, children[3].value),
+            getRandomIntInclusive(children[2].value.toNumber(), children[3].value.toNumber()),
           )
           doItAgain =
             (exclude && exclude.map(exp => exp.string).includes(e.string)) ||
@@ -156,13 +156,13 @@ function generateTemplate(node) {
           doItAgain =
             doItAgain ||
             (excludeMultiple &&
-              excludeMultiple.some(elt => e.value % elt.eval().value === 0))
+              excludeMultiple.some(elt => e.value.mod(elt.eval().value) === 0))
         }
         if (excludeDivider) {
           doItAgain =
             doItAgain ||
             (excludeDivider &&
-              excludeDivider.some(elt => elt.eval().value % e.value === 0))
+              excludeDivider.some(elt => elt.eval().value.mod(e.value) === 0))
         }
         if (excludeCommonDividersWith) {
           doItAgain =
@@ -170,9 +170,9 @@ function generateTemplate(node) {
             (excludeCommonDividersWith &&
               excludeCommonDividersWith.some(elt => {
                 let a = elt.eval()
-                a = a.isOpposite() ? a.first.value : a.value
+                a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
                 let b = e.eval()
-                b = b.isOpposite() ? b.first.value : b.value
+                b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
                 return gcd(a, b) !== 1
               }))
         }
@@ -201,8 +201,8 @@ function generateTemplate(node) {
       )
       if (children[0]) {
         // partie entière
-        integerPart = children[0].generate().value
-        decimalPart = children[1].generate().value
+        integerPart = children[0].generate().value.toNumber()
+        decimalPart = children[1].generate().value.toNumber()
         // console.log('inteferpart', integerPart)
         value = new Decimal(getIntOfNdigits(integerPart, integerPart))
 
@@ -231,12 +231,13 @@ function generateTemplate(node) {
     }
 
     case '$l': {
-      const children = node.children.map(
-        child =>
-          child.isTemplate()
-            ? generateTemplate(child)
-            : generate(Object.assign(child.substitute(), { parent: node })) 
-      )
+      // const children = node.children.map(
+      //   child =>
+      //     child.isTemplate()
+      //       ? generateTemplate(child)
+      //       : generate(Object.assign(child.substitute(), { parent: node })) 
+      // )
+      const children = node.children
       include = children
 
       let doItAgain = false
@@ -255,17 +256,17 @@ function generateTemplate(node) {
             doItAgain ||
             (node.excludeMultiple &&
               node.excludeMultiple.some(
-                elt => e.value % elt.eval().value === 0,
+                elt => e.value.mod(elt.eval().value) === 0,
               ))
         }
         if (node.excludeDivider) {
           doItAgain =
             doItAgain ||
             (node.excludeDivider &&
-              node.excludeDivider.some(elt => elt.eval().value % e.value === 0))
+              node.excludeDivider.some(elt => elt.eval().value.mod(e.value) === 0))
         }
       } while (doItAgain)
-
+      e = e.generate()
       node.root.generated.push(e)
       break
     }

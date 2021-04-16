@@ -61,6 +61,7 @@ describe('Testing evaluation of numerical expression with decimal result', () =>
     ['1.0', '1'],
     ['0.1', '0.1'],
     ['0.100', '0.1'],
+    ['0.0000001', '0.0000001'], // check precision
     ['0.1+0.1', '0.2'],
     ['0.1+0.2', '0.3'],
     ['3.5-2.3', '1.2'],
