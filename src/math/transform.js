@@ -104,24 +104,6 @@ function generateTemplate(node) {
   const decimal = node.nature === '$$'
   const precision = node.precision
 
-  // est ce bien raisonnable de mélanger génération et évaluation ?
-  // const children = node.children.map(
-  //   child =>
-  //     child.isTemplate()
-  //       ? generateTemplate(child)
-  //       : generate(Object.assign(child.substitute(), { parent: node })).eval({
-  //           decimal,
-  //           precision,
-  //         }), 
-  // )
-
-  const children = node.children.map(
-    child =>
-      child.isTemplate()
-        ? generateTemplate(child)
-        : generate(Object.assign(child.substitute(), { parent: node }))  // on a besoin de garder le lien avec root pour récupérer les templates générés
-  )
-
   let e
   let value
   let decimalPart
@@ -135,6 +117,15 @@ function generateTemplate(node) {
     case '$ep':
     case '$ei': {
       let doItAgain = false
+      const children = node.children.map(
+        child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })).eval({
+                decimal,
+                precision,
+              }), 
+      )
       const {
         excludeMin,
         excludeMax,
@@ -198,7 +189,16 @@ function generateTemplate(node) {
       node.root.generated.push(e)
       break
     }
-    case '$d':
+    case '$d': {
+      const children = node.children.map(
+        child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })).eval({
+                decimal,
+                precision,
+              }), 
+      )
       if (children[0]) {
         // partie entière
         integerPart = children[0].generate().value
@@ -228,8 +228,15 @@ function generateTemplate(node) {
 
       node.root.generated.push(e)
       break
+    }
 
     case '$l': {
+      const children = node.children.map(
+        child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })) 
+      )
       include = children
 
       let doItAgain = false
@@ -264,6 +271,15 @@ function generateTemplate(node) {
     }
     case '$':
     case '$$':
+      const children = node.children.map(
+        child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })).eval({
+                decimal,
+                precision,
+              }), 
+      )
       e = children[0]
       node.root.generated.push(e)
       break
