@@ -380,7 +380,7 @@ const PNode = {
     // TODO: memoize
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
-    const precision = params.precision || 12
+    const precision = params.precision || 20
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
@@ -440,7 +440,7 @@ const PNode = {
       const unit = e.unit
 
       // evaluate retourne un objet Decimal
-      e = number(roundDecimal(evaluate(e), precision).toString())
+      e = number(evaluate(e).toDecimalPlaces(precision).toString())
 
       //  on remet l'unité qui avait disparu
       if (unit) e.unit = unit

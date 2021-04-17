@@ -390,7 +390,7 @@ export function latex(e, options) {
       //   .replace('.', '{,}')
       // s = e.value.toString().replace('.', '{,}')
 
-      s = formatNumber(e.value.toNumber())
+      s = formatLatexNumber(e.value.toNumber())
       break
 
     case TYPE_HOLE:
@@ -409,10 +409,12 @@ export function latex(e, options) {
   return s
 }
 
-function formatNumber(num) {
+function formatLatexNumber(num) {
   
   ;let [int,dec] = num.toString().split('.')
   int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1\\,')
-  if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')
+  if (dec) dec = dec.replace(/\d{3}(?=\d)/g, '$&\\,')
+  // if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')
   return dec ? int+','+dec : int 
 }
+
