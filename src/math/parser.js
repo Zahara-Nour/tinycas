@@ -28,6 +28,7 @@ import {
   ln,
   log,
   exp,
+  mod,
   unequality,
 } from './node'
 
@@ -63,18 +64,18 @@ const CLOSING_SQUAREBRACKET = token(']')
 const OPENING_CURLYBRACKET = token('{')
 const CLOSING_CURLYBRACKET = token('}')
 // const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
+
 const VALUE_DECIMAL_TEMPLATE = token('$$')
 const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(rs?)?')
 const DECIMAL_TEMPLATE = token('@\\$d(r)?')
 const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
-
 const VALUE_TEMPLATE = token('$')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
-const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log')
+const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log|mod')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -296,6 +297,14 @@ ${msg}`
           require(SEMICOLON)
           const b = parseExpression()
           e = pgcd([a, b])
+          break
+        }
+
+        case 'mod': {
+          const a = parseExpression()
+          require(SEMICOLON)
+          const b = parseExpression()
+          e = mod([a, b])
           break
         }
 

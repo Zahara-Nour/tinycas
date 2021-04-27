@@ -150,6 +150,11 @@ describe('Test functions evaluation', () => {
     const e = math('pgcd(12;18)')
     expect(e.eval().string).toEqual('6')
   })
+
+  test('Function mod', () => {
+    const e = math('mod(15;4)')
+    expect(e.eval().string).toEqual('3')
+  })
 })
 
 describe('Test relations evaluation', () => {

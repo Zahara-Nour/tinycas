@@ -33,6 +33,7 @@ import {
   TYPE_INEQUALITY_LESS,
   TYPE_INEQUALITY_LESSOREQUAL,
   TYPE_UNEQUALITY,
+  TYPE_MOD,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -703,12 +704,22 @@ export default function normalize(node) {
 
       break
 
+      // TODO: A revoir, la forme normale n'est pas cohérente avec les autres
+
     case TYPE_GCD: {
       let a = node.first.eval()
       let b = node.last.eval()
       a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
       b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
       e = number(gcd(a, b)).normal
+      break
+    }
+
+    // TODO: pareil
+    case TYPE_MOD: {
+      let a = node.first.eval()
+      let b = node.last.eval()
+      e = number(a.value.mod(b.value).toNumber()).normal
       break
     }
 

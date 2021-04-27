@@ -35,6 +35,7 @@ export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
+export const TYPE_MOD = 'mod'
 export const TYPE_BOOLEAN = 'boolean'
 export const TYPE_COS = 'cos'
 export const TYPE_SIN = 'sin'
@@ -145,6 +146,9 @@ const PNode = {
   isPGCD() {
     return this.type === TYPE_GCD
   },
+  isMod() {
+    return this.type === TYPE_MOD
+  },
   isCos() {
     return this.type === TYPE_COS
   },
@@ -188,6 +192,7 @@ const PNode = {
     return (
       this.isRadical() ||
       this.isPGCD() ||
+      this.isMod() ||
       this.isCos() ||
       this.isSin() ||
       this.isTan() ||
@@ -725,6 +730,10 @@ export function exp(children) {
 
 export function pgcd(children) {
   return createNode({ type: TYPE_GCD, children })
+}
+
+export function mod(children) {
+  return createNode({ type: TYPE_MOD, children })
 }
 
 export function percentage(children) {

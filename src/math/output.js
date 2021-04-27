@@ -32,6 +32,7 @@ import {
   TYPE_EXP,
   TYPE_LOG,
   TYPE_UNEQUALITY,
+  TYPE_MOD,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -153,6 +154,10 @@ export function text(e, options) {
 
     case TYPE_GCD:
       s = 'pgcd(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
+      break
+
+    case TYPE_MOD:
+      s = 'mod(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
       break
 
     case TYPE_BOOLEAN:
@@ -383,7 +388,7 @@ export function latex(e, options) {
 
     case TYPE_NUMBER:
       // s = parseFloat(e.value, 10)
-      
+
       // s = e.value.toNumber()
       //   .toLocaleString('en',{maximumSignificantDigits:20} )
       //   .replace(/,/g, '\\,')
@@ -410,11 +415,11 @@ export function latex(e, options) {
 }
 
 function formatLatexNumber(num) {
-  
-  ;let [int,dec] = num.toString().split('.')
+
+  ; let [int, dec] = num.toString().split('.')
   int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1\\,')
   if (dec) dec = dec.replace(/\d{3}(?=\d)/g, '$&\\,')
   // if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')
-  return dec ? int+','+dec : int 
+  return dec ? int + ',' + dec : int
 }
 

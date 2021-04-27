@@ -156,13 +156,13 @@ function generateTemplate(node) {
           doItAgain =
             doItAgain ||
             (excludeMultiple &&
-              excludeMultiple.some(elt => e.value.mod(elt.eval().value) === 0))
+              excludeMultiple.some(elt => e.value.mod(elt.eval().value).equals(0)))
         }
         if (excludeDivider) {
           doItAgain =
             doItAgain ||
             (excludeDivider &&
-              excludeDivider.some(elt => elt.eval().value.mod(e.value) === 0))
+              excludeDivider.some(elt => elt.eval().value.mod(e.value).equals(0)))
         }
         if (excludeCommonDividersWith) {
           doItAgain =

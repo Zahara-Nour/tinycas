@@ -191,6 +191,10 @@ describe('Parsing', () => {
     expect(e.string).toEqual('pgcd(12;18)')
     expect(e.isFunction()).toBeTruthy()
 
+    e = p.parse('mod(15;4)')
+    expect(e.string).toEqual('mod(15;4)')
+    expect(e.isFunction()).toBeTruthy()
+
     e = p.parse('cos(5)')
     expect(e.string).toEqual('cos(5)')
     expect(e.isFunction()).toBeTruthy()
