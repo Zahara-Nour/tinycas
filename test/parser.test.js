@@ -218,6 +218,10 @@ describe('Parsing', () => {
     e = p.parse('exp(5)')
     expect(e.string).toEqual('exp(5)')
     expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('floor(5.2)')
+    expect(e.string).toEqual('floor(5.2)')
+    expect(e.isFunction()).toBeTruthy()
   })
 
   test('Parser parses booleans', () => {

@@ -174,3 +174,10 @@ describe('Testing strict equality between two expressions', () => {
     }
   )
 })
+
+describe('Testing terms', () => {
+  const e = '1+2+3+4'
+  expect(math(e).terms.toString()).toEqual([1,2,3,4].toString())
+   
+  
+})

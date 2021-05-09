@@ -29,6 +29,7 @@ import {
   log,
   exp,
   mod,
+  floor,
   unequality,
 } from './node'
 
@@ -75,7 +76,7 @@ const VALUE_TEMPLATE = token('$')
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
-const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log|mod')
+const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log|mod|floor')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -330,6 +331,10 @@ ${msg}`
 
         case 'exp':
           e = exp([parseExpression()])
+          break
+
+        case 'floor':
+          e = floor([parseExpression()])
           break
           
         default:

@@ -14,7 +14,6 @@ import {
   TYPE_RADICAL,
   TYPE_SUM,
   TYPE_SYMBOL,
-  TYPE_GCD,
 } from './node'
 
 
@@ -69,6 +68,8 @@ export default function evaluate (node, params) {
         (sum, child) => sum.mul(evaluate(child)),
         new Decimal(1)
       )
+
+
       
     default:
       return node

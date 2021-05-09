@@ -155,36 +155,56 @@ describe('Test functions evaluation', () => {
     const e = math('mod(15;4)')
     expect(e.eval().string).toEqual('3')
   })
+
+  test('Function floor', () => {
+    const e = math('floor(5.2)')
+    expect(e.eval().string).toEqual('5')
+  })
 })
 
 describe('Test relations evaluation', () => {
 
-  const t = [['1=1', 'true'],
-  ['1=2', 'false'],
-  
-  ['1<2', 'true'],
-  ['1<1', 'false'],
-  ['2<1', 'false'],
+  const t = [
+    ['1=1', 'true'],
+    ['1=2', 'false'],
+    ['1.0=1', 'true'],
+    ['1.1=1', 'false'],
+    ['1/2=0.5', 'true'],
+    ['cos(5)=cos(5)', 'true'],
+    ['cos(10:2)=cos(5)', 'true'],
+    ['sin(5)=cos(5)', 'false'],
 
-  ['1>2', 'false'],
-  ['1>1', 'false'],
-  ['2>1', 'true'],
-  
-  ['1<=2', 'true'],
-  ['1<=1', 'true'],
-  ['2<=1', 'false'],
-  
-  ['1>=2', 'false'],
-  ['1>=1', 'true'],
-  ['2>=1', 'true'],
 
-  ['pgcd(6;10)=2', 'true'],
-  ['1!=1', 'false'],
-  ['1!=2', 'true'],
+    ['1<2', 'true'],
+    ['1<1', 'false'],
+    ['2<1', 'false'],
 
-  
+    ['1>2', 'false'],
+    ['1>1', 'false'],
+    ['2>1', 'true'],
 
-]
+    ['1<=2', 'true'],
+    ['1<=1', 'true'],
+    ['2<=1', 'false'],
+
+    ['1>=2', 'false'],
+    ['1>=1', 'true'],
+    ['2>=1', 'true'],
+
+    ['pgcd(6;10)=2', 'true'],
+    ['1!=1', 'false'],
+    ['1!=2', 'true'],
+
+    ['1/2<3/2', 'true'],
+    ['5+1/10<5+2/10', 'true'],
+    ['5+23/10^3<5+124/10^3', 'true'],
+    ['4+261/10^3<4+75/10^2 ', 'true'],
+    ['4+861/10^3<4+75/10^2 ', 'false'],
+
+
+
+
+  ]
   test.each(t)('is %s %s', (e1, e2) => {
     expect(math(e1).eval().string).toEqual(e2)
   })

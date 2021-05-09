@@ -10,11 +10,19 @@ import {
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
-import { gcd } from '../utils/utils'
+import { gcd, shuffle } from '../utils/utils'
 
 const constants = {
   pi: '3.14',
   e: '2.7',
+}
+
+export function shuffleTerms(node) {
+  let terms = node.terms
+  shuffle(terms)
+  let e = terms.pop()
+  terms.forEach(term => e = e.add(term))
+  return e
 }
 
 export function substitute(node, params) {

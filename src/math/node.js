@@ -3,8 +3,8 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate } from './transform'
-import { roundDecimal } from '../utils/utils'
+import { substitute, generate, shuffleTerms } from './transform'
+import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 
 export const TYPE_SUM = '+'
@@ -43,6 +43,7 @@ export const TYPE_TAN = 'tan'
 export const TYPE_LN = 'ln'
 export const TYPE_LOG = 'log'
 export const TYPE_EXP = 'exp'
+export const TYPE_FLOOR = 'floor'
 
 
 
@@ -167,6 +168,9 @@ const PNode = {
   isExp() {
     return this.type === TYPE_EXP
   },
+  isFloor() {
+    return this.type === TYPE_FLOOR
+  },
   isNumber() {
     return this.type === TYPE_NUMBER
   },
@@ -198,7 +202,8 @@ const PNode = {
       this.isTan() ||
       this.isLog() ||
       this.isLn() ||
-      this.isExp()
+      this.isExp() ||
+      this.isFloor()
     )
   },
   compareTo(e) {
@@ -207,8 +212,14 @@ const PNode = {
   isLowerThan(e) {
     return fraction(this).isLowerThan(fraction(e))
   },
+  isLowerOrEqual(e) {
+    return this.isLowerThan(e) || this.equals(e)
+  },
   isGreaterThan(e) {
     return e.isLowerThan(this)
+  },
+  isGreaterOrEqual(e) {
+    return this.isGreaterThan(e) || this.equals(e)
   },
   isOne() {
     return this.string === '1'
@@ -217,7 +228,7 @@ const PNode = {
     return this.string === '-1'
   },
   isZero() {
-    return this.toString({displayUnit:false}) === '0'
+    return this.toString({ displayUnit: false }) === '0'
   },
   strictlyEquals(e) {
     return this.string === e.string
@@ -276,6 +287,17 @@ const PNode = {
     }
   },
 
+  get terms() {
+    if (this.isSum()) {
+      const left = this.first.terms
+      const right = this.last.terms
+      return left.concat(right)
+    }
+    else {
+      return [this]
+    }
+  },
+
   get pos() {
     return this.parent ? this.parent.children.indexOf(this) : 0
   },
@@ -292,8 +314,8 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ isUnit=false, displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
-    return text(this, { displayUnit, comma, addBrackets,  implicit, isUnit })
+  toString({ isUnit = false, displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
+    return text(this, { displayUnit, comma, addBrackets, implicit, isUnit })
   },
 
   get string() {
@@ -373,6 +395,10 @@ const PNode = {
     return power([this, e])
   },
 
+  shuffleTerms() {
+    return shuffleTerms(this)
+  },
+
   /* 
   params contient :
    - les valeurs de substitution
@@ -390,31 +416,47 @@ const PNode = {
     let e = this.substitute(params)
 
     switch (this.type) {
-      
-      case TYPE_UNEQUALITY:
-        e = e.normal.node
-        return boolean(!e.isZero())
 
-      
+      case TYPE_UNEQUALITY:
+        return boolean(!e.first.eval().equals(e.last.eval()))
+
+
       case TYPE_EQUALITY:
-        e = e.normal.node
-        return boolean(e.isZero())
+
+        return boolean(e.first.eval().equals(e.last.eval()))
 
       case TYPE_INEQUALITY_LESS:
-        e = e.normal.node
-        return boolean(e.isLowerThan(zero()))
+        return boolean(e.first.eval().isLowerThan(e.last.eval()))
 
       case TYPE_INEQUALITY_MORE:
-        e = e.normal.node
-        return boolean(e.isGreaterThan(zero()))
+        return boolean(e.first.eval().isGreaterThan(e.last.eval()))
 
       case TYPE_INEQUALITY_LESSOREQUAL:
-        e = e.normal.node
-        return boolean(e.isLowerThan(zero()) || e.isZero())
+        return boolean(e.first.eval().isLowerOrEqual(e.last.eval()))
 
       case TYPE_INEQUALITY_MOREOREQUAL:
-        e = e.normal.node
-        return boolean(e.isGreaterThan(zero()) || e.isZero())
+        return boolean(e.first.eval().isGreaterOrEqual(e.last.eval()))
+
+      case TYPE_GCD: {
+        let a = e.first.eval()
+        let b = e.last.eval()
+        a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+        b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
+        e = number(gcd(a, b))
+        return e
+      }
+
+      case TYPE_MOD: {
+        let a = e.first.eval()
+        let b = e.last.eval()
+        e = number(a.value.mod(b.value))
+        return e
+
+      }
+
+      case TYPE_FLOOR: {
+        return number(e.first.eval({decimal:true}).value.trunc())
+      }
 
       default:
         // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
@@ -514,7 +556,7 @@ const PNode = {
         return this.isSymbol() && this.letter === t.letter
 
       case TYPE_TEMPLATE:
-       
+
         switch (t.nature) {
           case '$e':
           case '$ep':
@@ -655,7 +697,7 @@ export function createNode(params) {
 
 // Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
 
-const one = (function() {
+const one = (function () {
   let instance
   return () => {
     if (!instance) instance = number('1')
@@ -663,7 +705,7 @@ const one = (function() {
   }
 })()
 
-const zero = (function() {
+const zero = (function () {
   let instance
   return () => {
     if (!instance) instance = number('0')
@@ -734,6 +776,10 @@ export function pgcd(children) {
 
 export function mod(children) {
   return createNode({ type: TYPE_MOD, children })
+}
+
+export function floor(children) {
+  return createNode({ type: TYPE_FLOOR, children })
 }
 
 export function percentage(children) {

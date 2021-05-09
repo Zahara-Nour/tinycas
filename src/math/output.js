@@ -30,6 +30,7 @@ import {
   TYPE_TAN,
   TYPE_LN,
   TYPE_EXP,
+  TYPE_FLOOR,
   TYPE_LOG,
   TYPE_UNEQUALITY,
   TYPE_MOD,
@@ -88,6 +89,7 @@ export function text(e, options) {
     case TYPE_LN:
     case TYPE_LOG:
     case TYPE_EXP:
+    case TYPE_FLOOR:
       s = e.type + '(' + e.first.toString(options) + ')'
       break
 
