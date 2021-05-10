@@ -18,7 +18,7 @@ import {
 import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal'
 /**
  * Un ordre doit être défini sur les expressions afin de créer les formes normales, qui permettent d'identifier
- * deux expressions équiavalentes
+ * deux expressions équivalentes
  * ordre choisi:
  * 2 < a < ? < template < function <  "<" , "<=" , ">" , ">=" , "="
  * pour les autres type, on compare les formes normales, termes à termes

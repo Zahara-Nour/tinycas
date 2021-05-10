@@ -3,7 +3,7 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate, shuffleTerms } from './transform'
+import { substitute, generate, shuffleTerms, sortTermsAndFactors } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 
@@ -287,10 +287,23 @@ const PNode = {
     }
   },
 
+  // recusirvly gets sum terms
   get terms() {
     if (this.isSum()) {
       const left = this.first.terms
       const right = this.last.terms
+      return left.concat(right)
+    }
+    else {
+      return [this]
+    }
+  },
+
+  // recusirvly gets product factors
+  get factors() {
+    if (this.isProduct()) {
+      const left = this.first.factors
+      const right = this.last.factors
       return left.concat(right)
     }
     else {
@@ -398,6 +411,11 @@ const PNode = {
   shuffleTerms() {
     return shuffleTerms(this)
   },
+
+  sortTermsAndFactors() {
+    return sortTermsAndFactors(this)
+  },
+
 
   /* 
   params contient :

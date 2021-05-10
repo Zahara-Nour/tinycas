@@ -2,10 +2,7 @@ import { math } from '../src/math/math'
 import compare from '../src/math/compare'
 
 describe('Testing comparison between 2 nodes', () => {
-  // test('Root is set on children', () => {
-  //   const e = math('2*3+4')
-  //   expect(e.normal.string).toBe('2+3*4')
-  // })
+
   const t = [
     ['0', '-0', 0],
     ['+0', '0', 0],
@@ -22,6 +19,8 @@ describe('Testing comparison between 2 nodes', () => {
     ['3', '-2', 1],
     ['-1/3', '1/2', -1],
     ['1/3', '-1/2', 1],
+    ['3+1', '1+3', -1],
+    ['3*1', '1*3', -1],
     ['a', 'b', -1],
     ['a', 'a', 0],
     ['b', 'a', 1],
@@ -38,6 +37,8 @@ describe('Testing comparison between 2 nodes', () => {
     ['a', 'ab', -1],
     ['ab', 'a', 1],
     ['a', 'aa', -1],
+    ['a', 'bc', -1],
+    ['b', 'ac', 1],
     ['a^2', 'a^3', -1],
     ['a^2', 'a^2', 0],
     ['a^3', 'a^2', 1],

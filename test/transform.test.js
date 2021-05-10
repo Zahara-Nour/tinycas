@@ -40,51 +40,51 @@ describe('Testing substitutions', () => {
 
 describe('Testing template $', () => {
   const t = [
-    ['${1/3}','1/3'  ]
-  
+    ['${1/3}', '1/3']
+
   ]
 
   test.each(t)(
     ' %s ',
     (e, expected) => {
-      
+
       const f = math(e)
-      
+
       const g = f.generate().string
-      
-      
-        expect(f.generate().string).toBe(expected)
-      
+
+
+      expect(f.generate().string).toBe(expected)
+
     }
   )
- 
+
 })
 
 
 //  TODO : est-ce bien utile comme template ?
 describe.skip('Testing template $$', () => {
   const t = [
-    ['$$2{1/3}','0.33'  ]
-  
+    ['$$2{1/3}', '0.33']
+
   ]
 
   test.each(t)(
     ' %s ',
     (e, expected) => {
-      
+
       const f = math(e)
-      
+
       const g = f.generate().string
-      
-      
-        expect(f.generate().string).toBe(expected)
-      
+
+
+      expect(f.generate().string).toBe(expected)
+
     }
   )
- 
+
 })
 
-describe('Testing templates generations', () => {
+describe.skip('Testing templates generations', () => {
   const t = [
     '$e{3}',
     '$e[15;19]',
@@ -108,7 +108,7 @@ describe('Testing templates generations', () => {
     "$d{0;3}",
 
     // '$dr{2:2;4:4}',
-    
+
     '$e{3}\\{1;2;3}',
     '$e[3;6]\\{4;5}',
     '$e[3;6]\\[4;5]',
@@ -130,22 +130,22 @@ describe('Testing templates generations', () => {
 
 
   ]
-  console.log('$e[2;9] km : ', math('$e[2;9] km').generate().string)
-  console.log('$l{3 km; 2m} : ', math('$l{3 km; 2m}').generate().string)
-  console.log('$l{$e[2;9] km; $e[2;9] m} : ', math('$l{$e[2;9] km ; $e[2;9] m}').generate().string)
-  
+  // console.log('$e[2;9] km : ', math('$e[2;9] km').generate().string)
+  // console.log('$l{3 km; 2m} : ', math('$l{3 km; 2m}').generate().string)
+  // console.log('$l{$e[2;9] km; $e[2;9] m} : ', math('$l{$e[2;9] km ; $e[2;9] m}').generate().string)
+
   // console.log('$l{km; m} : ', math('$l{km ; m}').generate().string)
   test.each(t)(
     'is %s generation matching initial template',
     (e) => {
       // const f = math(e).generate()
-      
+
       const f = math(e)
       const g = f.generate()
 
       console.log(f.string, g.string)
       // for (let i=0; i<100 ; i++) {
-        expect(g.matchTemplate(f)).toBeTruthy()
+      expect(g.matchTemplate(f)).toBeTruthy()
       // }
     },
   )
@@ -169,12 +169,12 @@ describe('Testing templates generations 2', () => {
     'is %s generation matching initial template',
     (e) => {
       // const f = math(e).generate()
-      
-      const f = math('${'+ e +'}')
+
+      const f = math('${' + e + '}')
       const g = math(e)
       // console.log(f.string)
       // console.log(f.generate().string)
-        expect(f.generate().string).toBe(g.string)
+      expect(f.generate().string).toBe(g.string)
     },
   )
   // let e
@@ -188,6 +188,19 @@ describe('Testing templates generations 2', () => {
   // }
 })
 
+
+describe('Testing sorting terms and factors', () => {
+
+  const t = [
+    ['3+5*4', '3+4*5'],
+    ['a+b*4+3*2*1', '1*2*3+a+4*b'],
+  ]
+
+
+  test.each(t)('%s and %s', (e, expected) => {
+    expect(math(e).sortTermsAndFactors().string).toBe(expected)
+  })
+})
 
 const e = math('1+2+3+4')
 console.log('shuffle', e.shuffleTerms().toString())

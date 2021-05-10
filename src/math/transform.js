@@ -25,6 +25,34 @@ export function shuffleTerms(node) {
   return e
 }
 
+export function shuffleFactors(node) {
+  let factors = node.factors
+  shuffle(factors)
+  let e = factors.pop()
+  factors.forEach(factor => e = e.mult(factor))
+  return e
+}
+
+export function sortTermsAndFactors(node) {
+  if (node.isSum()) {
+    let terms = node.terms.map(term => term.sortTermsAndFactors())
+    terms.sort((a, b) => a.compareTo(b))
+    let e = terms.shift()
+    terms.forEach(term => e = e.add(term))
+    return e
+  }
+  else if (node.isProduct()) {
+    let factors = node.factors.map(factor => factor.sortTermsAndFactors())
+    factors.sort((a, b) => a.compareTo(b))
+    let e = factors.shift()
+    factors.forEach(term => e = e.mult(term))
+    return e
+  }
+  else {
+    return node
+  }
+}
+
 export function substitute(node, params) {
   let e = node
   if (!params) return e
@@ -130,9 +158,9 @@ function generateTemplate(node) {
           child.isTemplate()
             ? generateTemplate(child)
             : generate(Object.assign(child.substitute(), { parent: node })).eval({
-                decimal,
-                precision,
-              }), 
+              decimal,
+              precision,
+            }),
       )
       const {
         excludeMin,
@@ -187,10 +215,10 @@ function generateTemplate(node) {
       } while (doItAgain)
 
       if (node.relative) {
-        if ( getRandomIntInclusive(0, 1)) {
+        if (getRandomIntInclusive(0, 1)) {
           e = e.oppose()
-        } else  if (node.signed) {
-          e=e.positive()
+        } else if (node.signed) {
+          e = e.positive()
         }
       }
 
@@ -203,9 +231,9 @@ function generateTemplate(node) {
           child.isTemplate()
             ? generateTemplate(child)
             : generate(Object.assign(child.substitute(), { parent: node })).eval({
-                decimal,
-                precision,
-              }), 
+              decimal,
+              precision,
+            }),
       )
       if (children[0]) {
         // partie entière
@@ -285,9 +313,9 @@ function generateTemplate(node) {
           child.isTemplate()
             ? generateTemplate(child)
             : generate(Object.assign(child.substitute(), { parent: node })).eval({
-                decimal,
-                precision,
-              }), 
+              decimal,
+              precision,
+            }),
       )
       e = children[0]
       node.root.generated.push(e)
@@ -325,7 +353,7 @@ export function generate(node) {
         type: node.type,
         children: node.children.map(child => generate(child)),
       })
-     
+
   }
   return e
 }
