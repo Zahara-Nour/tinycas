@@ -17,6 +17,66 @@ const constants = {
   e: '2.7',
 }
 
+
+export function removeUnecessaryBrackets(node) {
+  let e
+  if (node.isBracket() &&
+    (!node.parent ||
+      node.parent.isFunction() ||
+      node.parent.isBracket() ||
+      node.first.isFunction() ||
+      node.first.isHole() ||
+      node.first.isNumber() ||
+      node.first.isSymbol() ||
+      node.parent.isSum() && node.first.isSum() ||
+      node.parent.isSum() && node.first.isDifference() ||
+      node.parent.isSum() && node.first.isProduct() ||
+      node.parent.isSum() && node.first.isQuotient() ||
+      node.parent.isSum() && node.first.isDivision() ||
+      node.parent.isSum() && node.first.isPower() ||
+      node.parent.isDifference() && node.first.isSum() && node.isFirst() ||
+      node.parent.isDifference() && node.first.isDifference() && node.isFirst() ||
+      node.parent.isDifference() && node.first.isProduct() ||
+      node.parent.isDifference() && node.first.isQuotient() ||
+      node.parent.isDifference() && node.first.isDivision() ||
+      node.parent.isDifference() && node.first.isPower() ||
+      node.parent.isProduct() && node.first.isProduct() ||
+      node.parent.isProduct() && node.first.isQuotient() && node.isLast() ||
+      node.parent.isProduct() && node.first.isQuotient() && node.isFirst() ||
+      node.parent.isProduct() && node.first.isDivision() && node.isLast() ||
+      node.parent.isProduct() && node.first.isDivision() && node.isFirst() ||
+      node.parent.isProduct() && node.first.isPower() ||
+
+      node.parent.isQuotient() && node.first.isProduct() && node.isFirst() ||
+      node.parent.isQuotient() && node.first.isQuotient() && node.isFirst() ||
+      node.parent.isQuotient() && node.first.isDivision() && node.isFirst() ||
+      node.parent.isQuotient() && node.first.isPower() ||
+
+      node.parent.isDivision() && node.first.isProduct() && node.isFirst() ||
+      node.parent.isDivision() && node.first.isQuotient() && node.isFirst() ||
+      node.parent.isDivision() && node.first.isDivision() && node.isFirst() ||
+      node.parent.isDivision() && node.first.isPower() ||
+      node.parent.isPower() && node.first.isPower() && node.isFirst() ||
+
+      node.parent.isSum() && node.first.isOpposite() && node.isFirst() ||
+      node.parent.isSum() && node.first.isPositive() && node.isFirst() ||
+
+      node.parent.isEquality() ||
+      node.parent.isUnequality() ||
+      node.parent.isInequality()
+    )) {
+    e = node.first.removeUnecessaryBrackets()
+  }
+
+  else if (node.children) {
+    e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets()) })
+  }
+  else {
+    e = node
+  }
+
+  return e
+}
 export function shuffleTerms(node) {
   let terms = node.terms
   shuffle(terms)
@@ -38,7 +98,7 @@ export function sortTermsAndFactors(node) {
     let terms = node.terms.map(term => term.sortTermsAndFactors())
     terms.sort((a, b) => a.compareTo(b))
     let e = terms.shift()
-    terms.forEach(term => e = e.add(term))
+    terms.forEach(term => e = (term.isOpposite() || term.isPositive()) ? e.add(term.bracket()) : e.add(term))
     return e
   }
   else if (node.isProduct()) {

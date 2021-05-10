@@ -407,7 +407,7 @@ describe('Parsing', () => {
       '1--2': { children: ['number', 'opposite'], nature: '-' },
       '1-(-2)': { children: ['number', 'bracket'], nature: '-' },
 
-      '-1*2': { children: ['opposite', 'number'], nature: '*' },
+      '-1*2': { children: ['*'], nature: 'opposite' },
       '(-1)*2': { children: ['bracket', 'number'], nature: '*' },
       '-(1*2)': { children: ['bracket'], nature: 'opposite' },
       '1*-2': { children: ['number', 'opposite'], nature: '*' },

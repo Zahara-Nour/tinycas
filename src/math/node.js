@@ -3,7 +3,7 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate, shuffleTerms, sortTermsAndFactors } from './transform'
+import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 
@@ -192,6 +192,15 @@ const PNode = {
   isChild() {
     return !!this.parent
   },
+
+  isFirst() {
+    return this.parent && this.parent.children.indexOf(this) === 0
+  },
+
+  isLast() {
+    return this.parent && this.parent.children.indexOf(this) === 1
+  },
+
   isFunction() {
     return (
       this.isRadical() ||
@@ -416,6 +425,10 @@ const PNode = {
     return sortTermsAndFactors(this)
   },
 
+  removeUnecessaryBrackets() {
+    return removeUnecessaryBrackets(this)
+  },
+
 
   /* 
   params contient :
@@ -473,7 +486,7 @@ const PNode = {
       }
 
       case TYPE_FLOOR: {
-        return number(e.first.eval({decimal:true}).value.trunc())
+        return number(e.first.eval({ decimal: true }).value.trunc())
       }
 
       default:
