@@ -74,6 +74,7 @@ export function removeUnecessaryBrackets(node) {
   else {
     e = node
   }
+  e.unit = node.unit
 
   return e
 }
@@ -82,6 +83,7 @@ export function shuffleTerms(node) {
   shuffle(terms)
   let e = terms.pop()
   terms.forEach(term => e = e.add(term))
+  e.unit = node.unit
   return e
 }
 
@@ -90,27 +92,161 @@ export function shuffleFactors(node) {
   shuffle(factors)
   let e = factors.pop()
   factors.forEach(factor => e = e.mult(factor))
+  e.unit = node.unit
   return e
 }
 
 export function sortTermsAndFactors(node) {
+  let e
   if (node.isSum()) {
     let terms = node.terms.map(term => term.sortTermsAndFactors())
     terms.sort((a, b) => a.compareTo(b))
-    let e = terms.shift()
+    e = terms.shift()
     terms.forEach(term => e = (term.isOpposite() || term.isPositive()) ? e.add(term.bracket()) : e.add(term))
-    return e
   }
   else if (node.isProduct()) {
     let factors = node.factors.map(factor => factor.sortTermsAndFactors())
     factors.sort((a, b) => a.compareTo(b))
-    let e = factors.shift()
+    e = factors.shift()
     factors.forEach(term => e = e.mult(term))
-    return e
+  }
+  else if (node.children) {
+    e = createNode({ type: node.type, children: node.children.map(child => child.sortTermsAndFactors()) })
   }
   else {
-    return node
+    e = node
   }
+  e.unit = node.unit
+  return e
+}
+
+export function removeSigns(node) {
+  const parent = node.parent
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.removeSigns()) }) : math(node.string)
+  e.parent = parent
+
+  
+  if (e.isProduct() || e.isDivision() || e.isQuotient()) {
+    let first, last
+    let negative = false
+    if (e.first.isBracket() && e.first.first.isOpposite()) {
+      first = math(e.first.first.first.string)
+      negative = !negative
+    }
+    else if (e.first.isBracket() && e.first.first.isPositive()) {
+      first = math(e.first.first.first.string)
+    }
+    else {
+      first = math(e.first.string)
+    }
+
+    if (e.last.isBracket() && e.last.first.isOpposite()) {
+      last = math(e.last.first.first.string)
+      negative = !negative
+      if (!(last.isNumber() || last.isSymbol())) {
+        last = last.bracket()
+      }
+    }
+    else if (e.last.isBracket() && e.last.first.isPositive()) {
+      last = math(e.last.first.first.string)
+    }
+    else {
+      last = math(e.last.string)
+    }
+
+
+
+    if (e.isProduct()) {
+      e = first.mult(last)
+    } else if (e.isDivision()) {
+      e = first.div(last)
+    } else {
+      e = first.frac(last)
+    }
+
+    if (negative) {
+      e = e.oppose()
+    } else {
+      e = e.positive()
+    }
+    if (parent && !parent.isBracket()) {
+      e = e.bracket()
+    }
+    e.parent = parent
+
+  }
+  else if (e.isSum() && e.last.isBracket() && e.last.first.isOpposite()) {
+    e = math(e.first.string).sub(math(e.last.first.first.string))
+    e.parent = parent
+
+  }
+
+  else if (e.isSum() && e.last.isBracket() && e.last.first.isPositive()) {
+    e = math(e.first.string).add(math(e.last.first.first.string))
+    e.parent = parent
+  }
+
+  else if (e.isDifference() && e.last.isBracket() && e.last.first.isOpposite()) {
+    e = math(e.first.string).add(math(e.last.first.first.string))
+    e.parent = parent
+  }
+
+  else if (e.isDifference() && e.last.isBracket() && e.last.first.isPositive()) {
+    e = math(e.first.string).sub(math(e.last.first.first.string))
+    e.parent = parent
+  }
+
+  else if (e.isPositive() && e.first.isBracket() && e.first.first.isOpposite()) {
+    e = math(e.first.first.string)
+    e.parent = parent
+
+  }
+
+  else if (e.isPositive() && e.first.isBracket() && e.first.first.isPositive()) {
+    e = math(e.first.first.first.string)
+    e.parent = parent
+  }
+
+  else if (e.isOpposite() && e.first.isBracket() && e.first.first.isOpposite()) {
+    e = math(e.first.first.first.string).positive()
+    e.parent = parent
+  }
+
+  else if (e.isOpposite() && e.first.isBracket() && e.first.first.isPositive()) {
+    e = math(e.last.first.first.string).oppose()
+    e.parent = parent
+  }
+
+  else if (e.isBracket() && e.first.isPositive()) {
+    if (parent &&
+      (parent.isQuotient() || parent.isDivision()) &&
+      node.isLast() &&
+      (e.first.first.isQuotient() || e.first.first.isDivision())) {
+      e = math(e.first.first.string).bracket()
+
+    } else {
+      e = math(e.first.first.string)
+    }
+    e.parent = parent
+  }
+
+  if ((!e.parent || !e.parent.isBracket()) && e.isPositive()) {
+
+    e = math(e.first.string)
+    e.parent = parent
+  }
+
+
+  // else if (e.parent  && e.parent.isBracket() && e.isPositive()) {
+  //   e = e.first.first.removeSigns()
+  // }
+
+  // else if (e.isPositive()) {
+  //   e = e.first.removeSigns()
+  // }
+
+  e.unit = node.unit
+  return e
 }
 
 export function substitute(node, params) {

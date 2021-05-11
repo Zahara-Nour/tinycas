@@ -185,10 +185,26 @@ ${msg}`
   }
 
   function parseMember() {
-    let e = parseTerm()
+    let e
     let term
-    let unit = e.unit ? e.unit : { string: baseUnits.noUnit[1] }
     let sign
+    let unit
+
+    if (match(MINUS) || match(PLUS)) {
+      sign = _lexem
+    }
+    term = parseTerm()
+    
+
+    if (sign) {
+      e = sign === '-' ? opposite([term]) : positive([term])
+      e.unit =  term.unit
+      term.unit = null  
+    } else {
+      e = term
+    }
+
+    unit = e.unit ? e.unit : { string: baseUnits.noUnit[1] }
 
     while (match(PLUS) || match(MINUS)) {
       sign = _lexem
@@ -210,31 +226,45 @@ ${msg}`
   }
 
   function parseTerm() {
-    let e = parseRelative()
+    let e = parseImplicitFactors()
 
     while (match(TIMES) || match(DIV) || match(FRAC)) {
       if (_lexem === '*') {
-        e = product([e, parseRelative()])
+        e = product([e, parseImplicitFactors()])
       } else if (_lexem === ':') {
-        e = division([e, parseRelative({ localImplicit: false })])
+        e = division([e, parseImplicitFactors({ localImplicit: false })])
       } else {
-        e = quotient([e, parseRelative({ localImplicit: false })])
+        e = quotient([e, parseImplicitFactors({ localImplicit: false })])
       }
     }
     return e
   }
+  // function parseTerm() {
+  //   let e = parseRelative()
 
-  function parseRelative(options) {
-    let e
-    if (match(MINUS) || match(PLUS)) {
-      const sign = _lexem
-      const term = parseRelative(options)
-      e = sign === '-' ? opposite([term]) : positive([term])
-    } else {
-      e = parseImplicitFactors(options)
-    }
-    return e
-  }
+  //   while (match(TIMES) || match(DIV) || match(FRAC)) {
+  //     if (_lexem === '*') {
+  //       e = product([e, parseRelative()])
+  //     } else if (_lexem === ':') {
+  //       e = division([e, parseRelative({ localImplicit: false })])
+  //     } else {
+  //       e = quotient([e, parseRelative({ localImplicit: false })])
+  //     }
+  //   }
+  //   return e
+  // }
+
+  // function parseRelative(options) {
+  //   let e
+  //   if (match(MINUS) || match(PLUS)) {
+  //     const sign = _lexem
+  //     const term = parseRelative(options)
+  //     e = sign === '-' ? opposite([term]) : positive([term])
+  //   } else {
+  //     e = parseImplicitFactors(options)
+  //   }
+  //   return e
+  // }
 
   function parseImplicitFactors({ localImplicit = true } = {}) {
     let e = parsePower()

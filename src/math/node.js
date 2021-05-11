@@ -3,7 +3,7 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets } from './transform'
+import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 
@@ -429,6 +429,10 @@ const PNode = {
     return removeUnecessaryBrackets(this)
   },
 
+  removeSigns() {
+    return removeSigns(this)
+  },
+
 
   /* 
   params contient :
@@ -536,7 +540,7 @@ const PNode = {
   shallow() {
     return {
       nature: this.type,
-      children: this.children.map(e => e.type),
+      children: this.children ? this.children.map(e => e.type) : null,
     }
   },
 
