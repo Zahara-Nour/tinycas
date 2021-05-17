@@ -78,8 +78,9 @@ const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
 const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log|mod|floor')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
-const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
+// const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
+const NUMBER = token('@\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?')
 const UNIT = token(
   '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h',
 )
@@ -194,12 +195,12 @@ ${msg}`
       sign = _lexem
     }
     term = parseTerm()
-    
+
 
     if (sign) {
       e = sign === '-' ? opposite([term]) : positive([term])
-      e.unit =  term.unit
-      term.unit = null  
+      e.unit = term.unit
+      term.unit = null
     } else {
       e = term
     }
@@ -310,10 +311,17 @@ ${msg}`
 
     if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true')
-    } else if (match(SEGMENT_LENGTH)) {
+    } 
+
+    // boolean
+    else if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
-    } else if (match(DECIMAL) || match(INTEGER)) {
-      e = number(_lexem.replace(',', '.'))
+    }
+    
+    // number
+    else if (match(NUMBER)) {
+      
+      e = number(_lexem)
     } else if (match(HOLE)) {
       e = hole()
     } else if ((func = match(FUNCTION))) {
@@ -366,7 +374,7 @@ ${msg}`
         case 'floor':
           e = floor([parseExpression()])
           break
-          
+
         default:
           e = null
       }
@@ -387,6 +395,7 @@ ${msg}`
       e = bracket([parseExpression()])
       require(CLOSING_BRACKET)
     }
+
     // integer
     else if (match(INTEGER_TEMPLATE)) {
       const nature = _parts[2]
@@ -594,7 +603,7 @@ ${msg}`
       if (unit) {
         e.unit = unit
         // console.log('unit parsed', unit.string)
-      } 
+      }
     }
     return e
   }

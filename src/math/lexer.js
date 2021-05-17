@@ -56,12 +56,20 @@ function token (pattern) {
 }
 
 function lexer (exp) {
+  let whiteSpace = token('@\\s+')
   let _pos = 0
   let _savedPos
   let _lexem
-  const _baseExp = exp.replace(/\s/g, '')
+  // const _baseExp = exp.replace(/\s/g, '')
+  const _baseExp = exp.trim()
   let _parts
 
+  function removeWhiteSpaces() {
+ 
+    if (_pos<_baseExp.length && whiteSpace.match(_baseExp.slice(_pos))) {
+      _pos+=whiteSpace.lexem.length
+    }
+  }
   return {
     get lexem () {
       return _lexem
@@ -77,11 +85,12 @@ function lexer (exp) {
 
     match (t) {
       if (_pos >= _baseExp.length) return false
-      const s = _baseExp.slice(_pos, _baseExp.length)
+      const s = _baseExp.slice(_pos)
       if (t.match(s)) {
         _lexem = t.lexem
         if (t.parts) _parts = t.parts
         _pos += _lexem.length
+        removeWhiteSpaces()
         return true
       }
       return false
