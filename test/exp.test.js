@@ -1,4 +1,4 @@
-import {math} from '../src/math/math'
+import { math } from '../src/math/math'
 
 describe('Testing tree', () => {
   test('Root is set on children', () => {
@@ -26,7 +26,7 @@ describe('Testing tree', () => {
     expect(e.first.first.root).toBe(e)
     expect(e.first.last.parent).toBe(e.first)
     expect(e.first.last.root).toBe(e)
-    
+
     expect(e.last.parent).toBe(e)
 
     e = math('1+2+3+4')
@@ -38,21 +38,21 @@ describe('Testing tree', () => {
 
 describe.skip('Testing formats', () => {
   const exps = {
-    '3':        '$e',
-    '2':        '$er',
-    '-3':       '$er',
-    '4':        '$d',
-    '3.3':      '$d',
-    '5':        '$dr',
-    '-4':       '$dr',
-    '3.4':      '$dr',
-    '-3.4':     '$dr',
-    '3+4':      '$e+$e',
-    '3-4':      '$e-$e',
-    '3*4':      '$e*$e',
-    '3:4':      '$e:$e',
-    '3/4':      '$e/$e',
-    '3^4':      '$p',
+    '3': '$e',
+    '2': '$er',
+    '-3': '$er',
+    '4': '$d',
+    '3.3': '$d',
+    '5': '$dr',
+    '-4': '$dr',
+    '3.4': '$dr',
+    '-3.4': '$dr',
+    '3+4': '$e+$e',
+    '3-4': '$e-$e',
+    '3*4': '$e*$e',
+    '3:4': '$e:$e',
+    '3/4': '$e/$e',
+    '3^4': '$p',
     '3.4*10^2': '$d*10^$er'
   }
 
@@ -66,31 +66,31 @@ describe.skip('Testing formats', () => {
 
 describe('Testing equality between two expressions', () => {
   const t = [
-    ['x+x',       '2x'],
-    ['2*x',       '2x'],
-    ['(-1)*x',    '-x'],
-    ['0*x',       '0'],
-    ['-(-x)',     'x'],
-    ['x*x',       'x^2'],
+    ['x+x', '2x'],
+    ['2*x', '2x'],
+    ['(-1)*x', '-x'],
+    ['0*x', '0'],
+    ['-(-x)', 'x'],
+    ['x*x', 'x^2'],
     ['(-x)*(-x)', 'x^2'],
-    ['(-x)*x',    '-x^2'],
-    ['x*(-x)',    '-x^2'],
-    ['x+y',       'y+x'],
-    ['x+(-y)',    'x-y'],
-    ['x*y',       'y*x'],
-    ['x+(y+z)',   '(x+y)+z'],
-    ['x*(y*z)',   '(x*y)*z'],
-    ['x*(y+z)',   'x*y+x*z'],
-    ['-(x+y)',    '-x-y'],
-    ['x*(y+z)',   'x*y+x*z'],
-    ['x*(y-z)',   'x*y-x*z'],
-    ['(y-z)*x',   'y*x-z*x'],
+    ['(-x)*x', '-x^2'],
+    ['x*(-x)', '-x^2'],
+    ['x+y', 'y+x'],
+    ['x+(-y)', 'x-y'],
+    ['x*y', 'y*x'],
+    ['x+(y+z)', '(x+y)+z'],
+    ['x*(y*z)', '(x*y)*z'],
+    ['x*(y+z)', 'x*y+x*z'],
+    ['-(x+y)', '-x-y'],
+    ['x*(y+z)', 'x*y+x*z'],
+    ['x*(y-z)', 'x*y-x*z'],
+    ['(y-z)*x', 'y*x-z*x'],
     ['(3x+4y)^7',
       '2187 x^7 + 20412 x^6 * y + 81648 x^5 * y^2 + 181440 x^4 * y^3 + 241920 x^3 * y^4 + 193536 x^2 * y^5 + 86016 x * y^6 + 16384 * y^7'],
     ['(3x-4y)^7', '2187 x^7 - 20412 x^6 y + 81648 x^5 y^2 - 181440 x^4 y^3 + 241920 x^3 y^4 - 193536 x^2 y^5 + 86016 x y^6 - 16384 y^7'],
     // ['(3x+4y)^12', '531441 x^12 + 8503056 x^11 y + 62355744 x^10 y^2 + 277136640 x^9 y^3 + 831409920 x^8 y^4 + 1773674496 x^7 y^5 + 2759049216 x^6 y^6 + 3153199104 x^5 y^7 + 2627665920 x^4 y^8 + 1557135360 x^3 y^9 + 622854144 x^2 y^10 + 150994944 x y^11 + 16777216 y^12']
 
-    
+
     ['1=1', '1=1'],
     ['1=2', '2=1'],
     ['x=2+3', 'x=2+3'],
@@ -122,7 +122,7 @@ describe('Testing equality between two expressions', () => {
     ['1>=2', '2<=1'],
     ['x>=3+2', 'x>=2+3'],
     ['x>=3+2', '2+3<=x'],
-    
+
   ]
   test.each(t)(
     '%s is equivalent to %s',
@@ -130,7 +130,7 @@ describe('Testing equality between two expressions', () => {
       expect(math(e1).equals(math(e2))).toBeTruthy()
     }
   )
-  
+
 
   const t2 = [
     ['x-y', 'y-x'],
@@ -148,11 +148,11 @@ describe('Testing equality between two expressions', () => {
 
 describe('Testing strict equality between two expressions', () => {
   const t = [
-    ['x',       'x'],
-    ['2',       '2'],
-    ['13',       '13'],
+    ['x', 'x'],
+    ['2', '2'],
+    ['13', '13'],
 
-   
+
   ]
   test.each(t)(
     '%s is equivalent to %s',
@@ -160,7 +160,7 @@ describe('Testing strict equality between two expressions', () => {
       expect(math(e1).strictlyEquals(math(e2))).toBeTruthy()
     }
   )
-  
+
 
   const t2 = [
     ['x+y', 'y+x'],
@@ -177,7 +177,77 @@ describe('Testing strict equality between two expressions', () => {
 
 describe('Testing terms', () => {
   const e = '1+2+3+4'
-  expect(math(e).terms.toString()).toEqual([1,2,3,4].toString())
-   
-  
+  expect(math(e).terms.toString()).toEqual([1, 2, 3, 4].toString())
+
+
+})
+
+describe('Testing detection of unecessary zeros', () => {
+  const t = [
+    ['0', false],
+    ['1', false],
+    ['10', false],
+    ['01', true],
+    ['0.0', true],
+    ['0,0', true],
+    ['1.0', true],
+    ['1,0', true],
+    ['0.1', false],
+    ['0,1', false],
+    ['0.10', true],
+    ['0,10', true],
+    ['101', false],
+    ['101', false],
+    ['1,01', false],
+    ['1.01', false],
+
+
+
+  ]
+  test.each(t)(
+    '%s has unecessary Zeros',
+    (e, expected) => {
+      expect(math(e).searchUnecessaryZeros()).toBe(expected)
+    }
+  )
+})
+
+describe('Testing detection of misplaced spaces', () => {
+  const t = [
+    ['0', false],
+    ['0 ', false],
+    ['10', false],
+    ['1 0', true],
+    ['100', false],
+    ['1 00', true],
+    ['1000', true],
+    ['100 0', true],
+    ['10 00', true],
+    ['1 000', false],
+    ['10 000', false],
+    ['1 0000', true],
+
+    ['0.0', false],
+    ['0. 0', true],
+    ['0.1', false],
+    ['0.10', false],
+    ['0.1 0', true],
+    ['0.100', false],
+    ['0.10 0', true],
+    ['0.1 00', true],
+    ['0. 100', true],
+    ['0.1000', true],
+    ['0.100 0', false],
+    ['0.10 00', true],
+    ['0.1 000', true],
+    
+
+
+  ]
+  test.each(t)(
+    '%s has misplacedSpaces',
+    (e, expected) => {
+      expect(math(e).searchMisplacedSpaces()).toBe(expected)
+    }
+  )
 })

@@ -3,7 +3,7 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns } from './transform'
+import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns, removeNullTerms, removeFactorsOne } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 
@@ -344,8 +344,14 @@ const PNode = {
     return this.toString()
   },
 
-  toLatex({ addBrackets = false, implicit = false } = {}) {
-    return latex(this, { addBrackets, implicit })
+  toLatex({
+    addBrackets = false,
+    implicit = false,
+    addSpaces = true,
+    keepUnecessaryZeros = false
+  } = {}) {
+
+    return latex(this, { addBrackets, implicit, addSpaces, keepUnecessaryZeros })
   },
 
   get latex() {
@@ -431,6 +437,60 @@ const PNode = {
 
   removeSigns() {
     return removeSigns(this)
+  },
+
+  removeNullTerms() {
+    return removeNullTerms(this)
+  },
+
+  removeFactorsOne() {
+    return removeFactorsOne(this)
+  },
+
+  searchUnecessaryZeros() {
+    if (this.isNumber()) {
+      const regexs = [
+        /^0\d+/,
+        /[\.,]\d*0$/]
+      return regexs.some(regex => this.input.match(regex))
+    } else if (this.children) {
+      return this.children.some(child => child.searchUnecessaryZeros())
+    } else {
+      return false
+    }
+  },
+
+  searchMisplacedSpaces() {
+    let regexs
+    if (this.isNumber()) {
+      let [int, dec] = this.input.replace(',', '.').split('.')
+      let regexs = [
+        /\d{4}/,
+        /\s$/,
+        /\s\d{2}$/,
+        /\s\d{2}\s/,
+        /\s\d$/,
+        /\s\d\s/,
+      ]
+      if (regexs.some(regex => int.match(regex))) return true
+
+      if (dec) {
+        regexs = [
+          /\d{4}/,
+          /^\s/,
+          /^\d{2}\s/,
+          /\s\d{2}\s/,
+          /^\d\s/,
+          /\s\d\s/,
+        ]
+        if (regexs.some(regex => dec.match(regex))) return true
+      }
+      return false
+    } else if (this.children) {
+      return children.some(child => child.searchMisplacedSpaces())
+    } else {
+      return false
+    }
   },
 
 
@@ -820,8 +880,10 @@ export function floor(children) {
 export function percentage(children) {
   return createNode({ type: TYPE_PERCENTAGE, children })
 }
-export function number(value) {
-  return createNode({ type: TYPE_NUMBER, value: new Decimal(value) })
+export function number(input) {
+  const value = new Decimal(typeof input === 'string' ? input.replace(',', '.').replace(/\s/g, '') : input)
+
+  return createNode({ type: TYPE_NUMBER, value, input })
 }
 export function boolean(value) {
   return createNode({ type: TYPE_BOOLEAN, value })

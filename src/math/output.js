@@ -396,8 +396,9 @@ export function latex(e, options) {
       //   .replace(/,/g, '\\,')
       //   .replace('.', '{,}')
       // s = e.value.toString().replace('.', '{,}')
+      const value = options.keepUnecessaryZeros ? e.input  : e.value.toString()
 
-      s = formatLatexNumber(e.value.toNumber())
+      s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')
       break
 
     case TYPE_HOLE:
@@ -416,9 +417,10 @@ export function latex(e, options) {
   return s
 }
 
+// Ajoute un espace tous les 3 chiffres
 function formatLatexNumber(num) {
 
-  ; let [int, dec] = num.toString().split('.')
+  ; let [int, dec] = num.split('.')
   int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1\\,')
   if (dec) dec = dec.replace(/\d{3}(?=\d)/g, '$&\\,')
   // if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')

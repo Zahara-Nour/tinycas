@@ -7,6 +7,8 @@ import {
   number,
   TYPE_HOLE,
   TYPE_SEGMENT_LENGTH,
+  zero,
+  one,
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
@@ -17,6 +19,78 @@ const constants = {
   e: '2.7',
 }
 
+export function removeNullTerms(node) {
+  let e
+
+  if (node.isSum()) {
+    const first = node.first.removeNullTerms()
+    const last = node.last.removeNullTerms()
+
+    if (first.equals(zero()) && last.equals(zero())) {
+      e = number(0)
+    }
+    else if (first.equals(zero())) {
+      e = math(last.string)
+    }
+    else if (last.equals(zero())) {
+      e = math(first.string)
+    } else {
+      e = first.add(last)
+    }
+  }
+  else if (node.isDifference()) {
+    const first = node.first.removeNullTerms()
+    const last = node.last.removeNullTerms()
+
+    if (first.equals(zero()) && last.equals(zero())) {
+      e = number(0)
+    }
+    else if (first.equals(zero())) {
+      e = math(last.string).oppose()
+    }
+    else if (last.equals(zero())) {
+      e = math(first.string)
+    } else {
+      e = first.sub(last)
+    }
+  }
+  else if (node.children) {
+    e = createNode({ type: node.type, children: node.children.map(child => child.removeNullTerms()) })
+  }
+  else {
+    e = math(node.string)
+  }
+  return e
+}
+
+
+export function removeFactorsOne(node) {
+  let e
+
+  if (node.isProduct()) {
+    const first = node.first.removeFactorsOne()
+    const last = node.last.removeFactorsOne()
+
+    if (first.equals(one()) && last.equals(one())) {
+      e = number(1)
+    }
+    else if (first.equals(one())) {
+      e = math(last.string)
+    }
+    else if (last.equals(one())) {
+      e = math(first.string)
+    } else {
+      e = first.mult(last)
+    }
+  }
+  else if (node.children) {
+    e = createNode({ type: node.type, children: node.children.map(child => child.removeFactorsOne()) })
+  }
+  else {
+    e = math(node.string)
+  }
+  return e
+}
 
 export function removeUnecessaryBrackets(node) {
   let e
@@ -72,7 +146,7 @@ export function removeUnecessaryBrackets(node) {
     e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets()) })
   }
   else {
-    e = node
+    e = math(node.string)
   }
   e.unit = node.unit
 
@@ -97,6 +171,7 @@ export function shuffleFactors(node) {
 }
 
 export function sortTermsAndFactors(node) {
+
   let e
   if (node.isSum()) {
     let terms = node.terms.map(term => term.sortTermsAndFactors())
@@ -114,7 +189,7 @@ export function sortTermsAndFactors(node) {
     e = createNode({ type: node.type, children: node.children.map(child => child.sortTermsAndFactors()) })
   }
   else {
-    e = node
+    e = math(node.string)
   }
   e.unit = node.unit
   return e
@@ -123,9 +198,11 @@ export function sortTermsAndFactors(node) {
 export function removeSigns(node) {
   const parent = node.parent
   let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.removeSigns()) }) : math(node.string)
+
+  // TODO: est-ce vraiment nécessaire ?
   e.parent = parent
 
-  
+
   if (e.isProduct() || e.isDivision() || e.isQuotient()) {
     let first, last
     let negative = false

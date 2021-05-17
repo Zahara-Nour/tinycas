@@ -22,19 +22,57 @@ describe('Parsing', () => {
 
   test('Parser parses an integer', () => {
     const e = p.parse('123')
-    expect(e.toString()).toEqual('123')
+    expect(e.string).toEqual('123')
+    expect(e.input).toEqual('123')
     expect(e.isInt()).toBeTruthy()
   })
 
-  test('Parser parses a number', () => {
+  test('Parser parses a number whith coma', () => {
+    const e = p.parse('123,45')
+    expect(e.string).toEqual('123.45')
+    expect(e.input).toEqual('123,45')
+    expect(e.isNumber()).toBeTruthy()
+  })
+  
+  test('Parser parses a number whith point', () => {
     const e = p.parse('123.45')
     expect(e.string).toEqual('123.45')
+    expect(e.input).toEqual('123.45')
     expect(e.isNumber()).toBeTruthy()
   })
 
-  test('Parser parses a decimal number with","', () => {
+  test('Parser parses an integer whith leading 0', () => {
+    const e = p.parse('00123')
+    expect(e.string).toEqual('123')
+    expect(e.input).toEqual('00123')
+    expect(e.isNumber()).toBeTruthy()
+  })
+
+  test('Parser parses a decimal whith leading 0', () => {
+    const e = p.parse('00123,445')
+    expect(e.string).toEqual('123.445')
+    expect(e.input).toEqual('00123,445')
+    expect(e.isNumber()).toBeTruthy()
+  })
+
+  test('Parser parses a decimal whith trailing 0', () => {
+    const e = p.parse('123,44500')
+    expect(e.input).toEqual('123,44500')
+    expect(e.string).toEqual('123.445')
+    expect(e.isNumber()).toBeTruthy()
+  })
+
+  test('Parser parses a decimal number with"," and output the comma', () => {
     const e = p.parse('123,45')
     expect(e.toString({ comma: true })).toEqual('123,45')
+    expect(e.isNumber()).toBeTruthy()
+  })
+
+
+  test('Parser parses a decimal whith spaces', () => {
+    const e = p.parse('  1 23  ,4 45 0 0 ')
+    expect(e.input).toEqual('1 23  ,4 45 0 0')
+    expect(e.string).toEqual('123.445')
     expect(e.isNumber()).toBeTruthy()
   })
 
@@ -702,8 +740,6 @@ describe('Testing parsing units', () => {
     'a cm':               'a cm',
     '1 km = 1000 m':      '1 km=1000 m',
     '$e[2;9] km':         '$e[2;9] km',
-    '0.000001': '0.000001',
-    '0.0000001': '0.0000001',
   }
 
   
