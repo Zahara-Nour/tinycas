@@ -6,6 +6,7 @@ import compare from './compare'
 import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns, removeNullTerms, removeFactorsOne } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
+import { math } from './math'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -298,13 +299,38 @@ const PNode = {
 
   // recusirvly gets sum terms
   get terms() {
+    let left, right
+
     if (this.isSum()) {
-      const left = this.first.terms
-      const right = this.last.terms
+      if (this.first.isPositive()) {
+        left = [{ op: '+', term: this.first.first }]
+      }
+      else if (this.first.isOpposite()) {
+        left = [{ op: '-', term: this.first.first }]
+      }
+      else {
+        left = this.first.terms
+      }
+
+      right = [{ op: '+', term: this.last }]
+      return left.concat(right)
+    }
+    else if (this.isDifference()) {
+      if (this.first.isPositive()) {
+        left = [{ op: '+', term: this.first.first }]
+      }
+      else if (this.first.isOpposite()) {
+        left = [{ op: '-', term: this.first.first }]
+      }
+      else {
+        left = this.first.terms
+      }
+
+      right = [{ op: '-', term: this.last }]
       return left.concat(right)
     }
     else {
-      return [this]
+      return [{ op: '+', term: this }]
     }
   },
 
@@ -424,7 +450,11 @@ const PNode = {
   },
 
   shuffleTerms() {
-    return shuffleTerms(this)
+    if (this.isSum() || this.isDifference()) {
+      return shuffleTerms(this)
+    } else {
+      return this
+    }
   },
 
   sortTermsAndFactors() {
@@ -503,12 +533,42 @@ const PNode = {
    */
 
   eval(params = {}) {
+
+    function evalFunctions(node) {
+
+
+      if (node.isPGCD()) {
+        let a = node.first.eval()
+        let b = node.last.eval()
+        a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+        b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
+        e = number(gcd(a, b))
+        
+      }
+      else if (node.children) {
+        e = createNode({
+          type: node.type, children: node.children.map(child => evalFunctions(child))
+        })
+      }
+      else {
+        e = math(node.string)
+      }
+      e.unit = node.unit
+      return e
+    }
     // TODO: memoize
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 20
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
+
+    e = evalFunctions(e)
+
+    //  Il faut évaluer les noeuds correspondant à des fonctions renvoyant des valeurs entières
+    // car ce n'est pas géré par la forme normale
+
+
 
     switch (this.type) {
 
@@ -532,14 +592,14 @@ const PNode = {
       case TYPE_INEQUALITY_MOREOREQUAL:
         return boolean(e.first.eval().isGreaterOrEqual(e.last.eval()))
 
-      case TYPE_GCD: {
-        let a = e.first.eval()
-        let b = e.last.eval()
-        a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-        b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-        e = number(gcd(a, b))
-        return e
-      }
+      // case TYPE_GCD: {
+      //   let a = e.first.eval()
+      //   let b = e.last.eval()
+      //   a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+      //   b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
+      //   e = number(gcd(a, b))
+      //   return e
+      // }
 
       case TYPE_MOD: {
         let a = e.first.eval()

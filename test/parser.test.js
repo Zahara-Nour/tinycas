@@ -274,6 +274,12 @@ describe('Parsing', () => {
     expect(e.isFalse()).toBeTruthy()
   })
 
+  test('Parser parses expressions with spaces', () => {
+    let e = p.parse('3 + 7')
+    expect(e.string).toEqual('3+7')
+    expect(e.input).toEqual('3 + 7')
+  })
+
   test('Parser parses templates', () => {
     const exps = [
       // '$e',

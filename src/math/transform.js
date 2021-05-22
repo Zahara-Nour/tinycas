@@ -154,9 +154,14 @@ export function removeUnecessaryBrackets(node) {
 }
 export function shuffleTerms(node) {
   let terms = node.terms
-  shuffle(terms)
+  // shuffle(terms)
+
   let e = terms.pop()
-  terms.forEach(term => e = e.add(term))
+  e = e.op === '+' ? e.term : e.term.oppose()
+  terms.forEach(term => {
+
+    e = term.op === '+' ? e.add(term.term) : e.sub(term.term)
+  })
   e.unit = node.unit
   return e
 }
@@ -173,11 +178,28 @@ export function shuffleFactors(node) {
 export function sortTermsAndFactors(node) {
 
   let e
-  if (node.isSum()) {
-    let terms = node.terms.map(term => term.sortTermsAndFactors())
-    terms.sort((a, b) => a.compareTo(b))
-    e = terms.shift()
-    terms.forEach(term => e = (term.isOpposite() || term.isPositive()) ? e.add(term.bracket()) : e.add(term))
+  if (node.isSum() || node.isDifference()) {
+
+    let terms = node.terms.map(term => ({
+      op: term.op,
+      term: term.term.sortTermsAndFactors()
+    }))
+
+    const positives = terms.filter(term => term.op === '+').map(term => term.term).sort((a, b) => a.compareTo(b))
+
+    const negatives = terms.filter(term => term.op === '-').map(term => term.term).sort((a, b) => a.compareTo(b))
+
+    if (positives.length) {
+      e = positives.shift()
+      positives.forEach(term => e = e.add(term))
+    }
+
+    if (negatives) {
+      if (!e) {
+        e = negatives.shift().oppose()
+      }
+      negatives.forEach(term => e = e.sub(term))
+    }
   }
   else if (node.isProduct()) {
     let factors = node.factors.map(factor => factor.sortTermsAndFactors())
@@ -330,40 +352,35 @@ export function substitute(node, params) {
   let e = node
   if (!params) return e
 
-  switch (node.type) {
-    case TYPE_SYMBOL:
-      if (!constants[node.letter] && !params[node.letter]) {
-        // throw new Error(
-        // console.log(
-        //   `Le symbole ${node.letter} n'a pas de valeur de substitution`,
-        // )
-        return e
-      }
+  if (node.isSymbol()) {
+    if (!constants[node.letter] && !params[node.letter]) {
+      // throw new Error(
+      // console.log(
+      //   `Le symbole ${node.letter} n'a pas de valeur de substitution`,
       // )
-      else if (constants[node.letter]) {
-        e = math(constants[node.letter])
-      } else {
-        e = math(params[node.letter])
-      }
-      e.unit = node.unit
+      e = math(e.string)
+    }
+
+    else if (constants[node.letter]) {
+      e = math(constants[node.letter])
+    } else {
+      e = math(params[node.letter])
       // on refait une substitution au cas où un nouveau symbol a été introduit
       e = substitute(e, params)
-      break
-
-    case TYPE_NUMBER:
-    case TYPE_ERROR:
-    case TYPE_HOLE:
-    case TYPE_TEMPLATE:
-      e = node
-      break
-
-    default:
-      e = createNode({
-        type: node.type,
-        children: node.children.map(child => substitute(child, params)),
-      })
-      e.unit = node.unit
+    }
   }
+  else if (node.children) {
+    e = createNode({
+      type: node.type,
+      children: node.children.map(child => substitute(child, params)),
+    })
+
+  }
+  else {
+    e = math(node.string)
+  }
+  e.unit = node.unit
+
   return e
 }
 
