@@ -33,7 +33,7 @@ describe('Parsing', () => {
     expect(e.input).toEqual('123,45')
     expect(e.isNumber()).toBeTruthy()
   })
-  
+
   test('Parser parses a number whith point', () => {
     const e = p.parse('123.45')
     expect(e.string).toEqual('123.45')
@@ -68,7 +68,18 @@ describe('Parsing', () => {
     expect(e.isNumber()).toBeTruthy()
   })
 
+  test('Parser parses number with spaces', () => {
+    let e = p.parse('3 9 8 9')
+    expect(e.string).toEqual('3989')
+    expect(e.input).toEqual('3 9 8 9')
+  })
 
+  test('Parser parses expressions with spaces', () => {
+    let e = p.parse('3 + 7')
+    expect(e.string).toEqual('3+7')
+    // expect(e.input).toEqual('3 + 7')
+  })
+  
   test('Parser parses a decimal whith spaces', () => {
     const e = p.parse('  1 23  ,4 45 0 0 ')
     expect(e.input).toEqual('1 23  ,4 45 0 0')
@@ -274,11 +285,7 @@ describe('Parsing', () => {
     expect(e.isFalse()).toBeTruthy()
   })
 
-  test('Parser parses expressions with spaces', () => {
-    let e = p.parse('3 + 7')
-    expect(e.string).toEqual('3+7')
-    expect(e.input).toEqual('3 + 7')
-  })
+
 
   test('Parser parses templates', () => {
     const exps = [
@@ -685,71 +692,71 @@ describe('Implicit products', () => {
 describe('Testing parsing units', () => {
   const p = parser()
   const exps = {
-    '1 mL':               '1 mL',
-    '1 cL':               '1 cL',
-    '1 dL':               '1 dL',
-    '1 L':                '1 L',
-    '1 daL':              '1 daL',
-    '1 hL':               '1 hL',
-    '1 kL':               '1 kL',
-    '1 mm':               '1 mm',
-    '1 cm':               '1 cm',
-    '1 dm':               '1 dm',
-    '1 m':                '1 m',
-    '1 dam':              '1 dam',
-    '1 hm':               '1 hm',
-    '1 km':               '1 km',
-    '1 mg':               '1 mg',
-    '1 cg':               '1 cg',
-    '1 dg':               '1 dg',
-    '1 g':                '1 g',
-    '1 dag':              '1 dag',
-    '1 hg':               '1 hg',
-    '1 kg':               '1 kg',
-    '1 q':                '1 q',
-    '1 t':                '1 t',
-    '1 ms':               '1 ms',
-    '1 min':              '1 min',
-    '1 h':                '1 h',
-    '1 j':                '1 j',
-    '1 semaine':          '1 semaine',
-    '1 an':               '1 an',
-    '1 °':                '1 °',
-    '1 cm + 1 cm':        '1 cm+1 cm',
+    '1 mL': '1 mL',
+    '1 cL': '1 cL',
+    '1 dL': '1 dL',
+    '1 L': '1 L',
+    '1 daL': '1 daL',
+    '1 hL': '1 hL',
+    '1 kL': '1 kL',
+    '1 mm': '1 mm',
+    '1 cm': '1 cm',
+    '1 dm': '1 dm',
+    '1 m': '1 m',
+    '1 dam': '1 dam',
+    '1 hm': '1 hm',
+    '1 km': '1 km',
+    '1 mg': '1 mg',
+    '1 cg': '1 cg',
+    '1 dg': '1 dg',
+    '1 g': '1 g',
+    '1 dag': '1 dag',
+    '1 hg': '1 hg',
+    '1 kg': '1 kg',
+    '1 q': '1 q',
+    '1 t': '1 t',
+    '1 ms': '1 ms',
+    '1 min': '1 min',
+    '1 h': '1 h',
+    '1 j': '1 j',
+    '1 semaine': '1 semaine',
+    '1 an': '1 an',
+    '1 °': '1 °',
+    '1 cm + 1 cm': '1 cm+1 cm',
     '1 cm + 1 cm + 1 cm': '1 cm+1 cm+1 cm',
-    '3 cm + 5 cm ':       '3 cm+5 cm',
-    '1 km + 1 cm ':       '1 km+1 cm',
-    '1 km - 1 cm ':       '1 km-1 cm',
-    '1 km * 1 cm ':       '1 km*1 cm',
-    '1 km : 1 cm ':       '1 km:1 cm',
-    '1 km / 1 cm ':       '1 km/1 cm',
-    '1 cm.cm':            '1 cm.cm',
-    '1 cm^2':             '1 cm^2',
-    '1 cm^(-2)':          '1 cm^(-2)',
-    '1 cm^2.cm':          '1 cm^2.cm',
-    '1 cm^2.cm^2':        '1 cm^2.cm^2',
-    '1 cm^2.cm^(-2)':     '1 cm^2.cm^(-2)',
-    '1 t.cm^(-2)':        '1 t.cm^(-2)',
-    '1 kg.m^(-2)':        '1 kg.m^(-2)',
-    '(1+2) cm':           '(1+2) cm',
-    '(1*2) cm':           '(1*2) cm',
-    '1*2 cm':             '1*2 cm',
-    '1*(2 cm)':           '1*(2 cm)',
-    '1 cm * 2':           '1 cm*2',
-    '(1 cm) * 2':         '(1 cm)*2',
-    '(1-2) cm':           '(1-2) cm',
-    '(1:2) cm':           '(1:2) cm',
-    '1:2 cm':             '1:2 cm',
-    '1:(2 cm)':           '1:(2 cm)',
-    '1 cm:2':             '1 cm:2',
-    '(1/2) cm':           '(1/2) cm',
-    'a cm':               'a cm',
-    '1 km = 1000 m':      '1 km=1000 m',
-    '$e[2;9] km':         '$e[2;9] km',
+    '3 cm + 5 cm ': '3 cm+5 cm',
+    '1 km + 1 cm ': '1 km+1 cm',
+    '1 km - 1 cm ': '1 km-1 cm',
+    '1 km * 1 cm ': '1 km*1 cm',
+    '1 km : 1 cm ': '1 km:1 cm',
+    '1 km / 1 cm ': '1 km/1 cm',
+    '1 cm.cm': '1 cm.cm',
+    '1 cm^2': '1 cm^2',
+    '1 cm^(-2)': '1 cm^(-2)',
+    '1 cm^2.cm': '1 cm^2.cm',
+    '1 cm^2.cm^2': '1 cm^2.cm^2',
+    '1 cm^2.cm^(-2)': '1 cm^2.cm^(-2)',
+    '1 t.cm^(-2)': '1 t.cm^(-2)',
+    '1 kg.m^(-2)': '1 kg.m^(-2)',
+    '(1+2) cm': '(1+2) cm',
+    '(1*2) cm': '(1*2) cm',
+    '1*2 cm': '1*2 cm',
+    '1*(2 cm)': '1*(2 cm)',
+    '1 cm * 2': '1 cm*2',
+    '(1 cm) * 2': '(1 cm)*2',
+    '(1-2) cm': '(1-2) cm',
+    '(1:2) cm': '(1:2) cm',
+    '1:2 cm': '1:2 cm',
+    '1:(2 cm)': '1:(2 cm)',
+    '1 cm:2': '1 cm:2',
+    '(1/2) cm': '(1/2) cm',
+    'a cm': 'a cm',
+    '1 km = 1000 m': '1 km=1000 m',
+    '$e[2;9] km': '$e[2;9] km',
   }
 
-  
-  
+
+
 
 
   // TODO : division par 0

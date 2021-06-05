@@ -743,7 +743,7 @@ export default function normalize(node) {
     }
 
     case TYPE_PERCENTAGE:
-      e = node.div(100).normal
+      e = node.first.div(number(100)).normal
       break
 
     case TYPE_HOLE:
