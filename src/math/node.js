@@ -3,7 +3,10 @@ import fraction from './fraction'
 import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
-import { substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns, removeNullTerms, removeFactorsOne } from './transform'
+import {
+  substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns, removeNullTerms, removeFactorsOne, removeMultOperator,
+  shallowShuffleFactors, shallowShuffleTerms, sortTerms, sortFactors, shallowSortTerms, shallowSortFactors, simplifyNullProducts
+} from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 import { math } from './math'
@@ -297,7 +300,7 @@ const PNode = {
     }
   },
 
-  // recusirvly gets sum terms
+  // recusirvly gets sum terms (with signs)
   get terms() {
     let left, right
 
@@ -449,16 +452,58 @@ const PNode = {
     return power([this, e])
   },
 
-  shuffleTerms() {
+  shallowShuffleTerms() {
     if (this.isSum() || this.isDifference()) {
-      return shuffleTerms(this)
+      return shallowShuffleTerms(this)
     } else {
       return this
     }
   },
 
+  shallowShuffleFactors() {
+    if (this.isProduct()) {
+      return shallowShuffleFactors(this)
+    } else {
+      return this
+    }
+  },
+
+  shuffleTerms() {
+
+    return shuffleTerms(this)
+  },
+
+  shuffleFactors() {
+
+    return shuffleFactors(this)
+  },
+
+  shuffleTermsAndFactors() {
+    return shuffleTermsAndFactors(this)
+  },
+
+  sortTerms() {
+    return sortTerms(this)
+  },
+
+  shallowSortTerms() {
+    return shallowSortTerms(this)
+  },
+
+  sortFactors() {
+    return sortFactors(this)
+  },
+
+  shallowSortFactors() {
+    return shallowSortFactors(this)
+  },
+
   sortTermsAndFactors() {
     return sortTermsAndFactors(this)
+  },
+
+  removeMultOperator() {
+    return removeMultOperator(this)
   },
 
   removeUnecessaryBrackets() {
@@ -475,6 +520,10 @@ const PNode = {
 
   removeFactorsOne() {
     return removeFactorsOne(this)
+  },
+
+  simplifyNullProducts() {
+    return simplifyNullProducts(this)
   },
 
   searchUnecessaryZeros() {
@@ -543,7 +592,7 @@ const PNode = {
         a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
         b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
         e = number(gcd(a, b))
-        
+
       }
       else if (node.children) {
         e = createNode({

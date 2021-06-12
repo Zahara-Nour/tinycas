@@ -173,6 +173,9 @@ describe('Test relations evaluation', () => {
     ['cos(5)=cos(5)', 'true'],
     ['cos(10:2)=cos(5)', 'true'],
     ['sin(5)=cos(5)', 'false'],
+    ['mod(16;2)=0', 'true'],
+    ['mod(3;2)=1', 'true'],
+
 
 
     ['1<2', 'true'],

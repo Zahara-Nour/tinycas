@@ -9,6 +9,9 @@ import {
   TYPE_SEGMENT_LENGTH,
   zero,
   one,
+  TYPE_PRODUCT_IMPLICIT,
+  product,
+  TYPE_PRODUCT,
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
@@ -17,6 +20,21 @@ import { gcd, shuffle } from '../utils/utils'
 const constants = {
   pi: '3.14',
   e: '2.7',
+}
+
+
+export function removeMultOperator(node) {
+  let e = node.children
+    ? createNode({ type: node.type, children: node.children.map(child => child.removeMultOperator()) })
+    : math(node.string)
+
+  if (node.type === TYPE_PRODUCT &&
+    (node.last.isBracket() || node.last.isSymbol() || (node.last.isPower() && node.last.first.isSymbol()))) {
+    e = product([e.first, e.last], TYPE_PRODUCT_IMPLICIT)
+  }
+  e.unit = node.unit
+  return e
+
 }
 
 export function removeNullTerms(node) {
@@ -60,6 +78,8 @@ export function removeNullTerms(node) {
   else {
     e = math(node.string)
   }
+
+  e.unit = node.unit
   return e
 }
 
@@ -80,7 +100,7 @@ export function removeFactorsOne(node) {
     else if (last.equals(one())) {
       e = math(first.string)
     } else {
-      e = first.mult(last)
+      e = product([first, last], node.type)
     }
   }
   else if (node.children) {
@@ -89,8 +109,22 @@ export function removeFactorsOne(node) {
   else {
     e = math(node.string)
   }
+  e.unit = node.unit
   return e
 }
+
+export function simplifyNullProducts(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.simplifyNullProducts()) }) : math(node.string)
+  if (node.isProduct()) {
+    const factors = e.factors
+    if (factors.some(factor => factor.isZero())) {
+      e = zero()
+    }
+  }
+  e.unit = node.unit
+  return e
+}
+
 
 export function removeUnecessaryBrackets(node) {
   let e
@@ -152,9 +186,10 @@ export function removeUnecessaryBrackets(node) {
 
   return e
 }
-export function shuffleTerms(node) {
+
+export function shallowShuffleTerms(node) {
   let terms = node.terms
-  // shuffle(terms)
+  shuffle(terms)
 
   let e = terms.pop()
   e = e.op === '+' ? e.term : e.term.oppose()
@@ -166,7 +201,22 @@ export function shuffleTerms(node) {
   return e
 }
 
-export function shuffleFactors(node) {
+export function shuffleTerms(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.shuffleTerms()) }) : math(node.string)
+  let terms = e.terms
+  shuffle(terms)
+
+  e = terms.pop()
+  e = e.op === '+' ? e.term : e.term.oppose()
+  terms.forEach(term => {
+
+    e = term.op === '+' ? e.add(term.term) : e.sub(term.term)
+  })
+  e.unit = node.unit
+  return e
+}
+
+export function shallowShuffleFactors(node) {
   let factors = node.factors
   shuffle(factors)
   let e = factors.pop()
@@ -175,15 +225,36 @@ export function shuffleFactors(node) {
   return e
 }
 
-export function sortTermsAndFactors(node) {
+export function shuffleFactors(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.shuffleFactors()) }) : math(node.string)
+  let factors = node.factors
+  shuffle(factors)
 
+  e = factors.pop()
+  factors.forEach(factor => e = e.mult(factor))
+  e.unit = node.unit
+  return e
+}
+
+
+export function shuffleTermsAndFactors(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.shuffleTermsAndFactors()) }) : math(node.string)
+  if (e.isProduct()) {
+    e = e.shallowShuffleFactors()
+
+  }
+  else if (e.isSum() || e.isDifference()) {
+    e = e.shallowShuffleTerms()
+  }
+  e.unit = node.unit
+  return e
+}
+
+export function shallowSortTerms(node) {
   let e
   if (node.isSum() || node.isDifference()) {
 
-    let terms = node.terms.map(term => ({
-      op: term.op,
-      term: term.term.sortTermsAndFactors()
-    }))
+    let terms = node.terms
 
     const positives = terms.filter(term => term.op === '+').map(term => term.term).sort((a, b) => a.compareTo(b))
 
@@ -200,18 +271,63 @@ export function sortTermsAndFactors(node) {
       }
       negatives.forEach(term => e = e.sub(term))
     }
+    e.unit = node.unit
   }
-  else if (node.isProduct()) {
-    let factors = node.factors.map(factor => factor.sortTermsAndFactors())
+
+
+  else {
+    e = node
+  }
+
+  return e
+}
+
+export function sortTerms(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.sortTerms()) }) : math(node.string)
+  if (node.isSum() || node.isDifference()) {
+    e = e.shallowSortTerms()
+  }
+  e.unit = node.unit
+  return e
+}
+
+
+
+export function shallowSortFactors(node) {
+  let e
+
+  if (node.isProduct()) {
+    let factors = node.factors
     factors.sort((a, b) => a.compareTo(b))
     e = factors.shift()
     factors.forEach(term => e = e.mult(term))
+    e.unit = node.unit
   }
-  else if (node.children) {
-    e = createNode({ type: node.type, children: node.children.map(child => child.sortTermsAndFactors()) })
-  }
+
   else {
-    e = math(node.string)
+    e = node
+  }
+  return e
+}
+
+export function sortFactors(node) {
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.sortFactors()) }) : math(node.string)
+  if (node.isProduct()) {
+    e = e.shallowSortFactors()
+  }
+  e.unit = node.unit
+  return e
+}
+
+
+export function sortTermsAndFactors(node) {
+
+  let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.sortTermsAndFactors()) }) : math(node.string)
+  if (node.isSum() || node.isDifference()) {
+    e = e.shallowSortTerms()
+  }
+  else if (node.isProduct()) {
+    e = e.shallowSortFactors()
   }
   e.unit = node.unit
   return e

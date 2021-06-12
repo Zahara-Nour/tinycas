@@ -630,7 +630,7 @@ describe('Implicit products', () => {
     // expect(e.showShallowStructure()).toEqual(structure)
   })
 
-  test('Parser recognises a simple implicit product with +', () => {
+  test('Parser recognises a simple implicit product with *', () => {
     const e = p.parse('2ab*cab')
     // const structure = { children: ['number', 'symbol', 'symbol'], nature: '*' }
     expect(e.isProduct()).toBeTruthy()

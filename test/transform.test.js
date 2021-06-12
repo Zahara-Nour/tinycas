@@ -357,6 +357,44 @@ describe('Testing removing unecessary brackets', () => {
   })
 })
 
+
+describe('Testing removing unecessary Mult operator', () => {
+
+  const t = [
+    ['3*x', '3x'],
+    ['x*x', 'xx'],
+    ['3*4', '3*4'],
+    ['x*3', 'x*3'],
+    ['3*(2+5)', '3(2+5)'],
+    ['(2+5)*3', '(2+5)*3'],
+    ['3*a^2', '3a^2'],
+  ]
+
+
+  test.each(t)('%s and %s', (e, expected) => {
+    expect(math(e).removeMultOperator().string).toBe(expected)
+  })
+})
+
+describe('Simplify null product', () => {
+
+  const t = [
+    ['0*a', '0'],
+    ['a*0', '0'],
+    ['a*0*b', '0'],
+    ['0*0', '0'],
+    ['0*a+1', '0+1'],
+    ['0*a+0*b', '0+0'],
+    
+  ]
+
+
+  test.each(t)('%s and %s', (e, expected) => {
+    expect(math(e).simplifyNullProducts().string).toBe(expected)
+  })
+})
+
+
 describe('Testing removing unecessary signs', () => {
 
   const t = [
@@ -493,6 +531,7 @@ describe('Testing removing factors one', () => {
     ['1*2*3', '2*3'],
     ['2*3*1', '2*3'],
     ['1+2*1*3', '1+2*3'],
+    ['5(4+1*a)', '5(4+a)'],
     
   ]
 
