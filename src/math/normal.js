@@ -35,6 +35,7 @@ import {
   TYPE_UNEQUALITY,
   TYPE_MOD,
   TYPE_FLOOR,
+  TYPE_ABS,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -731,6 +732,7 @@ export default function normalize(node) {
     case TYPE_LOG:
     case TYPE_EXP:
     case TYPE_FLOOR:
+    case TYPE_ABS:
     case TYPE_GCD:
     case TYPE_MOD: {
       const children = node.children.map(c => c.normal.node)

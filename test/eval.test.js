@@ -160,6 +160,14 @@ describe('Test functions evaluation', () => {
     const e = math('floor(5.2)')
     expect(e.eval().string).toEqual('5')
   })
+  test('Function abs', () => {
+    const e = math('abs(5)')
+    expect(e.eval().string).toEqual('5')
+  })
+  test('Function abs', () => {
+    const e = math('abs(-5)')
+    expect(e.eval().string).toEqual('5')
+  })
 })
 
 describe('Test relations evaluation', () => {

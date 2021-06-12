@@ -48,6 +48,7 @@ export const TYPE_LN = 'ln'
 export const TYPE_LOG = 'log'
 export const TYPE_EXP = 'exp'
 export const TYPE_FLOOR = 'floor'
+export const TYPE_ABS = 'abs'
 
 
 
@@ -175,6 +176,9 @@ const PNode = {
   isFloor() {
     return this.type === TYPE_FLOOR
   },
+  isAbs() {
+    return this.type === TYPE_ABS
+  },
   isNumber() {
     return this.type === TYPE_NUMBER
   },
@@ -216,7 +220,8 @@ const PNode = {
       this.isLog() ||
       this.isLn() ||
       this.isExp() ||
-      this.isFloor()
+      this.isFloor() ||
+      this.isAbs()
     )
   },
   compareTo(e) {
@@ -662,6 +667,10 @@ const PNode = {
         return number(e.first.eval({ decimal: true }).value.trunc())
       }
 
+      case TYPE_ABS: {
+        return number(e.first.eval({ decimal: true }).value.abs())
+      }
+
       default:
         // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
         e = e.normal
@@ -984,6 +993,10 @@ export function mod(children) {
 
 export function floor(children) {
   return createNode({ type: TYPE_FLOOR, children })
+}
+
+export function abs(children) {
+  return createNode({ type: TYPE_ABS, children })
 }
 
 export function percentage(children) {

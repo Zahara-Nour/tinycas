@@ -34,6 +34,7 @@ import {
   TYPE_LOG,
   TYPE_UNEQUALITY,
   TYPE_MOD,
+  TYPE_ABS,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -90,6 +91,7 @@ export function text(e, options) {
     case TYPE_LOG:
     case TYPE_EXP:
     case TYPE_FLOOR:
+    case TYPE_ABS:
       s = e.type + '(' + e.first.toString(options) + ')'
       break
 
