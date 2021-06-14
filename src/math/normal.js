@@ -248,7 +248,7 @@ const PNormal = {
         d = bracket([d])
       }
       e = n.frac(d)
-      if (!positive) e = e.bracket().oppose()
+      if (!positive) e = e.oppose()
     }
 
     if (this.unit) {
