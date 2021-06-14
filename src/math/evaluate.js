@@ -19,6 +19,13 @@ import {
 
 import Decimal from 'decimal.js'
 
+// Decimal.set({ toExpPos: 20 })
+// const a = new Decimal('50388979879871545478.334343463469121445345434456456465412321321321546546546478987987')
+// console.log('a', a.toString())
+// const b = new Decimal('-0.2').toFraction()
+// console.log('b', b.toString())
+
+
 // Evaluation décimale d'une forme normale dont les symboles ont été substitués.
 // Pour éviter les conversions répétées, renvoie un Decimal
 // Les unités ne sont pas gérées ici, mais dans la fonction appelante eval() associée

@@ -53,8 +53,8 @@ export const TYPE_ABS = 'abs'
 
 
 Decimal.set({
-  toExpPos: 12,
-  toExpNeg: -12
+  toExpPos: 89,
+  toExpNeg: -89
 })
 
 

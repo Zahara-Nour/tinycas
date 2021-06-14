@@ -1,4 +1,21 @@
+import Decimal from 'decimal.js'
 import { math } from '../src/math/math'
+
+
+describe('Testing input value', () => {
+  test('accepts number values', () => {
+    const e = math(123)
+    expect(e.isNumber()).toBeTruthy()
+    expect(e.string).toBe('123')
+  })
+
+  test('accepts Decimaljs values', () => {
+    const e = math(new Decimal(123))
+    expect(e.isNumber()).toBeTruthy()
+    expect(e.string).toBe('123')
+  })
+
+})
 
 describe('Testing tree', () => {
   test('Root is set on children', () => {
