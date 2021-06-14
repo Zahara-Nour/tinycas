@@ -578,6 +578,7 @@ function generateTemplate(node) {
       } = node
       do {
         // whatis children[1] ?
+        doItAgain = false
         if (!children[1].isHole()) {
           e = number(
             getIntOfNdigits(
@@ -585,11 +586,25 @@ function generateTemplate(node) {
               children[1].value.toNumber(),
             ),
           )
+          if (node.relative) {
+            if (getRandomIntInclusive(0, 1)) {
+              e = e.oppose()
+            } else if (node.signed) {
+              e = e.positive()
+            }
+          }
           doItAgain = exclude && exclude.includes(e.string)
         } else {
           e = number(
             getRandomIntInclusive(children[2].value.toNumber(), children[3].value.toNumber()),
           )
+          if (node.relative) {
+            if (getRandomIntInclusive(0, 1)) {
+              e = e.oppose()
+            } else if (node.signed) {
+              e = e.positive()
+            }
+          }
           doItAgain =
             (exclude && exclude.map(exp => exp.string).includes(e.string)) ||
             (excludeMin && isInSegment(e, excludeMin, excludeMax))
@@ -620,13 +635,7 @@ function generateTemplate(node) {
         }
       } while (doItAgain)
 
-      if (node.relative) {
-        if (getRandomIntInclusive(0, 1)) {
-          e = e.oppose()
-        } else if (node.signed) {
-          e = e.positive()
-        }
-      }
+
 
       node.root.generated.push(e)
       break
