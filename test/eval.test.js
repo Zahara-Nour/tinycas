@@ -168,6 +168,21 @@ describe('Test functions evaluation', () => {
     const e = math('abs(-5)')
     expect(e.eval().string).toEqual('5')
   })
+
+  test('Function sqrt', () => {
+    let e = math('sqrt(16)')
+    expect(e.eval().string).toEqual('4')
+
+    e = math('1/sqrt(16)')
+    expect(e.eval().string).toEqual('1/4')
+
+    e = math('sqrt(1/16)')
+    expect(e.eval().string).toEqual('1/4')
+
+    e = math('sqrt(25/16)')
+    expect(e.eval().string).toEqual('5/4')
+    
+  })
 })
 
 describe('Test relations evaluation', () => {

@@ -103,6 +103,10 @@ describe('Testing normal forms for litteral expressions', () => {
     ['(-a)^3', '-a^3'],
     ['(ab)^3', 'a^3*b^3'],
     ['(ab)^(-3)', 'a^(-3)*b^(-3)'],
+    ['b^2^3', 'b^6'],
+    ['b^2^(-3)', 'b^(-6)'],
+    ['b^(-2)^3', 'b^(-6)'],
+    ['(1/b)^3', 'b^(-3)'],
     ['(a/b)^3', 'a^3*b^(-3)'],
     ['(a:b)^3', 'a^3*b^(-3)'],
     ['(a/b)^(-3)', 'a^(-3)*b^3'],
@@ -134,6 +138,13 @@ describe('Testing normal forms for functions', () => {
   //   expect(e.normal.string).toBe('2+3*4')
   // })
   const t = [
+    ['sqrt(x)', 'x^(1/2)'],
+    ['x^(-1/2)', 'x^(-1/2)'],
+    ['sqrt(xy)', 'x^(1/2)*y^(1/2)'],
+    ['sqrt(16y)', '4*y^(1/2)'],
+    ['sqrt(x^2)', 'x'],
+    ['sqrt(x)^2', 'x'],
+    ['sqrt(x)^3', 'x^(3/2)'],
     ['cos(1+2)', 'cos(3)'],
     ['cos(cos(1+2))', 'cos(cos(3))'],
 

@@ -24,12 +24,12 @@ function gcd(a, b) {
 
 const PFraction = {
   add(f) {
-    console.log('add   .................')
+    // console.log('add   .................')
     let n = this.n.mul(f.d).mul(this.s).add(this.d.mul(f.s).mul(f.n))
     const d = this.d.mul(f.d)
     const s = n.s
     n = n.abs()
-    return createFraction({ n, d, s })
+    return createFraction({ n, d, s }).reduce()
   },
 
   sub(f) {
@@ -46,14 +46,14 @@ const PFraction = {
     console.log('sub', s, this, f,a , b, n)
     }
     n = n.abs()
-    return createFraction({ n, d, s })
+    return createFraction({ n, d, s }).reduce()
   },
 
   mult(f) {
     let n = this.n.mul(f.n)
     const d = this.d.mul(f.d)
     const s = f.s * this.s
-    return createFraction({ n, d, s })
+    return createFraction({ n, d, s }).reduce()
   },
 
   div(f) {
@@ -104,7 +104,7 @@ function createFraction({ n, d, s }) {
 }
 
 function removeCommas(n, d) {
-  
+  // console.log('removeCommas', n, d)
   n = new Decimal(n)
   d = new Decimal(d)
   const s = n.s * d.s
@@ -147,7 +147,7 @@ function fraction(arg) {
     const removedCommas = removeCommas(parseFloat(result[1]), result[5] ? parseFloat(result[5]) : 1)
     let { n, d, s } = removedCommas
    
-    return createFraction({ n, d, s }).reduce()
+    return createFraction({ n, d, s })
   } else {
     // console.log('arg ' + arg)
     return fraction(arg.toString({ displayUnit: false }))

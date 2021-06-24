@@ -26,7 +26,7 @@ export const TYPE_NUMBER = 'number'
 export const TYPE_PERCENTAGE = 'percentage'
 export const TYPE_OPPOSITE = 'opposite'
 export const TYPE_POSITIVE = 'positive'
-export const TYPE_RADICAL = 'radical'
+
 export const TYPE_TEMPLATE = 'template'
 export const TYPE_SIMPLE_UNIT = 'simple unit'
 export const TYPE_UNIT = 'unit'
@@ -49,6 +49,7 @@ export const TYPE_LOG = 'log'
 export const TYPE_EXP = 'exp'
 export const TYPE_FLOOR = 'floor'
 export const TYPE_ABS = 'abs'
+export const TYPE_RADICAL = 'sqrt'
 
 
 

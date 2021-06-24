@@ -36,6 +36,7 @@ import {
   TYPE_MOD,
   TYPE_FLOOR,
   TYPE_ABS,
+  TYPE_RADICAL,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -62,6 +63,26 @@ const PNormal = {
 
   isOne() {
     return this.node.isOne()
+  },
+
+  isProduct() {
+    return this.node.isProduct()
+  },
+
+  isPower() {
+    return this.node.isPower()
+  },
+
+  isDivision() {
+    return this.node.isDivision()
+  },
+
+  isQuotient() {
+    return this.node.isQuotient()
+  },
+
+  isOpposite() {
+    return this.node.isOpposite()
   },
 
   isMinusOne() {
@@ -166,24 +187,52 @@ const PNormal = {
     if (this.isOne()) return this
 
     let result
+    if (this.isProduct()) {
+      const factors = this.node.factors.map(factor => factor.normal)
+      result = factors.shift().pow(e)
+      factors.forEach(factor => {
+        result = result.mult(factor.pow(e))
+      })
+    }
+    else if (this.isPower()) {
+  
+      // const exp= fraction(this.node.last.string)
+      const exp = this.node.last.mult(e.node).eval()
+      result = this.node.first.normal.pow(exp.normal)
+      
+    }
 
-    if (e.isInt()) {
+    else if (e.isInt()) {
       result = this
       for (let i = 1; i < e.node.value.toNumber(); i++) {
         result = result.mult(this)
       }
-    } else if (e.isMinusOne()) {
+    }
+    else if (e.isMinusOne()) {
       result = this.invert()
 
-    } else if (e.node.isOpposite() && e.node.first.isInt()) {
+    }
+    else if (e.isOpposite() && e.node.first.isInt()) {
       const n = e.node.first.value.toNumber()
       result = this
       for (let i = 1; i < n; i++) {
         result = result.mult(this)
       }
       result = result.invert()
-    } else if (e.equalsTo('1/2')) {
-    } else {
+    }
+    else if (e.equalsTo(number(0.5).normal) && this.node.isInt() && this.node.value.sqrt().isInt()) {
+      result = number(this.node.value.sqrt().toNumber()).normal
+    }
+    else if (e.isOpposite() && e.node.first.equals(number(0.5)) && this.node.isInt() && this.node.value.sqrt().isInt()) {
+      result = number(this.node.value.sqrt().toNumber()).normal.invert()
+    }
+    else {
+      console.log(' !!!! defult    !!!!', this.string, e.string)
+      // result = this
+      const n = nSum([[coefOne(), createBase(this.node, e.node)]])
+      const d = nSumOne()
+      result = normal(n, d)
+
     }
     return result
   },
@@ -352,11 +401,16 @@ const PNList = {
         if (coef1.type === TYPE_NSUM) {
           coef = coef1.merge(coef2) // coef1 est un nSum
         } else {
-          const newcoefvalue = parseInt(coef1.string) + parseInt(coef2.string)
-          coef =
-            newcoefvalue < 0
-              ? number(Math.abs(newcoefvalue)).oppose()
-              : number(newcoefvalue)
+          // const newcoefvalue = parseInt(coef1.string) + parseInt(coef2.string)
+          const newcoefvalue = fraction(coef1.string).add(fraction(coef2.string))
+          // console.log('newcoef', newcoefvalue.toString())
+          coef = math(newcoefvalue.toString())
+          // coef =
+          //   newcoefvalue.isLessThan(fraction(0))
+          //     ? number(Math.abs(newcoefvalue)).oppose()
+          //     : number(newcoefvalue)
+
+
         }
 
         if (coef.isZero()) {
@@ -725,6 +779,10 @@ export default function normalize(node) {
     //   break
     // }
 
+    case TYPE_RADICAL:
+      e = node.first.bracket().normal.pow(number(0.5).normal)
+      break
+
     case TYPE_COS:
     case TYPE_SIN:
     case TYPE_TAN:
@@ -737,7 +795,7 @@ export default function normalize(node) {
     case TYPE_MOD: {
       const children = node.children.map(c => c.normal.node)
       const base = createNode({ type: node.type, children })
-      
+
       // console.log("base", base, base.string)
       n = nSum([[coefOne(), createBase(base)]])
       d = nSumOne()
@@ -817,6 +875,7 @@ export default function normalize(node) {
     // TODO: et les TEMPLATES?
 
     default:
+      console.log('!!!normalizing default !!!', node.string)
   }
 
   if (!e) {
