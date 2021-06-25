@@ -39,6 +39,8 @@ import {
   TYPE_RADICAL,
   power,
   product,
+  boolean,
+  TYPE_BOOLEAN,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -877,6 +879,11 @@ export default function normalize(node) {
   // others.proto
 
   switch (node.type) {
+    case TYPE_BOOLEAN:
+      n = nSum([[coefOne(), createBase(node)]])
+      d = nSumOne()
+      break
+
     case TYPE_NUMBER:
       if (node.isInt()) {
         // il faut se debarasser de l'unité
@@ -944,18 +951,46 @@ export default function normalize(node) {
     case TYPE_ABS:
     case TYPE_GCD:
     case TYPE_MOD: {
-      const children = node.children.map(c => c.normal.node)
-      const base = createNode({ type: node.type, children })
-      if (base.isNumeric()) {
-        // d'abord voir si on peut évaluer
+      if (node.isNumeric()) {
+        switch (node.type) {
+          case TYPE_MOD: {
+            const a = node.first.eval()
+            const b = node.last.eval()
+            e = number(a.value.mod(b.value)).normal
+            break
+          }
 
-        // console.log('!!! Numeric !!!!')
-        const coef = nSum([[one(), createBase(base)]])
-        n = nSum([[coef, baseOne()]])
-        d = nSumOne()
-        // console.log('normal', normal(n, d).node)
+          case TYPE_FLOOR: {
+            e = number(node.first.eval({ decimal: true }).value.trunc()).normal
+            break
+          }
+
+          case TYPE_ABS: {
+            e = number(node.first.eval({ decimal: true }).value.abs()).normal
+            break
+          }
+
+          case TYPE_GCD: {
+            let a = node.first.eval()
+            let b = node.last.eval()
+            a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+            b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
+            e = number(gcd(a, b)).normal
+            break
+          }
+
+          default: {
+            const children = node.children.map(c => c.normal.node)
+            const base = createNode({ type: node.type, children })
+            const coef = nSum([[one(), createBase(base)]])
+            n = nSum([[coef, baseOne()]])
+            d = nSumOne()
+          }
+        }
       } else {
         // console.log("base", base, base.string)
+        const children = node.children.map(c => c.normal.node)
+        const base = createNode({ type: node.type, children })
         n = nSum([[coefOne(), createBase(base)]])
         d = nSumOne()
       }
@@ -1019,13 +1054,28 @@ export default function normalize(node) {
       e = node.first.normal.div(node.last.normal)
       break
 
-    case TYPE_EQUALITY:
     case TYPE_UNEQUALITY:
-    case TYPE_INEQUALITY_MORE:
-    case TYPE_INEQUALITY_MOREOREQUAL:
+      e = boolean(!node.first.eval().equals(node.last.eval())).normal
+      break
+
+    case TYPE_EQUALITY:
+      e = boolean(node.first.eval().equals(node.last.eval())).normal
+      break
+
     case TYPE_INEQUALITY_LESS:
+      e = boolean(node.first.eval().isLowerThan(node.last.eval())).normal
+      break
+
+    case TYPE_INEQUALITY_MORE:
+      e = boolean(node.first.eval().isGreaterThan(node.last.eval())).normal
+      break
+
     case TYPE_INEQUALITY_LESSOREQUAL:
-      e = node.first.normal.sub(node.last.normal)
+      e = boolean(node.first.eval().isLowerOrEqual(node.last.eval())).normal
+      break
+
+    case TYPE_INEQUALITY_MOREOREQUAL:
+      e = boolean(node.first.eval().isGreaterOrEqual(node.last.eval())).normal
       break
 
     // TODO: et les TEMPLATES?
@@ -1055,5 +1105,3 @@ export default function normalize(node) {
   }
   return e
 }
-
-

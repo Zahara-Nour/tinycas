@@ -4,8 +4,22 @@ import normalize from './normal'
 import { text, latex } from './output'
 import compare from './compare'
 import {
-  substitute, generate, shuffleTerms, sortTermsAndFactors, removeUnecessaryBrackets, removeSigns, removeNullTerms, removeFactorsOne, removeMultOperator,
-  shallowShuffleFactors, shallowShuffleTerms, sortTerms, sortFactors, shallowSortTerms, shallowSortFactors, simplifyNullProducts
+  substitute,
+  generate,
+  shuffleTerms,
+  sortTermsAndFactors,
+  removeUnecessaryBrackets,
+  removeSigns,
+  removeNullTerms,
+  removeFactorsOne,
+  removeMultOperator,
+  shallowShuffleFactors,
+  shallowShuffleTerms,
+  sortTerms,
+  sortFactors,
+  shallowSortTerms,
+  shallowSortFactors,
+  simplifyNullProducts,
 } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
@@ -51,13 +65,10 @@ export const TYPE_FLOOR = 'floor'
 export const TYPE_ABS = 'abs'
 export const TYPE_RADICAL = 'sqrt'
 
-
-
 Decimal.set({
   toExpPos: 89,
-  toExpNeg: -89
+  toExpNeg: -89,
 })
-
 
 const PNode = {
   [Symbol.iterator]() {
@@ -313,32 +324,26 @@ const PNode = {
     if (this.isSum()) {
       if (this.first.isPositive()) {
         left = [{ op: '+', term: this.first.first }]
-      }
-      else if (this.first.isOpposite()) {
+      } else if (this.first.isOpposite()) {
         left = [{ op: '-', term: this.first.first }]
-      }
-      else {
+      } else {
         left = this.first.terms
       }
 
       right = [{ op: '+', term: this.last }]
       return left.concat(right)
-    }
-    else if (this.isDifference()) {
+    } else if (this.isDifference()) {
       if (this.first.isPositive()) {
         left = [{ op: '+', term: this.first.first }]
-      }
-      else if (this.first.isOpposite()) {
+      } else if (this.first.isOpposite()) {
         left = [{ op: '-', term: this.first.first }]
-      }
-      else {
+      } else {
         left = this.first.terms
       }
 
       right = [{ op: '-', term: this.last }]
       return left.concat(right)
-    }
-    else {
+    } else {
       return [{ op: '+', term: this }]
     }
   },
@@ -349,8 +354,7 @@ const PNode = {
       const left = this.first.factors
       const right = this.last.factors
       return left.concat(right)
-    }
-    else {
+    } else {
       return [this]
     }
   },
@@ -371,7 +375,13 @@ const PNode = {
     return this.children ? this.children.length : null
   },
 
-  toString({ isUnit = false, displayUnit = true, comma = false, addBrackets = false, implicit = false } = {}) {
+  toString({
+    isUnit = false,
+    displayUnit = true,
+    comma = false,
+    addBrackets = false,
+    implicit = false,
+  } = {}) {
     return text(this, { displayUnit, comma, addBrackets, implicit, isUnit })
   },
 
@@ -383,10 +393,14 @@ const PNode = {
     addBrackets = false,
     implicit = false,
     addSpaces = true,
-    keepUnecessaryZeros = false
+    keepUnecessaryZeros = false,
   } = {}) {
-
-    return latex(this, { addBrackets, implicit, addSpaces, keepUnecessaryZeros })
+    return latex(this, {
+      addBrackets,
+      implicit,
+      addSpaces,
+      keepUnecessaryZeros,
+    })
   },
 
   get latex() {
@@ -475,12 +489,10 @@ const PNode = {
   },
 
   shuffleTerms() {
-
     return shuffleTerms(this)
   },
 
   shuffleFactors() {
-
     return shuffleFactors(this)
   },
 
@@ -534,9 +546,7 @@ const PNode = {
 
   searchUnecessaryZeros() {
     if (this.isNumber()) {
-      const regexs = [
-        /^0\d+/,
-        /[\.,]\d*0$/]
+      const regexs = [/^0\d+/, /[\.,]\d*0$/]
       return regexs.some(regex => this.input.match(regex))
     } else if (this.children) {
       return this.children.some(child => child.searchUnecessaryZeros())
@@ -549,25 +559,11 @@ const PNode = {
     let regexs
     if (this.isNumber()) {
       let [int, dec] = this.input.replace(',', '.').split('.')
-      let regexs = [
-        /\d{4}/,
-        /\s$/,
-        /\s\d{2}$/,
-        /\s\d{2}\s/,
-        /\s\d$/,
-        /\s\d\s/,
-      ]
+      let regexs = [/\d{4}/, /\s$/, /\s\d{2}$/, /\s\d{2}\s/, /\s\d$/, /\s\d\s/]
       if (regexs.some(regex => int.match(regex))) return true
 
       if (dec) {
-        regexs = [
-          /\d{4}/,
-          /^\s/,
-          /^\d{2}\s/,
-          /\s\d{2}\s/,
-          /^\d\s/,
-          /\s\d\s/,
-        ]
+        regexs = [/\d{4}/, /^\s/, /^\d{2}\s/, /\s\d{2}\s/, /^\d\s/, /\s\d\s/]
         if (regexs.some(regex => dec.match(regex))) return true
       }
       return false
@@ -578,7 +574,6 @@ const PNode = {
     }
   },
 
-
   /* 
   params contient :
    - les valeurs de substitution
@@ -588,105 +583,27 @@ const PNode = {
    */
 
   eval(params = {}) {
-
-    function evalFunctions(node) {
-      
-      if (node.isPGCD()) {
-        let a = node.first.eval()
-        let b = node.last.eval()
-        a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-        b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-        e = number(gcd(a, b))
-
-      }
-      else if (node.children) {
-        e = createNode({
-          type: node.type, children: node.children.map(child => evalFunctions(child))
-        })
-      }
-      else {
-        e = math(node.string)
-      }
-      e.unit = node.unit
-      return e
-    }
-    // TODO: memoize
+    
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 20
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
-    e = evalFunctions(e)
+    // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+    e = e.normal
 
-    //  Il faut évaluer les noeuds correspondant à des fonctions renvoyant des valeurs entières
-    // car ce n'est pas géré par la forme normale
-
-
-
-    switch (this.type) {
-
-      case TYPE_UNEQUALITY:
-        return boolean(!e.first.eval().equals(e.last.eval()))
-
-
-      case TYPE_EQUALITY:
-
-        return boolean(e.first.eval().equals(e.last.eval()))
-
-      case TYPE_INEQUALITY_LESS:
-        return boolean(e.first.eval().isLowerThan(e.last.eval()))
-
-      case TYPE_INEQUALITY_MORE:
-        return boolean(e.first.eval().isGreaterThan(e.last.eval()))
-
-      case TYPE_INEQUALITY_LESSOREQUAL:
-        return boolean(e.first.eval().isLowerOrEqual(e.last.eval()))
-
-      case TYPE_INEQUALITY_MOREOREQUAL:
-        return boolean(e.first.eval().isGreaterOrEqual(e.last.eval()))
-
-      // case TYPE_GCD: {
-      //   let a = e.first.eval()
-      //   let b = e.last.eval()
-      //   a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-      //   b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-      //   e = number(gcd(a, b))
-      //   return e
-      // }
-
-      case TYPE_MOD: {
-        let a = e.first.eval()
-        let b = e.last.eval()
-        e = number(a.value.mod(b.value))
-        return e
-
+    // si on doit faire une conversion
+    if (params.unit) {
+      if (!e.unit) {
+        throw new Error("calcul avec unité d'une expression sans unité")
       }
-
-      case TYPE_FLOOR: {
-        return number(e.first.eval({ decimal: true }).value.trunc())
-      }
-
-      case TYPE_ABS: {
-        return number(e.first.eval({ decimal: true }).value.abs())
-      }
-
-      default:
-        // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
-        e = e.normal
-
-        // si on doit faire une conversion
-        if (params.unit) {
-          if (!e.unit) {
-            throw new Error("calcul avec unité d'une expression sans unité")
-          }
-          const coef = e.unit.getCoefTo(params.unit.normal)
-          e = e.mult(coef)
-        }
-
-        // on retourne à la forme naturelle
-        e = e.node
+      const coef = e.unit.getCoefTo(params.unit.normal)
+      e = e.mult(coef)
     }
+
+    // on retourne à la forme naturelle
+    e = e.node
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
     //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
@@ -700,7 +617,11 @@ const PNode = {
       const unit = e.unit
 
       // evaluate retourne un objet Decimal
-      e = number(evaluate(e).toDecimalPlaces(precision).toString())
+      e = number(
+        evaluate(e)
+          .toDecimalPlaces(precision)
+          .toString(),
+      )
 
       //  on remet l'unité qui avait disparu
       if (unit) e.unit = unit
@@ -769,7 +690,6 @@ const PNode = {
         return this.isSymbol() && this.letter === t.letter
 
       case TYPE_TEMPLATE:
-
         switch (t.nature) {
           case '$e':
           case '$ep':
@@ -793,7 +713,11 @@ const PNode = {
             }
             if (
               !t.children[2].isHole() &&
-              !checkLimits(this.value.toNumber(), t.children[2].value.toNumber(), t.children[3].value.toNumber())
+              !checkLimits(
+                this.value.toNumber(),
+                t.children[2].value.toNumber(),
+                t.children[3].value.toNumber(),
+              )
             ) {
               return false
             }
@@ -910,7 +834,7 @@ export function createNode(params) {
 
 // Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
 
-const one = (function () {
+const one = (function() {
   let instance
   return () => {
     if (!instance) instance = number('1')
@@ -918,7 +842,7 @@ const one = (function () {
   }
 })()
 
-const zero = (function () {
+const zero = (function() {
   let instance
   return () => {
     if (!instance) instance = number('0')
@@ -1003,7 +927,11 @@ export function percentage(children) {
   return createNode({ type: TYPE_PERCENTAGE, children })
 }
 export function number(input) {
-  const value = new Decimal(typeof input === 'string' ? input.replace(',', '.').replace(/\s/g, '') : input)
+  const value = new Decimal(
+    typeof input === 'string'
+      ? input.replace(',', '.').replace(/\s/g, '')
+      : input,
+  )
 
   return createNode({ type: TYPE_NUMBER, value, input })
 }
