@@ -177,6 +177,18 @@ describe('Test functions evaluation', () => {
     e = math('sqrt(25/16)')
     expect(e.eval().string).toEqual('5/4')
 
+   
+
+  })
+})
+
+describe('Test powers', () => {  
+  test('powers', () => {
+    let e = math('16^2,3')
+    expect(e.eval().string).toEqual('16^(23/10)')
+    e = math('1/(16^2,3)')
+    expect(e.eval().string).toEqual('1/16^(23/10)')
+
     e = math('1/sqrt(25/16)')
     expect(e.eval().string).toEqual('4/5')
     
@@ -194,22 +206,6 @@ describe('Test functions evaluation', () => {
 
     e = math('(25/16)^(-1/2)')
     expect(e.eval().string).toEqual('4/5')
-
-  })
-})
-
-
-describe('Test powers', () => {
-  
-  test('powers', () => {
-    let e = math('16^2,3')
-    expect(e.eval().string).toEqual('16^(23/10)')
-
-    e = math('1/(16^2,3)')
-    expect(e.eval().string).toEqual('1/16^(23/10)')
-
-
-
   })
 })
 

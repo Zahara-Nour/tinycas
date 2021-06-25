@@ -120,4 +120,24 @@ const shuffle = function(array) {
   return array
 }
 
-export { shuffle, round, binarySearchCmp, roundNumber, roundDecimal, pgcd }
+function RadicalReduction(n) {
+  if (n === 0) return 0
+  if (n === 1) return 1
+  let answer = 1
+  let i = 1
+  let k = Math.floor(Math.sqrt(n))
+  while (i<=k) {
+    if (n % (i * i) === 0) {
+      n = n / (i * i)
+      answer = answer * i
+      k = Math.floor(Math.sqrt(n))
+      i= 2
+    } else {
+      i++
+    }
+  }
+
+  return answer
+}
+
+export { RadicalReduction,  shuffle, round, binarySearchCmp, roundNumber, roundDecimal, pgcd }

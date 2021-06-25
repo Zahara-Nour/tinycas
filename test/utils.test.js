@@ -1,5 +1,5 @@
 import {Decimal} from 'decimal.js'
-import {pgcd, roundDecimal} from '../src/utils/utils'
+import {pgcd, RadicalReduction, roundDecimal} from '../src/utils/utils'
 
 
 
@@ -21,20 +21,19 @@ describe('Testing rounding', () => {
   )
 })
 
-describe('Testing rounding', () => {
+describe('Testing radical reduction', () => {
 
   const t = [
-    [5.2346, 2, '5.23'],
-    [5.2356, 2, '5.24'],
-    [5.2, 2, '5.2'],
-    
+   [2,1],
+   [4,2],
+   [20,2],
+   [32,4],
+   [45,3],
   ]
-
-
   test.each(t)(
-    'rounding %s',
-    (n, d,   expected) => {
-      expect(roundDecimal(new Decimal(n), 2).toString()).toBe(expected)
+    'reduction %s',
+    (n,   expected) => {
+      expect(RadicalReduction(n)).toBe(expected)
     }
   )
 })

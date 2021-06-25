@@ -37,10 +37,12 @@ import {
   TYPE_FLOOR,
   TYPE_ABS,
   TYPE_RADICAL,
+  power,
+  product,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
-import { binarySearchCmp, gcd, pgcd } from '../utils/utils'
+import { binarySearchCmp, gcd, pgcd, RadicalReduction } from '../utils/utils'
 import compare from './compare'
 import Decimal from 'decimal.js'
 
@@ -88,6 +90,10 @@ const PNormal = {
 
   isMinusOne() {
     return this.node.isMinusOne()
+  },
+
+  isNumeric() {
+    return this.node.isNumeric()
   },
 
   // test if two units are the same type
@@ -245,19 +251,7 @@ const PNormal = {
     if (this.isOne()) return this
 
     let result
-    if (this.isProduct()) {
-      const factors = this.node.factors.map(factor => factor.normal)
-      result = factors.shift().pow(e)
-      factors.forEach(factor => {
-        result = result.mult(factor.pow(e))
-      })
-    } else if (this.isQuotient() || this.isDivision()) {
-      result = this.n.node.normal.pow(e).div(this.d.node.normal.pow(e))
-    } else if (this.isPower()) {
-      // const exp= fraction(this.node.last.string)
-      const exp = this.node.last.mult(e.node).eval()
-      result = this.node.first.normal.pow(exp.normal)
-    } else if (e.isInt()) {
+    if (e.isInt()) {
       result = this
       for (let i = 1; i < e.node.value.toNumber(); i++) {
         result = result.mult(this)
@@ -271,13 +265,33 @@ const PNormal = {
         result = result.mult(this)
       }
       result = result.invert()
-    } else if (
-      e.equalsTo(number(0.5).normal) &&
-      this.node.isInt() &&
-      this.node.value.sqrt().isInt()
-    ) {
-      result = number(this.node.value.sqrt()).normal
-      console.log('result', result.string)
+    } else if (this.isProduct()) {
+      const factors = this.node.factors.map(factor => factor.normal)
+      result = factors.shift().pow(e)
+      factors.forEach(factor => {
+        result = result.mult(factor.pow(e))
+      })
+    } else if (this.isQuotient() || this.isDivision()) {
+      result = this.n.node.normal.pow(e).div(this.d.node.normal.pow(e))
+    } else if (this.isPower()) {
+      // const exp= fraction(this.node.last.string)
+      const exp = this.node.last.mult(e.node).eval()
+      result = this.node.first.normal.pow(exp.normal)
+    } else if (e.equalsTo(number(0.5).normal) && this.node.isInt()) {
+      if (this.node.value.sqrt().isInt()) {
+        result = number(this.node.value.sqrt()).normal
+      } else {
+        const n = this.node.value.toNumber()
+        const k = RadicalReduction(n)
+        if (k === 1) {
+          const coef = nSum([[one(), createBase(this.node, e.node)]])
+          const n = nSum([[coef, baseOne()]])
+          const d = nSumOne()
+          result = normal(n, d)
+        } else {
+          result = number(k).mult(number(n / (k * k)).pow(number(0.5))).normal
+        }
+      }
     } else if (
       e.isOpposite() &&
       e.node.first.equals(number(0.5)) &&
@@ -286,13 +300,26 @@ const PNormal = {
     ) {
       result = number(this.node.value.sqrt().toNumber()).normal.invert()
     } else {
-      console.log(' !!!! defult    !!!!', this.string, e.string)
-      console.log(e.equalsTo(number(0.5).normal))
+      // TODO: parenthèses ??
+      let n, d
+      if (this.isNumeric() && e.isNumeric()) {
+        // d'abord voir si on peut évaluer
+        const coef = nSum([[one(), createBase(this.node, e.node)]])
+        n = nSum([[coef, baseOne()]])
+        d = nSumOne()
+        // console.log('normal', normal(n, d).node)
+      } else {
+        // console.log("base", base, base.string)
+        n = nSum([[coefOne(), createBase(this.node, e.node)]])
+        d = nSumOne()
+      }
       // this.node.isInt() &&
       // this.node.value.sqrt().isInt()
       // result = this
-      const n = nSum([[coefOne(), createBase(this.node, e.node)]])
-      const d = nSumOne()
+      // const n = nSum([[coefOne(), createBase(this.node, e.node)]])
+      // const d = nSumOne()
+
+      // TODO: et l'unité ???
       result = normal(n, d)
     }
     return result
@@ -337,19 +364,49 @@ const PNormal = {
 
   //  si la forme représente une fraction numérique, celle-ci a été simplifiée et le signe
   // est au numérateur
-  toNode() {
+  toNode({ isUnit = false } = {}) {
     let e
+    let n = this.n.node
+    let d = this.d.node
 
-    if (this.d.isOne()) {
-      e = this.n.node
+    // if (!isUnit && n.isProduct()) {
+    //   const nFactors = []
+    //   const dFactors = []
+    //   const factors = n.factors
+    //   factors.forEach(factor => {
+    //     if (
+    //       factor.isPower() &&
+    //       factor.last.isBracket() &&
+    //       factor.last.first.isOpposite()
+    //     ) {
+    //       dFactors.push(
+    //         power([
+    //           math(factor.first.string),
+    //           math(factor.last.first.first),
+    //         ]),
+    //       )
+    //     } else {
+    //       nFactors.push(math(factor.string))
+    //     }
+    //   })
+    //   console.log('nfactors', nFactors.map(f => f.string))
+    //   console.log('dfactors', dFactors.map(f => f.string))
+    //   if (nFactors.length !== factors.length) {
+    //     n = product(nFactors)
+    //   }
+    //   dFactors.forEach(factor => {
+    //     d = d.mult(factor)
+    //   })
+    // }
+
+    if (d.isOne()) {
+      e = n
     } else {
       let positive = true
-      let n = this.n.node
       if (n.isOpposite()) {
         positive = false
         n = n.first
       }
-      let d = this.d.node
       if (!(n.isNumber() || n.isHole() || n.isSymbol() || n.isPower())) {
         n = n.bracket()
       }
@@ -363,7 +420,9 @@ const PNormal = {
     if (this.unit) {
       // console.log('unit', this.unit)
       // console.log('unit.node', this.unit.node)
-      e.unit = math('1' + this.unit.node.toString({ isUnit: true })).unit
+      e.unit = math(
+        '1' + this.unit.toNode({ isUnit: true }).toString({ isUnit: true }),
+      ).unit
     }
     return e
   },
@@ -648,11 +707,14 @@ const PNList = {
                 // basecoef1 et basecoef2 sont des nProduct
                 const newcoefvalue =
                   parseInt(coefcoef1.string) * parseInt(coefcoef2.string)
-                const coef =
-                  newcoefvalue < 0
-                    ? number(Math.abs(newcoefvalue)).oppose()
-                    : number(newcoefvalue)
-                const base = basecoef1.mult(basecoef2)
+                const negative = newcoefvalue < 0
+                let coef = number(Math.abs(newcoefvalue))
+                let base = basecoef1.mult(basecoef2)
+                if (base.node.isNumber() && !base.node.isOne()) {
+                  coef = number(coef.value.mul(base.node.value))
+                  base = baseOne()
+                }
+                if (negative) coef = coef.oppose()
                 coefs.push([coef, base])
               }
             }
@@ -851,10 +913,27 @@ export default function normalize(node) {
     //   break
     // }
 
-    case TYPE_RADICAL:
-      e = node.first.normal.pow(number(0.5).normal)
+    case TYPE_POWER:
+      e = node.first.normal.pow(node.last.normal)
       break
 
+    case TYPE_RADICAL: {
+      // const child = node.first.normal.node
+      e = node.first.normal.pow(number(0.5).normal)
+      // const base = createNode({ type: node.type, children:[child] })
+      // if (child.isNumeric()) {
+
+      //   const coef = nSum([[one(), createBase(base)]])
+      //   n = nSum([[coef, baseOne()]])
+      //   d = nSumOne()
+      // }
+      // else {
+      //   // console.log("base", base, base.string)
+      //   n = nSum([[coefOne(), createBase(base)]])
+      //   d = nSumOne()
+      // }
+      break
+    }
     case TYPE_COS:
     case TYPE_SIN:
     case TYPE_TAN:
@@ -940,10 +1019,6 @@ export default function normalize(node) {
       e = node.first.normal.div(node.last.normal)
       break
 
-    case TYPE_POWER:
-      e = node.first.normal.pow(node.last.normal)
-      break
-
     case TYPE_EQUALITY:
     case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_MORE:
@@ -980,3 +1055,5 @@ export default function normalize(node) {
   }
   return e
 }
+
+
