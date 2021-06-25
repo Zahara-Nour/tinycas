@@ -37,6 +37,9 @@ describe('Testing normal forms for numerical expressions', () => {
     ['0.5/2', '1/4'],
     ['1/3+1/3', '2/3'],
     ['2/3*5/7', '10/21'],
+    ['2/3*(5/7)', '10/21'],
+    ['2/3*(3/2)', '1'],
+    ['2/3*(9/8)', '3/4'],
     ['2/3:(5/7)', '14/15'],
     ['23%', '23/100'],
   ]
@@ -117,6 +120,9 @@ describe('Testing normal forms for litteral expressions', () => {
     ['(a+b)/(c+d)', '(a+b)/(c+d)'],
     ['(a+b)^2/(c+d)^2', '(2*a*b+a^2+b^2)/(2*c*d+c^2+d^2)'],
     ['(a+b)^2/(c+d)^2', '(2*a*b+a^2+b^2)/(2*c*d+c^2+d^2)'],
+    ['2/7*x+3/7*x', '(5*x)/7'],
+    ['(4x+6y)/(10x+14y)', '(2*x+3*y)/(5*x+7*y)'],
+    ['(4x-6y)/(-10x+14y)', '(2*x-3*y)/(-5*x+7*y)'],
 
    
   ]
@@ -168,6 +174,10 @@ describe('Testing normal forms for functions', () => {
     ['sin(1)+cos(2)', 'cos(2)+sin(1)'],
     ['cos(2)+cos(2)', '2*cos(2)'],
     ['cos(2)*cos(2)', 'cos(2)^2'],
+    ['cos(2)+cos(2)', '2*cos(2)'],
+    ['cos(6)*x+cos(7)*x', '(cos(6)+cos(7))*x'],
+
+
   ]
 
 

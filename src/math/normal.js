@@ -40,8 +40,9 @@ import {
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
-import { binarySearchCmp, gcd } from '../utils/utils'
+import { binarySearchCmp, gcd, pgcd } from '../utils/utils'
 import compare from './compare'
+import Decimal from 'decimal.js'
 
 export const TYPE_NORMAL = 'normal'
 export const TYPE_NSUM = 'nsum'
@@ -114,25 +115,81 @@ const PNormal = {
 
   // réduit une expression normale correspondant à une fraction numérique
   reduce() {
-    function test(e) {
-      return e.isNumber() || (e.isOpposite() && e.first.isNumber())
-    }
-    // console.log("reduce")
-    if (test(this.n.node) && test(this.d.node)) {
-      // const negative = (this.n.isOpposite && !this.d.isOpposite) || (this.d.isOpposite && !this.n.isOpposite)
-      // const n = this.n.isOpposite() ? this.n.first :this.n
-      // const d = this.d.isOpposite() ? this.d.first :this.d
+    function lookForPGCDinSum(s) {
+      let n
 
-
-      const f = fraction(this.n.toString({ displayUnit: false }))
-        .div(fraction(this.d.toString({ displayUnit: false })))
-        .reduce()
-      if (f.toString() !== this.string) {
-        const e = math(f.toString()).normal
-        return normal(e.n, e.d, this.unit)
-      }
+      s.children.forEach(term => {
+        const coef = term[0]
+        let p
+        if (coef.type === TYPE_NSUM) {
+          p = lookForPGCDinSum(coef)
+        } else {
+          p = coef.isOpposite() ? coef.first.value : coef.value
+        }
+        n = n ? pgcd([n, p]) : p
+      })
+      return n
     }
-    return this
+
+    function simplify(s, p) {
+      const terms = s.children.map(term => {
+        let coef = term[0]
+        const base = term[1]
+
+        if (coef.type === TYPE_NSUM) {
+          coef = simplify(coef, p)
+          return [coef, base]
+        } else {
+          return coef.isOpposite()
+            ? [number(coef.first.value.div(p)).oppose(), base]
+            : [number(coef.value.div(p)), base]
+
+          // return coef.div(number(p)).eval()
+        }
+      })
+      return nSum(terms)
+    }
+
+    const n_pgcd = lookForPGCDinSum(this.n)
+    const d_pgcd = lookForPGCDinSum(this.d)
+
+    const p = pgcd([n_pgcd, d_pgcd])
+    let n = simplify(this.n, p)
+    let d = simplify(this.d, p)
+
+    let negative = false
+    if (n.node.isOpposite()) {
+      negative = true
+      n = n.oppose()
+    }
+    if (d.node.isOpposite()) {
+      negative = !negative
+      d = d.oppose()
+    }
+
+    if (negative) n = n.oppose()
+    //  console.log('lookup pgcd', this.string, n_pgcd, d_pgcd, p,  n.string)
+    return normal(n, d, this.unit)
+    // return this
+
+    // function test(e) {
+    //   return e.isNumber() || (e.isOpposite() && e.first.isNumber())
+    // }
+    // // console.log("reduce")
+    // if (test(this.n.node) && test(this.d.node)) {
+    //   // const negative = (this.n.isOpposite && !this.d.isOpposite) || (this.d.isOpposite && !this.n.isOpposite)
+    //   // const n = this.n.isOpposite() ? this.n.first :this.n
+    //   // const d = this.d.isOpposite() ? this.d.first :this.d
+
+    //   const f = fraction(this.n.toString({ displayUnit: false }))
+    //     .div(fraction(this.d.toString({ displayUnit: false })))
+    //     .reduce()
+    //   if (f.toString() !== this.string) {
+    //     const e = math(f.toString()).normal
+    //     return normal(e.n, e.d, this.unit)
+    //   }
+    // }
+    // return this
   },
 
   add(e) {
@@ -142,6 +199,7 @@ const PNormal = {
       (!this.unit && e.unit)
     )
       throw new Error("Erreur d'unité")
+
     return normal(
       this.n.mult(e.d).add(e.n.mult(this.d)),
       this.d.mult(e.d),
@@ -172,7 +230,7 @@ const PNormal = {
     else if (this.unit) unit = this.unit
     else unit = e.unit
 
-    if (unit && unit.string === "1") unit = null
+    if (unit && unit.string === '1') unit = null
     return normal(this.n.mult(e.n), e.d.mult(this.d), unit).reduce()
   },
 
@@ -193,46 +251,49 @@ const PNormal = {
       factors.forEach(factor => {
         result = result.mult(factor.pow(e))
       })
-    }
-    else if (this.isPower()) {
-  
+    } else if (this.isQuotient() || this.isDivision()) {
+      result = this.n.node.normal.pow(e).div(this.d.node.normal.pow(e))
+    } else if (this.isPower()) {
       // const exp= fraction(this.node.last.string)
       const exp = this.node.last.mult(e.node).eval()
       result = this.node.first.normal.pow(exp.normal)
-      
-    }
-
-    else if (e.isInt()) {
+    } else if (e.isInt()) {
       result = this
       for (let i = 1; i < e.node.value.toNumber(); i++) {
         result = result.mult(this)
       }
-    }
-    else if (e.isMinusOne()) {
+    } else if (e.isMinusOne()) {
       result = this.invert()
-
-    }
-    else if (e.isOpposite() && e.node.first.isInt()) {
+    } else if (e.isOpposite() && e.node.first.isInt()) {
       const n = e.node.first.value.toNumber()
       result = this
       for (let i = 1; i < n; i++) {
         result = result.mult(this)
       }
       result = result.invert()
-    }
-    else if (e.equalsTo(number(0.5).normal) && this.node.isInt() && this.node.value.sqrt().isInt()) {
-      result = number(this.node.value.sqrt().toNumber()).normal
-    }
-    else if (e.isOpposite() && e.node.first.equals(number(0.5)) && this.node.isInt() && this.node.value.sqrt().isInt()) {
+    } else if (
+      e.equalsTo(number(0.5).normal) &&
+      this.node.isInt() &&
+      this.node.value.sqrt().isInt()
+    ) {
+      result = number(this.node.value.sqrt()).normal
+      console.log('result', result.string)
+    } else if (
+      e.isOpposite() &&
+      e.node.first.equals(number(0.5)) &&
+      this.node.isInt() &&
+      this.node.value.sqrt().isInt()
+    ) {
       result = number(this.node.value.sqrt().toNumber()).normal.invert()
-    }
-    else {
+    } else {
       console.log(' !!!! defult    !!!!', this.string, e.string)
+      console.log(e.equalsTo(number(0.5).normal))
+      // this.node.isInt() &&
+      // this.node.value.sqrt().isInt()
       // result = this
       const n = nSum([[coefOne(), createBase(this.node, e.node)]])
       const d = nSumOne()
       result = normal(n, d)
-
     }
     return result
   },
@@ -264,7 +325,6 @@ const PNormal = {
     n = n.mult(this.d)
     // }
     return normal(n, d, unit).reduce()
-
   },
 
   compareTo(e) {
@@ -291,10 +351,10 @@ const PNormal = {
       }
       let d = this.d.node
       if (!(n.isNumber() || n.isHole() || n.isSymbol() || n.isPower())) {
-        n = bracket([n])
+        n = n.bracket()
       }
       if (!(d.isNumber() || d.isHole() || d.isSymbol() || d.isPower())) {
-        d = bracket([d])
+        d = d.bracket()
       }
       e = n.frac(d)
       if (!positive) e = e.oppose()
@@ -303,7 +363,7 @@ const PNormal = {
     if (this.unit) {
       // console.log('unit', this.unit)
       // console.log('unit.node', this.unit.node)
-      e.unit = math("1" + this.unit.node.toString({ isUnit: true })).unit
+      e.unit = math('1' + this.unit.node.toString({ isUnit: true })).unit
     }
     return e
   },
@@ -402,15 +462,16 @@ const PNList = {
           coef = coef1.merge(coef2) // coef1 est un nSum
         } else {
           // const newcoefvalue = parseInt(coef1.string) + parseInt(coef2.string)
-          const newcoefvalue = fraction(coef1.string).add(fraction(coef2.string))
+          const newcoefvalue = fraction(coef1.string)
+            .add(fraction(coef2.string))
+            .reduce()
+
           // console.log('newcoef', newcoefvalue.toString())
           coef = math(newcoefvalue.toString())
           // coef =
           //   newcoefvalue.isLessThan(fraction(0))
           //     ? number(Math.abs(newcoefvalue)).oppose()
           //     : number(newcoefvalue)
-
-
         }
 
         if (coef.isZero()) {
@@ -439,7 +500,7 @@ const PNList = {
 
   symmetrize() {
     // symmetrize an element [coef, base]
-    const f = function (e) {
+    const f = function(e) {
       const coef = e[0]
       const base = e[1]
       let newcoef
@@ -495,7 +556,7 @@ const PNList = {
   },
 
   toNode() {
-    const nProductElementToNode = function ([coef, base]) {
+    const nProductElementToNode = function([coef, base]) {
       // normalement coef est différent de 0
       let e = base
       if (!base.isOne() && !coef.isOne()) {
@@ -508,8 +569,12 @@ const PNList = {
     switch (this.type) {
       case TYPE_NPRODUCT:
         for (let i = 0; i < this.children.length; i++) {
-          const factor = nProductElementToNode(this.children[i])
+          let factor = nProductElementToNode(this.children[i])
 
+          if (factor.isOpposite() || factor.isSum() || factor.isDifference()) {
+            console.log('factor', factor.string)
+            factor = factor.bracket()
+          }
           if (i === 0) {
             e = factor
           } else if (!factor.isOne()) {
@@ -522,7 +587,7 @@ const PNList = {
       case TYPE_NSUM:
         for (let i = 0; i < this.children.length; i++) {
           const child = this.children[i]
-          const coef = child[0].type === TYPE_NSUM ? child[0].node : child[0]
+          let coef = child[0].type === TYPE_NSUM ? child[0].node : child[0]
           const base = child[1].node
           let term
           let minus = false
@@ -535,8 +600,15 @@ const PNList = {
             term = base
           } else if (coef.isOpposite()) {
             minus = true
-            term = coef.first.mult(base)
+            if (coef.first.isSum() || coef.first.isDifference()) {
+              term = coef.first.bracket().mult(base)
+            } else {
+              term = coef.first.mult(base)
+            }
           } else {
+            if (coef.isSum() || coef.isDifference()) {
+              coef = coef.bracket()
+            }
             term = coef.mult(base)
           }
           if (i === 0) {
@@ -624,7 +696,7 @@ const PNList = {
 /**
  * Constantes utilsées
  */
-const baseOne = (function () {
+const baseOne = (function() {
   let instance
   return () => {
     if (!instance) {
@@ -642,7 +714,7 @@ function simpleCoef(coef) {
   return nSum([[coef, baseOne()]])
 }
 
-const coefOne = (function () {
+const coefOne = (function() {
   let instance
   return () => {
     if (!instance) {
@@ -652,7 +724,7 @@ const coefOne = (function () {
   }
 })()
 
-const coefZero = (function () {
+const coefZero = (function() {
   let instance
   return () => {
     if (!instance) {
@@ -662,7 +734,7 @@ const coefZero = (function () {
   }
 })()
 
-const nSumOne = (function () {
+const nSumOne = (function() {
   let instance
   return () => {
     if (!instance) instance = nSum([[coefOne(), baseOne()]])
@@ -670,7 +742,7 @@ const nSumOne = (function () {
   }
 })()
 
-const nSumZero = (function () {
+const nSumZero = (function() {
   let instance
   return () => {
     if (!instance) instance = nSum([[coefZero(), baseOne()]])
@@ -679,7 +751,7 @@ const nSumZero = (function () {
 })()
 
 // forme normale du nombre 1 - singleton
-const normOne = (function () {
+const normOne = (function() {
   let instance
   return unit => {
     if (!unit) {
@@ -691,7 +763,7 @@ const normOne = (function () {
 })()
 
 // forme normale du nombre 0 - singleton
-const normZero = (function () {
+const normZero = (function() {
   let instance
   return unit => {
     if (!unit) {
@@ -780,7 +852,7 @@ export default function normalize(node) {
     // }
 
     case TYPE_RADICAL:
-      e = node.first.bracket().normal.pow(number(0.5).normal)
+      e = node.first.normal.pow(number(0.5).normal)
       break
 
     case TYPE_COS:
@@ -795,10 +867,19 @@ export default function normalize(node) {
     case TYPE_MOD: {
       const children = node.children.map(c => c.normal.node)
       const base = createNode({ type: node.type, children })
+      if (base.isNumeric()) {
+        // d'abord voir si on peut évaluer
 
-      // console.log("base", base, base.string)
-      n = nSum([[coefOne(), createBase(base)]])
-      d = nSumOne()
+        // console.log('!!! Numeric !!!!')
+        const coef = nSum([[one(), createBase(base)]])
+        n = nSum([[coef, baseOne()]])
+        d = nSumOne()
+        // console.log('normal', normal(n, d).node)
+      } else {
+        // console.log("base", base, base.string)
+        n = nSum([[coefOne(), createBase(base)]])
+        d = nSumOne()
+      }
       break
     }
 
@@ -894,7 +975,7 @@ export default function normalize(node) {
     const uD = nSum([[simpleCoef(one()), u.d.first[1]]])
     u = normal(uN, uD)
     e = e.mult(coef)
-    if (u.string === "1") u = null
+    if (u.string === '1') u = null
     e.unit = u
   }
   return e

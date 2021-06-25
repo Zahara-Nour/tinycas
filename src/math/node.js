@@ -590,8 +590,7 @@ const PNode = {
   eval(params = {}) {
 
     function evalFunctions(node) {
-
-
+      
       if (node.isPGCD()) {
         let a = node.first.eval()
         let b = node.last.eval()

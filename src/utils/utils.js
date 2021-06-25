@@ -54,17 +54,45 @@ export const gcd = function(a, b) {
     return a
   }
   const result = gcd2(b, a % b)
- 
+
   return result
 }
 
 const gcd2 = function(a, b) {
-  
   if (!b) {
     return a
   }
 
   return gcd2(b, a % b)
+}
+
+function pgcd(numbers) {
+  switch (numbers.length) {
+    case 1:
+      return numbers[0]
+
+    case 2: {
+      let a = numbers[0]
+      let b = numbers[1]
+
+      if (b.greaterThan(a)) {
+        ;[a, b] = [b, a]
+      }
+      while (true) {
+        if (b.isZero()) return a
+        a = a.mod(b)
+        if (a.isZero()) return b
+        b = b.mod(a)
+      }
+    }
+
+    default: {
+      const a = numbers.shift()
+      const b = numbers.shift()
+      numbers.unshift(pgcd([a, b]))
+      return pgcd(numbers)
+    }
+  }
 }
 
 /**
@@ -73,7 +101,7 @@ const gcd2 = function(a, b) {
  * @param  {Array} array The array to shuffle
  * @return {String}      The first item in the shuffled array
  */
- const shuffle = function (array) {
+const shuffle = function(array) {
   let currentIndex = array.length
   let temporaryValue, randomIndex
 
@@ -92,5 +120,4 @@ const gcd2 = function(a, b) {
   return array
 }
 
-
-export { shuffle, round, binarySearchCmp, roundNumber, roundDecimal }
+export { shuffle, round, binarySearchCmp, roundNumber, roundDecimal, pgcd }

@@ -80,11 +80,6 @@ describe('Testing evaluation of numerical expression with decimal result', () =>
     ['(-42)/70', '-0.6'],
     ['42/(-70)', '-0.6'],
     ['(-42)/(-70)', '0.6'],
-    // ['2/7+3/7', '5/7'],
-    // ['5/7-3/7', '2/7'],
-    // ['(5/7)*(3/7)', '15/49'],
-    // ['(5/7):(3/7)', '5/3'],
-    // ['(5/7)/(3/7)', '5/3'],
     ['3/10+15/8', '2.175'],
     ['3/10-15/8', '-1.575'],
     ['(2/10)*(15/8)', '0.375'],
@@ -181,7 +176,40 @@ describe('Test functions evaluation', () => {
 
     e = math('sqrt(25/16)')
     expect(e.eval().string).toEqual('5/4')
+
+    e = math('1/sqrt(25/16)')
+    expect(e.eval().string).toEqual('4/5')
     
+    e = math('16^(1/2)')
+    expect(e.eval().string).toEqual('4')
+
+    e = math('16^(-1/2)')
+    expect(e.eval().string).toEqual('1/4')
+
+    e = math('(1/16)^(1/2)')
+    expect(e.eval().string).toEqual('1/4')
+
+    e = math('(25/16)^(1/2)')
+    expect(e.eval().string).toEqual('5/4')
+
+    e = math('(25/16)^(-1/2)')
+    expect(e.eval().string).toEqual('4/5')
+
+  })
+})
+
+
+describe('Test powers', () => {
+  
+  test('powers', () => {
+    let e = math('16^2,3')
+    expect(e.eval().string).toEqual('16^(23/10)')
+
+    e = math('1/(16^2,3)')
+    expect(e.eval().string).toEqual('1/16^(23/10)')
+
+
+
   })
 })
 
