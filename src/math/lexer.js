@@ -96,6 +96,12 @@ function lexer (exp) {
       return false
     },
 
+    prematch (t) {
+      if (_pos >= _baseExp.length) return false
+      const s = _baseExp.slice(_pos)
+      return (t.match(s))
+    },
+
     saveTrack () {
       _savedPos = _pos
     },

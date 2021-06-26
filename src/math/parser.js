@@ -154,6 +154,10 @@ ${msg}`
     return false
   }
 
+  function prematch(t) {
+    return _lex.prematch(t)
+  }
+
   function require(t) {
     if (!match(t)) throw new ParsingError(`${t.pattern} required`)
   }
@@ -603,7 +607,8 @@ ${msg}`
       e = percentage([e])
     }
 
-    if (e) {
+    // les noms des fonctions interferent avec ceux des unités
+    if (e && !prematch(FUNCTION)) {
       const unit = parseUnit()
       if (unit) {
         e.unit = unit

@@ -50,6 +50,7 @@ describe('Testing normal forms for numerical expressions', () => {
     ['sqrt(17)', 'sqrt(17)'],
     ['sqrt(25)', '5'],
     ['sqrt(32)', '4*sqrt(2)'],
+    ['3sqrt(2)', '3*sqrt(2)'],
     ['sqrt(20)+sqrt(45)', '5*sqrt(5)'],
     ['sqrt(20)+sqrt(45)+sqrt(98)', '7*sqrt(2)+5*sqrt(5)'],
     ['sqrt(2^2)', '2'],
