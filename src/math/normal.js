@@ -41,6 +41,7 @@ import {
   product,
   boolean,
   TYPE_BOOLEAN,
+  radical,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -305,21 +306,13 @@ const PNormal = {
       // TODO: parenthèses ??
       let n, d
       if (this.isNumeric() && e.isNumeric()) {
-        // d'abord voir si on peut évaluer
         const coef = nSum([[one(), createBase(this.node, e.node)]])
         n = nSum([[coef, baseOne()]])
         d = nSumOne()
-        // console.log('normal', normal(n, d).node)
       } else {
-        // console.log("base", base, base.string)
         n = nSum([[coefOne(), createBase(this.node, e.node)]])
         d = nSumOne()
       }
-      // this.node.isInt() &&
-      // this.node.value.sqrt().isInt()
-      // result = this
-      // const n = nSum([[coefOne(), createBase(this.node, e.node)]])
-      // const d = nSumOne()
 
       // TODO: et l'unité ???
       result = normal(n, d)
@@ -619,7 +612,11 @@ const PNList = {
   toNode() {
     const nProductElementToNode = function([coef, base]) {
       // normalement coef est différent de 0
+      // TODO: mise a jour ds parents ?
       let e = base
+      if (coef.string==='1/2') {
+        e = radical([base])
+      } else 
       if (!base.isOne() && !coef.isOne()) {
         e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
       }
@@ -901,44 +898,12 @@ export default function normalize(node) {
 
       break
 
-    // TODO: A revoir, la forme normale n'est pas cohérente avec les autres
-
-    // case TYPE_GCD: {
-    //   let a = node.first.eval()
-    //   let b = node.last.eval()
-    //   a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-    //   b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-    //   e = number(gcd(a, b)).normal
-    //   break
-    // }
-
-    // // TODO: pareil
-    // case TYPE_MOD: {
-    //   let a = node.first.eval()
-    //   let b = node.last.eval()
-    //   e = number(a.value.mod(b.value).toNumber()).normal
-    //   break
-    // }
-
     case TYPE_POWER:
       e = node.first.normal.pow(node.last.normal)
       break
 
     case TYPE_RADICAL: {
-      // const child = node.first.normal.node
       e = node.first.normal.pow(number(0.5).normal)
-      // const base = createNode({ type: node.type, children:[child] })
-      // if (child.isNumeric()) {
-
-      //   const coef = nSum([[one(), createBase(base)]])
-      //   n = nSum([[coef, baseOne()]])
-      //   d = nSumOne()
-      // }
-      // else {
-      //   // console.log("base", base, base.string)
-      //   n = nSum([[coefOne(), createBase(base)]])
-      //   d = nSumOne()
-      // }
       break
     }
     case TYPE_COS:

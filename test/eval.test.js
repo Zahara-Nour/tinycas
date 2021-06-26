@@ -253,6 +253,8 @@ describe('Test relations evaluation', () => {
     
     ['abs(4-2)>1', 'true'],
     ['abs(4-3)>1', 'false'],
+    ['abs(4-3)>1', 'false'],
+    ['sqrt(6)', 'sqrt(6)'],
 
 
 
