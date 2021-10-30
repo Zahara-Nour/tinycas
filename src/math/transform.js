@@ -91,14 +91,22 @@ export function removeFactorsOne(node) {
     const first = node.first.removeFactorsOne()
     const last = node.last.removeFactorsOne()
 
-    if (first.equals(one()) && last.equals(one())) {
+    if (first.string === '1' && last.string === '1') {
       e = number(1)
     }
-    else if (first.equals(one())) {
-      e = math(last.string)
+    else if (first.string === '1') {
+      // e = math(last.string)
+      e = last
+      if (e.isBracket()) {
+        e = e.first
+      }
     }
-    else if (last.equals(one())) {
-      e = math(first.string)
+    else if (last.string === '1') {
+      // e = math(first.string)
+      e = first
+      if (e.isBracket()) {
+        e = e.first
+      }
     } else {
       e = product([first, last], node.type)
     }
@@ -109,7 +117,11 @@ export function removeFactorsOne(node) {
   else {
     e = math(node.string)
   }
-  e.unit = node.unit
+
+  
+  if (node.unit && !e.unit) {
+    e.unit = node.unit
+  }
   return e
 }
 
