@@ -32,6 +32,8 @@ import {
   floor,
   unequality,
   abs,
+  min,
+  max,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -77,7 +79,7 @@ const VALUE_TEMPLATE = token('$')
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
-const FUNCTION = token('@cos|sin|sqrt|pgcd|cos|sin|tan|exp|ln|log|mod|floor|abs')
+const FUNCTION = token('@cos|sin|sqrt|pgcd|mini|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs')
 // NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
 // const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
@@ -341,6 +343,22 @@ ${msg}`
           require(SEMICOLON)
           const b = parseExpression()
           e = pgcd([a, b])
+          break
+        }
+
+        case 'mini': {
+          const a = parseExpression()
+          require(SEMICOLON)
+          const b = parseExpression()
+          e = min([a, b])
+          break
+        }
+
+        case 'maxi': {
+          const a = parseExpression()
+          require(SEMICOLON)
+          const b = parseExpression()
+          e = max([a, b])
           break
         }
 

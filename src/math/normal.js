@@ -42,6 +42,8 @@ import {
   boolean,
   TYPE_BOOLEAN,
   radical,
+  TYPE_MIN,
+  TYPE_MAX,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
@@ -915,6 +917,8 @@ export default function normalize(node) {
     case TYPE_FLOOR:
     case TYPE_ABS:
     case TYPE_GCD:
+    case TYPE_MIN:
+    case TYPE_MAX:
     case TYPE_MOD: {
       if (node.isNumeric()) {
         switch (node.type) {
@@ -941,6 +945,20 @@ export default function normalize(node) {
             a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
             b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
             e = number(gcd(a, b)).normal
+            break
+          }
+
+          case TYPE_MIN: {
+            const a = node.first.eval()
+            const b = node.last.eval()
+            e = number(Decimal.min(a.value, b.value)).normal
+            break
+          }
+
+          case TYPE_MAX: {
+            const a = node.first.eval()
+            const b = node.last.eval()
+            e = number(Decimal.max(a.value, b.value)).normal
             break
           }
 

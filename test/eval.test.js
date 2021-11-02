@@ -146,6 +146,27 @@ describe('Test functions evaluation', () => {
     expect(e.eval().string).toEqual('6')
   })
 
+  test('Function min', () => {
+    const e = math('mini(12;18)')
+    expect(e.eval().string).toEqual('12')
+  })
+
+  test('Function min', () => {
+    const e = math('mini(8;5)')
+    expect(e.eval().string).toEqual('5')
+  })
+
+  test('Function max', () => {
+    const e = math('maxi(12;18)')
+    console.log('max', e)
+    expect(e.eval().string).toEqual('18')
+  })
+
+  test('Function max', () => {
+    const e = math('maxi(8;5)')
+    expect(e.eval().string).toEqual('8')
+  })
+
   test('Function mod', () => {
     const e = math('mod(15;4)')
     expect(e.eval().string).toEqual('3')

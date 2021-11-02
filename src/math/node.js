@@ -53,6 +53,8 @@ export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
+export const TYPE_MAX = 'maxi'
+export const TYPE_MIN = 'mini'
 export const TYPE_MOD = 'mod'
 export const TYPE_BOOLEAN = 'boolean'
 export const TYPE_COS = 'cos'
@@ -164,6 +166,12 @@ const PNode = {
   isPGCD() {
     return this.type === TYPE_GCD
   },
+  isMax() {
+    return this.type === TYPE_MAX
+  },
+  isMin() {
+    return this.type === TYPE_MIN
+  },
   isMod() {
     return this.type === TYPE_MOD
   },
@@ -225,6 +233,8 @@ const PNode = {
     return (
       this.isRadical() ||
       this.isPGCD() ||
+      this.isMin() ||
+      this.isMax() ||
       this.isMod() ||
       this.isCos() ||
       this.isSin() ||
@@ -921,6 +931,14 @@ export function floor(children) {
 
 export function abs(children) {
   return createNode({ type: TYPE_ABS, children })
+}
+
+export function min(children) {
+  return createNode({ type: TYPE_MIN, children })
+}
+
+export function max(children) {
+  return createNode({ type: TYPE_MAX, children })
 }
 
 export function percentage(children) {
