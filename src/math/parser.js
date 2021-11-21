@@ -135,6 +135,7 @@ class ParsingError extends Error {
 function parser({ implicit = true, allowDoubleSign = true } = {}) {
   let _lex
   let _lexem
+  let _last_lexem
   let _input
   let _parts
 
@@ -149,6 +150,7 @@ ${msg}`
 
   function match(t) {
     if (_lex.match(t)) {
+      _last_lexem = _lexem
       _lexem = _lex.lexem
       _parts = _lex.parts
       return _lexem
@@ -318,16 +320,16 @@ ${msg}`
 
     if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true')
-    } 
+    }
 
     // boolean
     else if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1))
     }
-    
+
     // number
     else if (match(NUMBER)) {
-      
+
       e = number(_lexem)
     } else if (match(HOLE)) {
       e = hole()
@@ -398,31 +400,15 @@ ${msg}`
           e = floor([parseExpression()])
           break
 
-          case 'abs':
-            e = abs([parseExpression()])
-            break
+        case 'abs':
+          e = abs([parseExpression()])
+          break
 
         default:
           e = null
       }
       require(CLOSING_BRACKET)
-    } else if (match(CONSTANTS)) {
-      e = symbol(_lexem)
-    } else if (match(SYMBOL)) {
-      switch (_lexem) {
-        /*
-        case "p":
-          e = parseFactory.PI;
-        */
-        default:
-          e = symbol(_lexem)
-      }
-    } else if (match(OPENING_BRACKET)) {
-      // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
-      e = bracket([parseExpression()])
-      require(CLOSING_BRACKET)
     }
-
     // integer
     else if (match(INTEGER_TEMPLATE)) {
       const nature = _parts[2]
@@ -617,7 +603,37 @@ ${msg}`
         children: [parseExpression()],
       })
       require(CLOSING_CURLYBRACKET)
-    } else {
+    }
+    else if (match(CONSTANTS)) {
+      e = symbol(_lexem)
+    } else if (match(SYMBOL)) {
+      switch (_lexem) {
+        /*
+        case "p":
+          e = parseFactory.PI;
+        */
+        default:
+          e = symbol(_lexem)
+      }
+    } else if (match(OPENING_BRACKET)) {
+      // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
+      e = bracket([parseExpression()])
+      require(CLOSING_BRACKET)
+    }
+    // Fausses parenthèses pour gérer les fractions
+    else if (match(OPENING_CURLYBRACKET)) {
+      // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
+      e = parseExpression()
+      require(CLOSING_CURLYBRACKET)
+    }
+    else {
+
+      if (_lexem === '-' && _last_lexem === '+') {
+        console.log('erreur op')
+      }
+      if ('+-:*'.includes(_lexem) && '+-:*'.includes(_last_lexem)) {
+        console.log('erreur op')
+      }
       failure(ERROR_NO_VALID_ATOM)
     }
 
@@ -677,7 +693,7 @@ ${msg}`
       try {
         e = parseExpression()
       } catch (error) {
-        e = notdefined({ message: error.message })
+        e = notdefined({ message: error.message, input })
       }
       return e
     },

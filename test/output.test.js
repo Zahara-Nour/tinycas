@@ -10,13 +10,21 @@ import { math } from '../src/math/math'
 // }
 
 // console.log(formatNumber(123456789.123456789))
+ 
 
+console.log(math('2+').string)
 describe('Testing asciimath export', () => {
 
   const t = [ 
   //   ['3/4', '\\frac{3}{4}'],
     ['3%', '3%'],
     ['3%+4%', '3%+4%'],
+    ['2x', '2x'],
+    ['2*x', '2*x'],
+    ['2:x', '2:x'],
+    ['2/x', '2/x'],
+    ['{2/3}x', '{2/3}x'],
+
   ]
 
   test.each(t)(
@@ -35,6 +43,7 @@ describe('Testing latex export', () => {
       ['3%', '3\\%'],
       ['3%+4%', '3\\%+4\\%'],
       ['0.0123456789123456','0,012\\,345\\,678\\,912\\,345\\,6'],
+      ['{3/4}x','\\frac{3}{4}x'],
 
     ]
   

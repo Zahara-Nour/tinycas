@@ -122,7 +122,6 @@ function removeCommas(n, d) {
     d = d.mul(10)
   }
   return { n, d, s }
-
 }
 
 function fraction(arg) {

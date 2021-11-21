@@ -88,6 +88,7 @@ describe('Testing templates generations', () => {
   const t = [
     '$e{3}',
     '$e[15;19]',
+   
     '$e{2;3}',
     '$er{3}',
     '-$e{3}',
@@ -234,13 +235,14 @@ describe('Testing sorting terms and factors', () => {
 
 describe('Testing removing unecessary brackets', () => {
 
-  const t = [
+  let t = [
     ['(3)', '3'],
     ['(3+4)', '3+4'],
     ['((3+4))', '3+4'],
     ['3*((3+4))', '3*(3+4)'],
 
     ['(-1)+4', '-1+4'],
+    ['4+(-9)', '4+(-9)'],
     ['2+(-1)+4', '2+(-1)+4'],
     ['2*((-1)+4)', '2*(-1+4)'],
     ['(+1)+4', '+1+4'],
@@ -355,8 +357,38 @@ describe('Testing removing unecessary brackets', () => {
   test.each(t)('%s and %s', (e, expected) => {
     expect(math(e).removeUnecessaryBrackets().string).toBe(expected)
   })
+
+   t = [
+    ['(-1)+4', '(-1)+4'],
+    ['(+1)+4', '(+1)+4'],
+  ]
+
+  test.each(t)('%s and %s', (e, expected) => {
+    expect(math(e).removeUnecessaryBrackets(true).string).toBe(expected)
+  })
 })
 
+describe('Testing reducing fractions', () => {
+
+  const t = [
+    ['2', '2'],
+    ['8/4', '2'],
+    ['4/6', '2/3'],
+    ['-4/6', '-2/3'],
+    ['4/6+6/15', '2/3+2/5'],
+    ['4/6-6/15', '2/3-2/5'],
+    ['(4/6)*(6/15)', '(2/3)*(2/5)'],
+
+    ['(-4)/6', '-2/3'],
+    ['4/(-6)', '-2/3'],
+
+  ]
+
+
+  test.each(t)('%s and %s', (e, expected) => {
+    expect(math(e).reduceFractions().string).toBe(expected)
+  })
+})
 
 describe('Testing removing unecessary Mult operator', () => {
 

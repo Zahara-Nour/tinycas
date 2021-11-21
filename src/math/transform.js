@@ -12,6 +12,7 @@ import {
   TYPE_PRODUCT_IMPLICIT,
   product,
   TYPE_PRODUCT,
+  TYPE_QUOTIENT,
 } from './node'
 import { math } from './math'
 import Decimal from 'decimal.js'
@@ -22,6 +23,27 @@ const constants = {
   e: '2.7',
 }
 
+export function reduceFractions(node) {
+
+  // On considère que les fractions sont composées de nombres positifs. Il faut appeler removeSign avant ?
+
+  let e
+  if (node.children) {
+    e = createNode({ type: node.type, children: node.children.map(child => child.reduceFractions()) })
+  } else {
+    e = node
+  }
+
+  if (e.isNumeric() && e.isQuotient()) {
+    e = e.reduce()
+
+  }
+
+  e = math(e.string)
+  e.unit = node.unit
+  return e
+
+}
 
 export function removeMultOperator(node) {
   let e = node.children
@@ -118,7 +140,7 @@ export function removeFactorsOne(node) {
     e = math(node.string)
   }
 
-  
+
   if (node.unit && !e.unit) {
     e.unit = node.unit
   }
@@ -138,7 +160,7 @@ export function simplifyNullProducts(node) {
 }
 
 
-export function removeUnecessaryBrackets(node) {
+export function removeUnecessaryBrackets(node,allowFirstNegativeTerm=false) {
   let e
   if (node.isBracket() &&
     (!node.parent ||
@@ -178,18 +200,21 @@ export function removeUnecessaryBrackets(node) {
       node.parent.isDivision() && node.first.isPower() ||
       node.parent.isPower() && node.first.isPower() && node.isFirst() ||
 
-      node.parent.isSum() && node.first.isOpposite() && node.isFirst() ||
-      node.parent.isSum() && node.first.isPositive() && node.isFirst() ||
+      !allowFirstNegativeTerm && node.parent.isSum() && node.first.isOpposite() && node.isFirst() ||
+      !allowFirstNegativeTerm && node.parent.isSum() && node.first.isPositive() && node.isFirst() ||
+
+      !allowFirstNegativeTerm && node.parent.isDifference() && node.first.isOpposite() && node.isFirst() ||
+      !allowFirstNegativeTerm && node.parent.isDifference() && node.first.isPositive() && node.isFirst() ||
 
       node.parent.isEquality() ||
       node.parent.isUnequality() ||
       node.parent.isInequality()
     )) {
-    e = node.first.removeUnecessaryBrackets()
+    e = node.first.removeUnecessaryBrackets(allowFirstNegativeTerm)
   }
 
   else if (node.children) {
-    e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets()) })
+    e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets(allowFirstNegativeTerm)) })
   }
   else {
     e = math(node.string)
@@ -350,35 +375,35 @@ export function removeSigns(node) {
   let e = node.children ? createNode({ type: node.type, children: node.children.map(child => child.removeSigns()) }) : math(node.string)
 
   // TODO: est-ce vraiment nécessaire ?
-  e.parent = parent
+
 
 
   if (e.isProduct() || e.isDivision() || e.isQuotient()) {
     let first, last
     let negative = false
     if (e.first.isBracket() && e.first.first.isOpposite()) {
-      first = math(e.first.first.first.string)
+      first = e.first.first.first
       negative = !negative
     }
     else if (e.first.isBracket() && e.first.first.isPositive()) {
-      first = math(e.first.first.first.string)
+      first = e.first.first.first
     }
     else {
-      first = math(e.first.string)
+      first = e.first
     }
 
     if (e.last.isBracket() && e.last.first.isOpposite()) {
-      last = math(e.last.first.first.string)
+      last = e.last.first.first
       negative = !negative
       if (!(last.isNumber() || last.isSymbol())) {
         last = last.bracket()
       }
     }
     else if (e.last.isBracket() && e.last.first.isPositive()) {
-      last = math(e.last.first.first.string)
+      last = e.last.first.first
     }
     else {
-      last = math(e.last.string)
+      last = e.last
     }
 
 
@@ -399,49 +424,41 @@ export function removeSigns(node) {
     if (parent && !parent.isBracket()) {
       e = e.bracket()
     }
-    e.parent = parent
+
 
   }
   else if (e.isSum() && e.last.isBracket() && e.last.first.isOpposite()) {
-    e = math(e.first.string).sub(math(e.last.first.first.string))
-    e.parent = parent
+    e = e.first.sub(e.last.first.first)
 
   }
 
   else if (e.isSum() && e.last.isBracket() && e.last.first.isPositive()) {
-    e = math(e.first.string).add(math(e.last.first.first.string))
-    e.parent = parent
+    e = e.first.add(e.last.first.first)
   }
 
   else if (e.isDifference() && e.last.isBracket() && e.last.first.isOpposite()) {
-    e = math(e.first.string).add(math(e.last.first.first.string))
-    e.parent = parent
+    e = e.first.add(e.last.first.first)
+
   }
 
   else if (e.isDifference() && e.last.isBracket() && e.last.first.isPositive()) {
-    e = math(e.first.string).sub(math(e.last.first.first.string))
-    e.parent = parent
+    e = e.first.sub(e.last.first.first)
   }
 
   else if (e.isPositive() && e.first.isBracket() && e.first.first.isOpposite()) {
-    e = math(e.first.first.string)
-    e.parent = parent
-
+    e = e.first.first
   }
 
   else if (e.isPositive() && e.first.isBracket() && e.first.first.isPositive()) {
-    e = math(e.first.first.first.string)
-    e.parent = parent
+    e = e.first.first.first
   }
 
   else if (e.isOpposite() && e.first.isBracket() && e.first.first.isOpposite()) {
-    e = math(e.first.first.first.string).positive()
-    e.parent = parent
+    e = e.first.first.first.positive()
   }
 
   else if (e.isOpposite() && e.first.isBracket() && e.first.first.isPositive()) {
-    e = math(e.last.first.first.string).oppose()
-    e.parent = parent
+    e = e.last.first.first.oppose()
   }
 
   else if (e.isBracket() && e.first.isPositive()) {
@@ -449,18 +466,17 @@ export function removeSigns(node) {
       (parent.isQuotient() || parent.isDivision()) &&
       node.isLast() &&
       (e.first.first.isQuotient() || e.first.first.isDivision())) {
-      e = math(e.first.first.string).bracket()
+      e = e.first.first.bracket()
 
     } else {
-      e = math(e.first.first.string)
+      e = e.first.first
     }
-    e.parent = parent
+
   }
 
-  if ((!e.parent || !e.parent.isBracket()) && e.isPositive()) {
+  if ((!parent || !parent.isBracket()) && e.isPositive()) {
 
-    e = math(e.first.string)
-    e.parent = parent
+    e = e.first
   }
 
 
@@ -471,8 +487,9 @@ export function removeSigns(node) {
   // else if (e.isPositive()) {
   //   e = e.first.removeSigns()
   // }
-
+  e = math(e.string)
   e.unit = node.unit
+  e.parent = parent
   return e
 }
 
@@ -580,7 +597,7 @@ function generateTemplate(node) {
               precision,
             }),
       )
-      const {
+      let {
         excludeMin,
         excludeMax,
         exclude,
@@ -588,8 +605,31 @@ function generateTemplate(node) {
         excludeMultiple,
         excludeCommonDividersWith,
       } = node
+
+      if (exclude) {
+        exclude = exclude.map(child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })).eval({
+              decimal,
+              precision,
+            }))
+      }
+     
+
+      if (excludeCommonDividersWith) {
+        excludeCommonDividersWith = excludeCommonDividersWith.map(child =>
+          child.isTemplate()
+            ? generateTemplate(child)
+            : generate(Object.assign(child.substitute(), { parent: node })).eval({
+              decimal,
+              precision,
+            }))
+      }
+
       do {
         // whatis children[1] ?
+        // ça veut dire une expression du type $e{;}
         doItAgain = false
         if (!children[1].isHole()) {
           e = number(
@@ -598,19 +638,20 @@ function generateTemplate(node) {
               children[1].value.toNumber(),
             ),
           )
-          if (node.relative) {
+          if (node.relative && !e.isZero()) {
             if (getRandomIntInclusive(0, 1)) {
               e = e.oppose()
             } else if (node.signed) {
               e = e.positive()
             }
           }
-          doItAgain = exclude && exclude.includes(e.string)
+        
+          doItAgain = exclude && exclude.map(exp => exp.string).includes(e.string)
         } else {
           e = number(
             getRandomIntInclusive(children[2].value.toNumber(), children[3].value.toNumber()),
           )
-          if (node.relative) {
+          if (node.relative && !e.isZero()) {
             if (getRandomIntInclusive(0, 1)) {
               e = e.oppose()
             } else if (node.signed) {
@@ -622,28 +663,24 @@ function generateTemplate(node) {
             (excludeMin && isInSegment(e, excludeMin, excludeMax))
         }
         if (excludeMultiple) {
-          doItAgain =
-            doItAgain ||
-            (excludeMultiple &&
-              excludeMultiple.some(elt => e.value.mod(elt.eval().value).equals(0)))
+          doItAgain = doItAgain ||
+            excludeMultiple.some(elt => e.value.mod(elt.eval().value).equals(0))
         }
         if (excludeDivider) {
-          doItAgain =
-            doItAgain ||
-            (excludeDivider &&
-              excludeDivider.some(elt => elt.eval().value.mod(e.value).equals(0)))
+          doItAgain = doItAgain ||
+            excludeDivider.some(elt => elt.eval().value.mod(e.value).equals(0))
         }
         if (excludeCommonDividersWith) {
           doItAgain =
             doItAgain ||
-            (excludeCommonDividersWith &&
-              excludeCommonDividersWith.some(elt => {
-                let a = elt.eval()
-                a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-                let b = e.eval()
-                b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-                return gcd(a, b) !== 1
-              }))
+
+            excludeCommonDividersWith.some(elt => {
+              let a = elt.generate().eval()
+              a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
+              let b = e.generate().eval()
+              b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
+              return gcd(a, b) !== 1
+            })
         }
       } while (doItAgain)
 
@@ -750,6 +787,7 @@ function generateTemplate(node) {
 
     default:
       // $1....
+     
       ref = parseInt(node.nature.slice(1, node.nature.length), 10)
       e = node.root.generated[ref - 1]
   }

@@ -13,6 +13,7 @@ import {
   removeNullTerms,
   removeFactorsOne,
   removeMultOperator,
+  reduceFractions,
   shallowShuffleFactors,
   shallowShuffleTerms,
   sortTerms,
@@ -80,12 +81,18 @@ const PNode = {
   //  simplifier une fraction numérique
   reduce() {
     // la fraction est déj
-    const b = fraction(this.string).reduce()
-    let result
+    // on simplifie les signes.
+    let b = this.removeSigns()
 
-    if (b.n === 0) {
+    const negative = b.isOpposite()
+    b =  fraction(negative ? b.first.string : b.string).reduce() 
+ 
+    let result
+    
+
+    if (b.n.equals(0)) {
       result = number(0)
-    } else if (b.d === 1) {
+    } else if (b.d.equals(1)) {
       result = b.s === 1 ? number(b.n) : opposite([number(b.n)])
     } else {
       result = quotient([number(b.n), number(b.d)])
@@ -93,6 +100,15 @@ const PNode = {
         result = opposite([result])
       }
     }
+
+    if (negative) {
+      if (result.isOpposite()) {
+        result = result.first
+      } else {
+        result = opposite([result])
+      }
+    }
+ 
     return result
   },
 
@@ -101,6 +117,9 @@ const PNode = {
   },
   simplify() {
     return this
+  },
+  isCorrect() {
+    return this.type !== TYPE_ERROR
   },
   isIncorrect() {
     return this.type === TYPE_ERROR
@@ -530,12 +549,16 @@ const PNode = {
     return sortTermsAndFactors(this)
   },
 
+  reduceFractions() {
+    return reduceFractions(this)
+  },
+
   removeMultOperator() {
     return removeMultOperator(this)
   },
 
-  removeUnecessaryBrackets() {
-    return removeUnecessaryBrackets(this)
+  removeUnecessaryBrackets(allowFirstNegativeTerm) {
+    return removeUnecessaryBrackets(this, allowFirstNegativeTerm)
   },
 
   removeSigns() {
@@ -792,6 +815,7 @@ const PNode = {
 
           default:
             // $1 ....
+            console.log('match template $1')
             n = parseInt(t.nature.slice(1, t.nature.length), 10)
             return this.matchTemplate(t.root.generated[n - 1])
         }
@@ -837,6 +861,18 @@ export function createNode(params) {
   if (node.children) {
     for (const child of node) {
       child.parent = node
+    }
+  }
+
+  if (node.exclude) {
+    for (const e of node.exclude) {
+      e.parent = node
+    }
+  }
+
+  if (node.excludeCommonDividersWith) {
+    for (const e of node.excludeCommonDividersWith) {
+      e.parent = node
     }
   }
   return node

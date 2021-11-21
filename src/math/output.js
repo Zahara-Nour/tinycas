@@ -125,7 +125,10 @@ export function text(e, options) {
       break
 
     case TYPE_PRODUCT_IMPLICIT:
+      s = e.children.map(child => child.toString(options)).join('')
+      break
     case TYPE_PRODUCT_POINT:
+
 
       s = e.children.map(child => child.toString(options)).join(e.type)
       // console.log('isunit IMPLCITI POINT', options.isUnit, s)
@@ -149,7 +152,7 @@ export function text(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error'
+      s = 'Error : ' + e.error.message+ ' ' + e.error.input
       break
 
     case TYPE_NORMAL:
@@ -408,7 +411,7 @@ export function latex(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error'
+      s = 'Error : ' + e.error+' '+e.input 
       break
 
     default:
