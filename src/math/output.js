@@ -340,8 +340,8 @@ export function latex(e, options) {
     }
 
     case TYPE_POWER:
-      console.log('e', e.string)
-      console.log('e.first', e.first.toLatex(options))
+      // console.log('e', e.string)
+      // console.log('e.first', e.first.toLatex(options))
       s =
         e.first.toLatex(options) +
         '^{' +
@@ -349,7 +349,7 @@ export function latex(e, options) {
           ? e.last.first.toLatex(options)
           : e.last.toLatex(options)) +
         '}'
-      console.log('s', s)
+      // console.log('s', s)
       break
 
     case TYPE_DIVISION:

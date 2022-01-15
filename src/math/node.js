@@ -501,6 +501,18 @@ const PNode = {
     return power([this, e])
   },
 
+  floor() {
+    return floor([this])
+  },
+
+  mod(e) {
+    return mod([this,e])
+  },
+
+  abs() {
+    return abs([this])
+  },
+
   shallowShuffleTerms() {
     if (this.isSum() || this.isDifference()) {
       return shallowShuffleTerms(this)

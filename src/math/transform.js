@@ -51,7 +51,7 @@ export function removeMultOperator(node) {
     : math(node.string)
 
   if (node.type === TYPE_PRODUCT &&
-    (node.last.isBracket() || node.last.isSymbol() || (node.last.isPower() && node.last.first.isSymbol()))) {
+    (node.last.isFunction() || node.last.isBracket() || node.last.isSymbol() || (node.last.isPower() && node.last.first.isSymbol()))) {
     e = product([e.first, e.last], TYPE_PRODUCT_IMPLICIT)
   }
   e.unit = node.unit
@@ -160,7 +160,7 @@ export function simplifyNullProducts(node) {
 }
 
 
-export function removeUnecessaryBrackets(node,allowFirstNegativeTerm=false) {
+export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
   let e
   if (node.isBracket() &&
     (!node.parent ||
@@ -176,6 +176,9 @@ export function removeUnecessaryBrackets(node,allowFirstNegativeTerm=false) {
       node.parent.isSum() && node.first.isQuotient() ||
       node.parent.isSum() && node.first.isDivision() ||
       node.parent.isSum() && node.first.isPower() ||
+      node.parent.isOpposite() && node.first.isProduct() ||
+      node.parent.isOpposite() && node.first.isQuotient() ||
+      node.parent.isOpposite() && node.first.isDivision() ||
       node.parent.isDifference() && node.first.isSum() && node.isFirst() ||
       node.parent.isDifference() && node.first.isDifference() && node.isFirst() ||
       node.parent.isDifference() && node.first.isProduct() ||
@@ -409,7 +412,9 @@ export function removeSigns(node) {
 
 
     if (e.isProduct()) {
-      e = first.mult(last)
+      // prendre en compte les différentes notation pour la multiplication
+      e = product([first, last], e.type)
+      // e = first.mult(last)
     } else if (e.isDivision()) {
       e = first.div(last)
     } else {
@@ -418,10 +423,11 @@ export function removeSigns(node) {
 
     if (negative) {
       e = e.oppose()
-    } else {
-      e = e.positive()
-    }
-    if (parent && !parent.isBracket()) {
+    } 
+    // else {
+    //   e = e.positive()
+    // }
+    if (negative && parent && !(parent.isBracket())) {
       e = e.bracket()
     }
 
@@ -615,7 +621,7 @@ function generateTemplate(node) {
               precision,
             }))
       }
-     
+
 
       if (excludeCommonDividersWith) {
         excludeCommonDividersWith = excludeCommonDividersWith.map(child =>
@@ -645,11 +651,18 @@ function generateTemplate(node) {
               e = e.positive()
             }
           }
-        
+
           doItAgain = exclude && exclude.map(exp => exp.string).includes(e.string)
         } else {
           e = number(
-            getRandomIntInclusive(children[2].value.toNumber(), children[3].value.toNumber()),
+            getRandomIntInclusive(
+              children[2].isOpposite()
+                ? children[2].first.value.toNumber()*(-1)
+                : children[2].value.toNumber(),
+              children[3].isOpposite()
+                ? children[3].first.value.toNumber()*(-1)
+                : children[3].value.toNumber()
+            ),
           )
           if (node.relative && !e.isZero()) {
             if (getRandomIntInclusive(0, 1)) {
@@ -787,7 +800,7 @@ function generateTemplate(node) {
 
     default:
       // $1....
-     
+
       ref = parseInt(node.nature.slice(1, node.nature.length), 10)
       e = node.root.generated[ref - 1]
   }
