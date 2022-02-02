@@ -635,10 +635,15 @@ const PNode = {
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
 
+
+
+    //  Cas particuliers : fonctions mini et maxi
+    // ces fonctions doivent retourner la forme initiale d'une des deux expressions
+    // et non la forme normaleg
     // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
     e = e.normal
 
-    // si on doit faire une conversion
+    // si l'unité du résultat est imposée
     if (params.unit) {
       if (!e.unit) {
         throw new Error("calcul avec unité d'une expression sans unité")
@@ -656,7 +661,7 @@ const PNode = {
       e.unit = params.unit
     }
 
-    // si on veut la valeur décimale
+    // si on veut la valeur décimale, on utilise la fonction evaluate
     if (params.decimal) {
       //  on garde en mémoire l'unité
       const unit = e.unit

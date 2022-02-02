@@ -949,16 +949,21 @@ export default function normalize(node) {
           }
 
           case TYPE_MIN: {
-            const a = node.first.eval()
-            const b = node.last.eval()
-            e = number(Decimal.min(a.value, b.value)).normal
+           
+            // const a = node.first.eval()
+           
+            // const b = node.last.eval()
+           
+            e = node.first.isLowerThan(node.last) ? node.first.normal : node.last.normal
+            // e = number(Decimal.min(a.value, b.value)).normal
             break
           }
 
           case TYPE_MAX: {
-            const a = node.first.eval()
-            const b = node.last.eval()
-            e = number(Decimal.max(a.value, b.value)).normal
+            // const a = node.first.eval()
+            // const b = node.last.eval()
+            // e = number(Decimal.max(a.value, b.value)).normal
+            e = node.first.isLowerThan(node.last) ? node.last.normal : node.first.normal
             break
           }
 
