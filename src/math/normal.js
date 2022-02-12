@@ -56,8 +56,11 @@ export const TYPE_NSUM = 'nsum'
 export const TYPE_NPRODUCT = 'nproduct'
 
 /* 
-Les formes normales servent à comparer des expressions pour déterminer celles qui sont équivalentes.
+Les formes normales servent à déterminer si deux expressions sont équivalentes.
 Les formes normales sont vues comme des fractions rationnelles.
+Le numérateur et le dénominateur doivent être développées et réduits. Les fractions et racines doivent être simplifiées.
+Les fonctions numériques doivent être évaluées à une forme exacte.
+Les unités sont convertis à l'unité de base.
 */
 
 const PNormal = {

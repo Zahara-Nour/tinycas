@@ -152,7 +152,7 @@ export function text(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error : ' + e.error.message+ ' ' + e.error.input
+      s = 'Error : ' + e.error.message + ' ' + e.error.input
       break
 
     case TYPE_NORMAL:
@@ -358,7 +358,7 @@ export function latex(e, options) {
 
     case TYPE_QUOTIENT:
       s =
-        '\\frac{' +
+        '\\dfrac{' +
         (e.first.isBracket()
           ? e.first.first.toLatex(options)
           : e.first.toLatex(options)) +
@@ -390,7 +390,12 @@ export function latex(e, options) {
       break
 
     case TYPE_SYMBOL:
-      s = e.letter
+      if (e.letter === 'pi') {
+        s = '\\pi'
+      }
+      else {
+        s = e.letter
+      }
       break
 
     case TYPE_NUMBER:
@@ -401,7 +406,7 @@ export function latex(e, options) {
       //   .replace(/,/g, '\\,')
       //   .replace('.', '{,}')
       // s = e.value.toString().replace('.', '{,}')
-      const value = options.keepUnecessaryZeros ? e.input  : e.value.toString()
+      const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
 
       s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')
       break
@@ -411,7 +416,7 @@ export function latex(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error : ' + e.error+' '+e.input 
+      s = 'Error : ' + e.error + ' ' + e.input
       break
 
     default:
