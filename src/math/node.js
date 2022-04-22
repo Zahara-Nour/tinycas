@@ -25,6 +25,7 @@ import {
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
 import { math } from './math'
+import { unit } from './unit'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -67,6 +68,8 @@ export const TYPE_EXP = 'exp'
 export const TYPE_FLOOR = 'floor'
 export const TYPE_ABS = 'abs'
 export const TYPE_RADICAL = 'sqrt'
+export const TYPE_TIME = 'time'
+export const TYPE_SIMPLE_TIME = 'simple_time'
 
 Decimal.set({
   toExpPos: 89,
@@ -85,10 +88,10 @@ const PNode = {
     let b = this.removeSigns()
 
     const negative = b.isOpposite()
-    b =  fraction(negative ? b.first.string : b.string).reduce() 
- 
+    b = fraction(negative ? b.first.string : b.string).reduce()
+
     let result
-    
+
 
     if (b.n.equals(0)) {
       result = number(0)
@@ -108,7 +111,7 @@ const PNode = {
         result = opposite([result])
       }
     }
- 
+
     return result
   },
 
@@ -236,6 +239,9 @@ const PNode = {
   isHole() {
     return this.type === TYPE_HOLE
   },
+  isTime() {
+    return this.type === TYPE_TIME
+  },
   isChild() {
     return !!this.parent
   },
@@ -264,6 +270,15 @@ const PNode = {
       this.isFloor() ||
       this.isAbs()
     )
+  },
+  isDuration() {
+    return this.isTime() || (!!this.unit && this.unit.isConvertibleTo(unit('s')))
+  },
+  isLength() {
+    return !!this.unit && this.unit.isConvertibleTo(unit('m'))
+  },
+  isMass() {
+    return !!this.unit && this.unit.isConvertibleTo(unit('g'))
   },
   compareTo(e) {
     return compare(this, e)
@@ -344,6 +359,9 @@ const PNode = {
       default:
         return this.normal.string === e.normal.string
     }
+  },
+  isSameQuantityType(e) {
+    return (!this.unit && !e.unit) || this.normal.isSameQuantityType(e.normal)
   },
 
   // recusirvly gets sum terms (with signs)
@@ -506,7 +524,7 @@ const PNode = {
   },
 
   mod(e) {
-    return mod([this,e])
+    return mod([this, e])
   },
 
   abs() {
@@ -628,14 +646,21 @@ const PNode = {
    */
 
   eval(params = {}) {
-    
+
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 20
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
-
-
+    let unit
+    if (params.unit) {
+      if (typeof params.unit === 'string' && params.unit !== 'HMS') {
+        unit = math('1 ' + params.unit).unit
+      }
+      else {
+        unit = params.unit
+      }
+    }
 
     //  Cas particuliers : fonctions mini et maxi
     // ces fonctions doivent retourner la forme initiale d'une des deux expressions
@@ -644,27 +669,36 @@ const PNode = {
     e = e.normal
 
     // si l'unité du résultat est imposée
-    if (params.unit) {
-      if (!e.unit) {
-        throw new Error("calcul avec unité d'une expression sans unité")
+    if (unit) {
+      if (unit === 'HMS' && !e.isDuration() || (unit !=='HMS' && !math('1' + unit.string).normal.isSameQuantityType(e))) {
+
+        throw new Error("Unités incompatibles")
       }
-      const coef = e.unit.getCoefTo(params.unit.normal)
-      e = e.mult(coef)
+      if (unit !== 'HMS') {
+        const coef = e.unit.getCoefTo(unit.normal)
+        e = e.mult(coef)
+      }
     }
 
     // on retourne à la forme naturelle
-    e = e.node
+    if (unit === 'HMS') {
+      e=e.toNode({formatTime:true})
+    }
+    else {
+      e = e.node
+    }
+    
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
     //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
-    if (params.unit) {
-      e.unit = params.unit
+    if (unit && unit !=='HMS') {
+      e.unit = unit
     }
 
     // si on veut la valeur décimale, on utilise la fonction evaluate
-    if (params.decimal) {
+    if (params.decimal && unit !=='HMS') {
       //  on garde en mémoire l'unité
-      const unit = e.unit
+      const u = e.unit
 
       // evaluate retourne un objet Decimal
       e = number(
@@ -674,7 +708,7 @@ const PNode = {
       )
 
       //  on remet l'unité qui avait disparu
-      if (unit) e.unit = unit
+      if (u) e.unit = u
     }
     return e
   },
@@ -687,9 +721,11 @@ const PNode = {
   },
 
   shallow() {
+
     return {
       nature: this.type,
       children: this.children ? this.children.map(e => e.type) : null,
+      unit: this.unit ? this.unit.string : ''
     }
   },
 
@@ -852,24 +888,7 @@ Création de la représentation intermédiaire de l'expresssion mathématique (A
 La forme normale utilise une forme propre.
  */
 export function createNode(params) {
-  // dans le cas des sommes et des produits, on applatit d'abord les fils qui auraient la même structure
-  // FINALEMENT  NON
-  // if (
-  //   params.type === TYPE_SUM ||
-  //   params.type === TYPE_PRODUCT ||
-  //   params.type === TYPE_PRODUCT_IMPLICIT ||
-  //   params.type === TYPE_PRODUCT_POINT
-  // ) {
-  //   let t = []
-  //   for (const child of params.children) {
-  //     if (params.type === child.type) {
-  //       t = t.concat(child.children)
-  //     } else {
-  //       t.push(child)
-  //     }
-  //   }
-  //   params.children = t
-  // }
+
 
   const node = Object.create(PNode)
   Object.assign(node, params)
@@ -897,7 +916,7 @@ export function createNode(params) {
 
 // Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
 
-const one = (function() {
+const one = (function () {
   let instance
   return () => {
     if (!instance) instance = number('1')
@@ -905,7 +924,7 @@ const one = (function() {
   }
 })()
 
-const zero = (function() {
+const zero = (function () {
   let instance
   return () => {
     if (!instance) instance = number('0')
@@ -1037,3 +1056,8 @@ export function unequality(children) {
 export function inequality(children, relation) {
   return createNode({ type: relation, children })
 }
+
+export function time(children) {
+  return createNode({ type: TYPE_TIME, children })
+}
+

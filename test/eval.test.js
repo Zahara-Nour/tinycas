@@ -141,31 +141,40 @@ describe('Testing constants', () => {
 
 
 describe('Test functions evaluation', () => {
+  let t = []
   test('Function pgcd', () => {
     const e = math('pgcd(12;18)')
     expect(e.eval().string).toEqual('6')
   })
 
-  test('Function min', () => {
-    const e = math('mini(12;18)')
-    expect(e.eval().string).toEqual('12')
+
+  
+  t = [
+    ['mini(8;5)', '5'],
+    ['mini(5;8)', '5'],
+    ['mini(2;2)', '2'],
+    ['mini(10-3;2+3)', '5'],
+    ['mini(2+3;10-3)', '5'],
+  
+  ]
+  
+  test.each(t)('mini %s %s', (e1, e2) => {
+    expect(math(e1).eval().string).toEqual(e2)
   })
 
-  test('Function min', () => {
-    const e = math('mini(8;5)')
-    expect(e.eval().string).toEqual('5')
+  t = [
+    ['maxi(8;5)', '8'],
+    ['maxi(5;8)', '8'],
+    ['maxi(2;2)', '2'],
+    ['maxi(10-3;2+3)', '7'],
+    ['maxi(2+3;10-3)', '7'],
+  
+  ]
+  
+  test.each(t)('maxi %s %s', (e1, e2) => {
+    expect(math(e1).eval().string).toEqual(e2)
   })
 
-  test('Function max', () => {
-    const e = math('maxi(12;18)')
-    console.log('max', e)
-    expect(e.eval().string).toEqual('18')
-  })
-
-  test('Function max', () => {
-    const e = math('maxi(8;5)')
-    expect(e.eval().string).toEqual('8')
-  })
 
   test('Function mod', () => {
     const e = math('mod(15;4)')
@@ -198,12 +207,12 @@ describe('Test functions evaluation', () => {
     e = math('sqrt(25/16)')
     expect(e.eval().string).toEqual('5/4')
 
-   
+
 
   })
 })
 
-describe('Test powers', () => {  
+describe('Test powers', () => {
   test('powers', () => {
     let e = math('16^2,3')
     expect(e.eval().string).toEqual('16^(23/10)')
@@ -212,7 +221,7 @@ describe('Test powers', () => {
 
     e = math('1/sqrt(25/16)')
     expect(e.eval().string).toEqual('4/5')
-    
+
     e = math('16^(1/2)')
     expect(e.eval().string).toEqual('4')
 
@@ -271,7 +280,7 @@ describe('Test relations evaluation', () => {
     ['5+23/10^3<5+124/10^3', 'true'],
     ['4+261/10^3<4+75/10^2 ', 'true'],
     ['4+861/10^3<4+75/10^2 ', 'false'],
-    
+
     ['abs(4-2)>1', 'true'],
     ['abs(4-3)>1', 'false'],
     ['abs(4-3)>1', 'false'],

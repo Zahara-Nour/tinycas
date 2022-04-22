@@ -35,6 +35,7 @@ import {
   TYPE_UNEQUALITY,
   TYPE_MOD,
   TYPE_ABS,
+  TYPE_TIME,
 } from './node'
 
 import { TYPE_NORMAL } from './normal'
@@ -46,6 +47,46 @@ export function text(e, options) {
   // console.log('isUnit', options.isUnit)
 
   switch (e.type) {
+
+    case TYPE_TIME:
+      // format = options.formatTime
+     
+      s = ""
+      if (e.children[0] && !e.children[0].isZero()) {
+        s += e.children[0]
+        s += ' '
+      }
+      if (e.children[1] && !e.children[1].isZero()) {
+        s += e.children[1]
+        s += ' '
+      }
+      if (e.children[2] && !e.children[2].isZero()) {
+        s += e.children[2]
+        s += ' '
+      }
+      if (e.children[3] && !e.children[3].isZero()) {
+        s += e.children[3] 
+        s += ' '
+      }
+      if (e.children[4] && !e.children[4].isZero()) {
+        s += e.children[4]
+        s += ' '
+      }
+      if (e.children[5] && !e.children[5].isZero()) {
+        s += e.children[5]
+        s += ' '
+      }
+      if (e.children[6] && !e.children[6].isZero()) {
+        s += e.children[6]
+        s += ' '
+      }
+      if (e.children[7] && !e.children[7].isZero()) {
+        s += e.children[7]
+        s += ' '
+      }
+      s = s.trim()
+      break
+
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
       break
@@ -112,7 +153,15 @@ export function text(e, options) {
       break
 
     case TYPE_QUOTIENT:
-      s = e.first.toString(options) + '/' + e.last.toString(options)
+      let s1 = e.first.toString(options)
+      let s2 = e.last.toString(options)
+      if (e.first.isOpposite() || e.first.isSum() || e.first.isDifference()) {
+        s1 = '{' + s1 + '}'
+      }
+      if (e.last.isOpposite() || e.last.isSum() || e.last.isDifference() || e.last.isProduct() || e.last.isDivision() || e.last.isQuotient()) {
+        s2 = '{' + s2 + '}'
+      }
+      s = s1 + '/' + s2
       break
 
     case TYPE_SUM:
@@ -125,7 +174,8 @@ export function text(e, options) {
       break
 
     case TYPE_PRODUCT_IMPLICIT:
-      s = e.children.map(child => child.toString(options)).join('')
+      s = e.children.map(child =>
+        child.isQuotient() ? '{' + child.toString(options) + '}' : child.toString(options)).join('')
       break
     case TYPE_PRODUCT_POINT:
 
@@ -193,6 +243,7 @@ export function text(e, options) {
           }
           break
 
+          
         case '$d':
         case '$dr':
         case '$dn':
@@ -228,7 +279,13 @@ export function text(e, options) {
     default:
   }
 
-  if (e.unit && options.displayUnit) s += ' ' + e.unit.string
+
+  if (e.unit && options.displayUnit) {
+    if (e.isQuotient() || e.isDivision()) {
+      s = '(' + s + ')'
+    }
+    s += ' ' + e.unit.string
+  }
   // if (options.isUnit) console.log('-> isUnit', s)
   return s
 }
@@ -237,6 +294,50 @@ export function latex(e, options) {
   let s
 
   switch (e.type) {
+    case TYPE_TIME:
+      // format = options.formatTime
+     
+      s = ""
+      if (e.children[0] && !e.children[0].isZero()) {
+        s += e.children[0].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[1] && !e.children[1].isZero()) {
+        s += e.children[1].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[2] && !e.children[2].isZero()) {
+        s += e.children[2].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[3] && !e.children[3].isZero()) {
+        s += e.children[3].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[4] && !e.children[4].isZero()) {
+        s += e.children[4].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[5] && !e.children[5].isZero()) {
+        if (e.children[5].value.lessThan(10)) {
+          s += '0'+ e.children[5].toLatex(options)
+        } else {
+          s += e.children[5].toLatex(options)
+        }
+        s += '\\,'
+      }
+      if (e.children[6] && !e.children[6].isZero()) {
+        s += e.children[6].toLatex(options)
+        s += '\\,'
+      }
+      if (e.children[7] && !e.children[7].isZero()) {
+        s += e.children[7].toLatex(options)
+        s += '\\,'
+      }
+      
+      break
+
+   
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
       break

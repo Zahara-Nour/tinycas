@@ -19,7 +19,6 @@ const PUnit = {
   },
 
   toString () {
-    // console.log('u', this.u)
     return this.u.toString({isUnit:true})
   },
 
@@ -63,6 +62,9 @@ function unit (u, normal) {
 }
 
 const baseUnits = {
+  'Qr':       [1, 'Qr'],
+  'k€':       [1000, '€'],
+  '€':       [1, '€'],
   kL:       [1000, 'L'],
   hL:       [100, 'L'],
   daL:      [10, 'L'],
@@ -86,16 +88,18 @@ const baseUnits = {
   dg:       [0.1, 'g'],
   cg:       [0.01, 'g'],
   mg:       [0.001, 'g'],
-  an:       [1, 's'],
-  ans:      [1, 's'],
-  mois:     [1, 's'],
-  semaine:  [1, 's'],
-  semaines: [1, 's'],
-  j:        [86400, 's'],
-  h:        [3600, 's'],
-  min:      [60, 's'],
-  s:        [1, 's'],
-  ms:       [0.001, 's'],
+  an:       [31536000000, 'ms'],
+  ans:      [31536000000, 'ms'],
+  mois:     [2592000000, 'ms'],
+  semaine:  [604800000, 'ms'],
+  semaines: [604800000, 'ms'],
+  jour:     [86400000, 'ms'],
+  jours:    [86400000, 'ms'],
+  h:        [3600000, 'ms'],
+  min:      [60000, 'ms'],
+  mins:      [60000, 'ms'],
+  s:        [1000, 'ms'],
+  ms:       [1, 'ms'],
   '°':      [1, '°'],
   noUnit:   [1, 'noUnit']
 }

@@ -46,6 +46,7 @@ export function reduceFractions(node) {
 }
 
 export function removeMultOperator(node) {
+
   let e = node.children
     ? createNode({ type: node.type, children: node.children.map(child => child.removeMultOperator()) })
     : math(node.string)
@@ -55,6 +56,7 @@ export function removeMultOperator(node) {
     e = product([e.first, e.last], TYPE_PRODUCT_IMPLICIT)
   }
   e.unit = node.unit
+  
   return e
 
 }
@@ -186,10 +188,8 @@ export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
       node.parent.isDifference() && node.first.isDivision() ||
       node.parent.isDifference() && node.first.isPower() ||
       node.parent.isProduct() && node.first.isProduct() ||
-      node.parent.isProduct() && node.first.isQuotient() && node.isLast() ||
       node.parent.isProduct() && node.first.isQuotient() && node.isFirst() ||
-      node.parent.isProduct() && node.first.isDivision() && node.isLast() ||
-      node.parent.isProduct() && node.first.isDivision() && node.isFirst() ||
+      node.parent.isProduct() && node.first.isDivision() ||
       node.parent.isProduct() && node.first.isPower() ||
 
       node.parent.isQuotient() && node.first.isProduct() && node.isFirst() ||
@@ -211,11 +211,23 @@ export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
 
       node.parent.isEquality() ||
       node.parent.isUnequality() ||
-      node.parent.isInequality()
+      node.parent.isInequality() ||
+
+      // cas ou les brackets doivent être remplacées par des curly brackets en sortie
+      node.parent.isProduct() && node.first.isQuotient() && node.isLast() ||
+    node.parent.isQuotient() && node.first.isProduct() && node.isLast() ||
+    node.parent.isQuotient() && node.first.isQuotient() && node.isLast() ||
+    node.parent.isQuotient() && node.first.isDivision() && node.isLast() ||
+    node.parent.isQuotient() && node.first.isOpposite() ||
+    node.parent.isQuotient() && node.first.isSum() ||
+    node.parent.isQuotient() && node.first.isDifference()
+
+
+
     )) {
     e = node.first.removeUnecessaryBrackets(allowFirstNegativeTerm)
   }
-
+  
   else if (node.children) {
     e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets(allowFirstNegativeTerm)) })
   }

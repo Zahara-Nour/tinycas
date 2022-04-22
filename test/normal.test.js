@@ -223,3 +223,34 @@ describe('Testing normal forms for functions', () => {
     },
   )
 })
+
+describe('Testing normal forms with units', () => {
+  // test('Root is set on children', () => {
+  //   const e = math('2*3+4')
+  //   expect(e.normal.string).toBe('2+3*4')
+  // })
+  const t = [
+    // ['1000 cm', '10 m'],
+    ['1 jour', '86400000 ms'],
+    ['1 h', '3600000 ms'],
+    ['1 min', '60000 ms'],
+    ['1 s', '1000 ms'],
+    ['1 ms', '1 ms'],
+    ['1 min 1 s', '61000 ms'],
+
+  
+   
+
+  ]
+
+
+  test.each(t)(
+    'normal form of %s',
+    (e, expected) => {
+      // e = math(e)
+      // console.log("e", e, e.string)
+      // console.log("normal e", e.normal.n.children[0][1].children[0], e.normal.n.children[0][1].children[0])
+      expect(math(e).normal.string).toBe(expected)
+    },
+  )
+})

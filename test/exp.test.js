@@ -140,6 +140,9 @@ describe('Testing equality between two expressions', () => {
     ['x>=3+2', 'x>=2+3'],
     ['x>=3+2', '2+3<=x'],
 
+    ['1 cm', '10 mm'],
+    ['1 h 1 min', '61 min'],
+
   ]
   test.each(t)(
     '%s is equivalent to %s',

@@ -44,12 +44,16 @@ import {
   radical,
   TYPE_MIN,
   TYPE_MAX,
+  TYPE_TIME,
+  TYPE_SIMPLE_TIME,
+  time,
 } from './node'
 import fraction from './fraction'
 import { math } from './math'
 import { binarySearchCmp, gcd, pgcd, RadicalReduction } from '../utils/utils'
 import compare from './compare'
 import Decimal from 'decimal.js'
+import { unit } from './unit'
 
 export const TYPE_NORMAL = 'normal'
 export const TYPE_NSUM = 'nsum'
@@ -104,6 +108,16 @@ const PNormal = {
     return this.node.isNumeric()
   },
 
+  isDuration() {
+    return !!this.unit && this.unit.isConvertibleTo(unit('s').normal)
+  },
+  isLength() {
+    return !!this.unit && this.unit.isConvertibleTo(unit('m').normal)
+  },
+  isMass() {
+    return !!this.unit && this.unit.isConvertibleTo(unit('g').normal)
+  },
+
   // test if two units are the same type
   isConvertibleTo(u) {
     const u1N = nSum([[simpleCoef(one()), this.n.first[1]]])
@@ -114,6 +128,10 @@ const PNormal = {
     const u2 = normal(u2N, u2D)
 
     return u1.equalsTo(u2)
+  },
+
+  isSameQuantityType(e) {
+    return (!this.unit && !e.unit) || (!!this.unit && !!e.unit && this.unit.isConvertibleTo(e.unit))
   },
 
   getCoefTo(u) {
@@ -207,12 +225,9 @@ const PNormal = {
   },
 
   add(e) {
-    if (
-      (e.unit && this.unit && !e.unit.equalsTo(this.unit)) ||
-      (this.unit && !e.unit) ||
-      (!this.unit && e.unit)
-    )
+    if (!this.isSameQuantityType(e)) {
       throw new Error("Erreur d'unité")
+    }
 
     return normal(
       this.n.mult(e.d).add(e.n.mult(this.d)),
@@ -364,7 +379,7 @@ const PNormal = {
 
   //  si la forme représente une fraction numérique, celle-ci a été simplifiée et le signe
   // est au numérateur
-  toNode({ isUnit = false } = {}) {
+  toNode({ isUnit = false, formatTime = false } = {}) {
     let e
     let n = this.n.node
     let d = this.d.node
@@ -420,10 +435,35 @@ const PNormal = {
     if (this.unit) {
       // console.log('unit', this.unit)
       // console.log('unit.node', this.unit.node)
-      e.unit = math(
-        '1' + this.unit.toNode({ isUnit: true }).toString({ isUnit: true }),
-      ).unit
+      if (formatTime) {
+        let s = ''
+        let ms = e.value.toNumber()
+        const ans = Math.floor(ms / 31536000000);
+        if (ans) s += ans + ' ans '
+        ms = ms % 31536000000;
+        const jours = Math.floor(ms / 86400000);
+        if (jours) s += jours + ' jours '
+        ms = ms % 86400000;
+        const heures = Math.floor(ms / 3600000);
+        if (heures) s += heures + ' h '
+        ms = ms % 3600000;
+        const minutes = Math.floor(ms / 60000);
+        if (minutes) s += minutes + ' min '
+        ms = ms % 60000;
+        const secondes = Math.floor(ms / 1000);
+        if (secondes) s += secondes + ' s '
+        ms = ms % 1000;
+        if (ms) s += ms + ' ms '
+        
+        e = math(s)
+
+      } else {
+        e.unit = math(
+          '1' + this.unit.toNode({ isUnit: true }).toString({ isUnit: true })
+        ).unit
+      }
     }
+
     return e
   },
 
@@ -557,9 +597,10 @@ const PNList = {
     }
   },
 
+  // symmetrize an element [coef, base]
   symmetrize() {
-    // symmetrize an element [coef, base]
-    const f = function(e) {
+
+    const f = function (e) {
       const coef = e[0]
       const base = e[1]
       let newcoef
@@ -615,16 +656,16 @@ const PNList = {
   },
 
   toNode() {
-    const nProductElementToNode = function([coef, base]) {
+    const nProductElementToNode = function ([coef, base]) {
       // normalement coef est différent de 0
       // TODO: mise a jour ds parents ?
       let e = base
-      if (coef.string==='1/2') {
+      if (coef.string === '1/2') {
         e = radical([base])
-      } else 
-      if (!base.isOne() && !coef.isOne()) {
-        e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
-      }
+      } else
+        if (!base.isOne() && !coef.isOne()) {
+          e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+        }
       return e
     }
 
@@ -760,9 +801,9 @@ const PNList = {
 }
 
 /**
- * Constantes utilsées
+ * Constantes utilisées
  */
-const baseOne = (function() {
+const baseOne = (function () {
   let instance
   return () => {
     if (!instance) {
@@ -780,7 +821,7 @@ function simpleCoef(coef) {
   return nSum([[coef, baseOne()]])
 }
 
-const coefOne = (function() {
+const coefOne = (function () {
   let instance
   return () => {
     if (!instance) {
@@ -790,7 +831,7 @@ const coefOne = (function() {
   }
 })()
 
-const coefZero = (function() {
+const coefZero = (function () {
   let instance
   return () => {
     if (!instance) {
@@ -800,7 +841,7 @@ const coefZero = (function() {
   }
 })()
 
-const nSumOne = (function() {
+const nSumOne = (function () {
   let instance
   return () => {
     if (!instance) instance = nSum([[coefOne(), baseOne()]])
@@ -808,7 +849,7 @@ const nSumOne = (function() {
   }
 })()
 
-const nSumZero = (function() {
+const nSumZero = (function () {
   let instance
   return () => {
     if (!instance) instance = nSum([[coefZero(), baseOne()]])
@@ -817,7 +858,7 @@ const nSumZero = (function() {
 })()
 
 // forme normale du nombre 1 - singleton
-const normOne = (function() {
+const normOne = (function () {
   let instance
   return unit => {
     if (!unit) {
@@ -829,7 +870,7 @@ const normOne = (function() {
 })()
 
 // forme normale du nombre 0 - singleton
-const normZero = (function() {
+const normZero = (function () {
   let instance
   return unit => {
     if (!unit) {
@@ -875,12 +916,25 @@ export default function normalize(node) {
   let d // dénominateur de la partie normale
   let n // numérateur de la partie normale
   let e // forme normale retournée
+  let unit = node.unit
 
   // pose des problèmes de prototypes
   // const { unit, ...others } = node // ? est-ce qu'on se débarrasse de la forme normale?
   // others.proto
 
   switch (node.type) {
+
+
+    case TYPE_TIME:
+      let children = node.children.map(c => c.normal)
+
+      e = children.pop()
+      while (children.length) {
+        e = e.add(children.pop())
+      }
+
+      break
+
     case TYPE_BOOLEAN:
       n = nSum([[coefOne(), createBase(node)]])
       d = nSumOne()
@@ -898,6 +952,7 @@ export default function normalize(node) {
         d = nSumOne()
       } else {
         // on convertit le float en fraction
+
         e = math(fraction(node).toString({ displayUnit: false })).normal
       }
 
@@ -952,21 +1007,21 @@ export default function normalize(node) {
           }
 
           case TYPE_MIN: {
-           
-            // const a = node.first.eval()
-           
-            // const b = node.last.eval()
-           
-            e = node.first.isLowerThan(node.last) ? node.first.normal : node.last.normal
+
+            const a = node.first.eval()
+
+            const b = node.last.eval()
+
+            e = a.isLowerThan(b) ? node.first.normal : node.last.normal
             // e = number(Decimal.min(a.value, b.value)).normal
             break
           }
 
           case TYPE_MAX: {
-            // const a = node.first.eval()
-            // const b = node.last.eval()
+            const a = node.first.eval()
+            const b = node.last.eval()
             // e = number(Decimal.max(a.value, b.value)).normal
-            e = node.first.isLowerThan(node.last) ? node.last.normal : node.first.normal
+            e = a.isLowerThan(b) ? node.last.normal : node.first.normal
             break
           }
 
@@ -1072,7 +1127,7 @@ export default function normalize(node) {
     // TODO: et les TEMPLATES?
 
     default:
-      console.log('!!!normalizing default !!!', node.string)
+      console.log('!!!normalizing default !!!', node, node.string)
   }
 
   if (!e) {
@@ -1082,6 +1137,7 @@ export default function normalize(node) {
     //TODO : et quand les opérandes ont aussi une unité ?
     // console.log('node', node)
     // console.log('node.unit', node.unit)
+
     let u = node.unit.normal
     //  on récupère le coefficeient de l'unité et on l'applique à la forme normale
     const coefN = nSum([[u.n.first[0], baseOne()]])
@@ -1092,7 +1148,10 @@ export default function normalize(node) {
     u = normal(uN, uD)
     e = e.mult(coef)
     if (u.string === '1') u = null
+
     e.unit = u
+
   }
+
   return e
 }

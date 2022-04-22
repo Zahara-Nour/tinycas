@@ -6,6 +6,8 @@ describe('Stringing unit', () => {
   const t = [
     '0 m',
     '1 m',
+    '1/2 m',
+    '1/2200 m^2',
     '1 mm',
     '1 m.m',
     '1 km^2',
@@ -14,6 +16,7 @@ describe('Stringing unit', () => {
     '1 m^4.m^(-2)',
     '1 m^(-1).m^(-1)',
     '1 kg.km^(-2)',
+
   ]
 
 
@@ -24,25 +27,93 @@ describe('Stringing unit', () => {
     }
   )
 })
+
+describe('Testing duration units', () => {
+
+  const t = [
+    ['1 ans', true],
+    ['1 mois', true],
+    ['1 semaines', true],
+    ['1 jours', true],
+    ['1 h', true],
+    ['1 min', true],
+    ['1 s', true],
+    ['1 ms', true],
+    ['1 m', false],
+    ['1 g', false],
+    ['0 s', true],
+    ['1', false],
+   
+  ]
+
+
+  test.each(t)(
+    'Testing if %s is a duration or not',
+    (e,b) => {
+      expect(math(e).isDuration()).toBe(b)
+    }
+  )
+})
+
+
+describe('Testing quantity types', () => {
+
+  const t = [
+    ['1', '1', true],
+    ['1 ans', '1 s', true],
+    ['1 h 1 min', '1 s', true],
+    ['1', '1 s', false],
+    ['1g', '1 s', false],
+
+   
+  ]
+
+
+  test.each(t)(
+    'Testing if %s ans %s are same quantity type',
+    (e,f, b) => {
+      expect(math(e).isSameQuantityType(math(f))).toBe(b)
+    }
+  )
+})
+
+describe('Testing equality with units', () => {
+
+  const t = [
+    ['1 m', '10 dm'],
+  ]
+
+
+  test.each(t)(
+    'Testing equality between %s and %s',
+    (e,f) => {
+      expect(math(e).equals(math(f))).toBeTruthy()
+    }
+  )
+})
+
 describe('Testing normalizing unit', () => {
 
   const t = [
     ['0 m', '0 m'],
     ['1 m', '1 m'],
     ['1 km', '1000 m'],
-    ['1 mm', '1/1000 m'],
+    ['1 mm', '(1/1000) m'],
     ['1 km', '1000 m'],
     ['2 km', '2000 m'],
     ['0.001 km', '1 m'],
-    ['1 mm', '1/1000 m'],
+    ['1 mm', '(1/1000) m'],
+    ['{1/2} mm', '(1/2000) m'],
     ['1 m.m', '1 m^2'],
     ['1 m^2.m^2', '1 m^4'],
     ['1 m^4.m^(-2)', '1 m^2'],
     ['1 m^2.m^(-2)', '1'],
     ['1 m^(-1).m^(-1)', '1 m^(-2)'],
     ['1 km^2',       '1000000 m^2'],
-    ['1 km^(-2)',    '1/1000000 m^(-2)'],
-    ['1 kg.km^(-2)', '1/1000 g.m^(-2)']
+    ['1 km^(-2)',    '(1/1000000) m^(-2)'],
+    ['1 kg.km^(-2)', '(1/1000) g.m^(-2)'],
+    ['1 k€', '1000 €'],
+    ['1 Qr', '1 Qr'],
   ]
 
 
@@ -83,7 +154,7 @@ describe('Testing convertible units', () => {
 })
 
 
-describe('Testing units convertions', () => {
+describe('Testing units conversions', () => {
   const t = [
     ['1 km','m', '1000 m'],
     ['3 km','cm', '300000 cm'],
@@ -91,12 +162,16 @@ describe('Testing units convertions', () => {
     ['40000 m^(-2)','cm^(-2)', '4 cm^(-2)'],
     ['4 kg.m^(-2)','g.m^(-2)', '4000 g.m^(-2)'],
     ['4 kg.m^(-2)','g.dam^(-2)', '400000 g.dam^(-2)'],
+    ['3h30min','h', '3.5 h'],
+    ['3,5h','HMS', '3 h 30 min'],
+    ['1 an 1 jour 1 h 1 min 1s 1ms','s', '31626061.001 s'],
+    ['31626061.001 s','HMS', '1 ans 1 jours 1 h 1 min 1 s 1 ms'],
   ]
 
   test.each(t)(
     'converting %s in %s :',
     (e, u, expected) => {
-      expect(math(e).eval({unit:math('1'+u).unit, decimal:true}).string).toBe(expected)
+      expect(math(e).eval({unit:u, decimal:true}).string).toBe(expected)
     }
   )
 })
@@ -105,6 +180,7 @@ describe('Testing evaluation of litteral expressions with units', () => {
   const t = [
     ['a cm +b cm', 'a', 'b', 'b', '2', '0.04 m'],
     ['(a + b ) cm', 'a', 'b', 'b', '2', '0.04 m'],
+   
   ]
 
   test.each(t)(
@@ -126,9 +202,6 @@ describe('Test relations evaluation with units', () => {
   ['1 cm = 1 m', 'false'],
   ['100 cm = 1 m', 'true'],
   ['1 cm + 1 dm = 0.11 m', 'true'],
-  
-
-  
 
 ]
   test.each(t)('is %s %s', (e1, e2) => {
@@ -151,14 +224,17 @@ describe('Testing evaluation of numerical expression with unit conversion', () =
     ['(1+1) km', 'dam', '200 dam'],
     ['2 km * 3 km', 'dam^2', '60000 dam^2'],
     ['2 km * 3', 'dam', '600 dam'],
-    ['2 km^2', 'm', '2000000 m'],
+    ['2 km^2', 'm^2', '2000000 m^2'],
     ['2000000 km^(-2)', 'm^(-2)', '2 m^(-2)'],
     ['2000000 km^(-2)', 'm^(-2)', '2 m^(-2)'],
+    ['1 h 1 min 1 s + 1 h 1 min 1 s', 'HMS', '2 h 2 min 2 s'],
+    ['2*(1 h 1 min 1 s)', 'HMS', '2 h 2 min 2 s'],
+    ['2*(1 h 6 min)', 'h', '2.2 h'],
   ]
 
-  test.each(t)('converting %s in %s :', (e, u, expected) => {
+  test.each(t)('evaluating %s in %s :', (e, u, expected) => {
     expect(
-      math(e).eval({ unit: math('1' + u).unit, decimal: true }).string,
+      math(e).eval({ unit:u, decimal: true }).string,
     ).toBe(expected)
   })
 })
@@ -175,10 +251,14 @@ describe('Testing calculus with units', () => {
     ['3 cm^2 * 2 cm^(-2)',            '6'],
     ['10 cm - 5 mm',                  '0.095 m'],
     ['10 m^2 - 5 m^2',                '5 m^2'],
-    ['10 m^(-2) - 5 m^(-2)',                '5 m^(-2)'],
-    ['10 m.m',    '10 m^2'],
-    ['10 kg.m - 5 kg.m',    '5000 g.m'],
-    ['10 kg.m^(-2) - 5 kg.m^(-2)',    '5000 g.m^(-2)']
+    ['10 m^(-2) - 5 m^(-2)',          '5 m^(-2)'],
+    ['10 m.m',                        '10 m^2'],
+    ['10 kg.m - 5 kg.m',              '5000 g.m'],
+    ['10 kg.m^(-2) - 5 kg.m^(-2)',    '5000 g.m^(-2)'],
+    ['1 h + 1 min + 1 s',             '3661000 ms'],
+    ['1 h 1 min + 1 s',               '3661000 ms'],
+    ['1 h 1 min 1 s',                 '3661000 ms'],
+    ['1 h 1 min 1 s + 1 h 1 min 1 s',                 '7322000 ms'],
 
     // '10 km : 100 cm': '100'
   ]

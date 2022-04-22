@@ -1,4 +1,5 @@
 import { token, lexer } from './lexer'
+import { math } from './math'
 import {
   number,
   hole,
@@ -34,6 +35,7 @@ import {
   abs,
   min,
   max,
+  time,
 } from './node'
 
 import { unit, baseUnits } from './unit'
@@ -84,8 +86,17 @@ const FUNCTION = token('@cos|sin|sqrt|pgcd|mini|maxi|cos|sin|tan|exp|ln|log|mod|
 // const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
 const NUMBER = token('@\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?')
+const TIME = token('@\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ans?)?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*mois)?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*semaines?)?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*jours?)?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*h(?![a-zA-Z]))?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*mins?)?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*s(?![a-zA-Z]))?\\s*\
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?')
 const UNIT = token(
-  '@kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|ans|an|semaines|semaine|mois|min|ms|m|g|n|s|j|h',
+  '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n',
 )
 
 const ERROR_NO_VALID_ATOM = 'no valid atom found'
@@ -198,7 +209,7 @@ ${msg}`
     let e
     let term
     let sign
-    let unit
+    // let unit
 
     if (match(MINUS) || match(PLUS)) {
       sign = _lexem
@@ -208,13 +219,13 @@ ${msg}`
 
     if (sign) {
       e = sign === '-' ? opposite([term]) : positive([term])
-      e.unit = term.unit
-      term.unit = null
+      // e.unit = term.unit
+      // term.unit = null
     } else {
       e = term
     }
 
-    unit = e.unit ? e.unit : { string: baseUnits.noUnit[1] }
+    // unit = e.unit ? e.unit : { string: baseUnits.noUnit[1] }
 
     while (match(PLUS) || match(MINUS)) {
       sign = _lexem
@@ -222,13 +233,14 @@ ${msg}`
       term = parseTerm()
 
       if (
-        (!term.unit && unit.string !== baseUnits.noUnit[1]) ||
-        (term.unit && unit.string === baseUnits.noUnit[1]) ||
-        (term.unit && !term.unit.isConvertibleTo(unit))
+        // (!term.unit && unit.string !== baseUnits.noUnit[1]) ||
+        // (term.unit && unit.string === baseUnits.noUnit[1]) ||
+        // (term.unit && !term.unit.isConvertibleTo(unit))
+        !term.isSameQuantityType(e)
       ) {
         failure("Erreur d'unité")
       }
-      if (!unit) unit = term.unit
+      // if (!unit) unit = term.unit
 
       e = sign === '+' ? sum([e, term]) : difference([e, term])
     }
@@ -321,6 +333,55 @@ ${msg}`
     if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true')
     }
+
+    else if (match(TIME)) {
+
+      const units = ['ans', 'mois', 'semaines', 'jours', 'h', 'min', 's', 'ms']
+      const parts = [_parts[3], _parts[6], _parts[9], _parts[12], _parts[15], _parts[18], _parts[21], _parts[24]]
+      const filtered = parts.filter(p => !!p)
+      const u = filtered.length === 1 ? units[parts.findIndex(p => !!p)] : null
+
+      if (u) {
+        e = math(filtered[0])
+        e.unit = unit(u)
+      } else if (filtered.length === 0) {
+        e = math('0')
+        e.unit = unit('s')
+      }
+      else {
+        const times = parts.map((p, i) => {
+          const e = p ? math(p.trim()) : math('0')
+          e.unit = unit(units[i])
+          return e
+        })
+        e = time(times)
+      }
+    }
+    // const ans = _parts[3] ? math(_parts[3].trim()) : math('0')
+    // ans.unit = unit('ans')
+    // const mois = _parts[6] ? math(_parts[6].trim()) : math('0')
+    // mois.unit = unit('mois')
+    // const semaines = _parts[9] ? math(_parts[9].trim()) : math('0')
+    // semaines.unit = unit('semaines')
+    // const jours = _parts[12] ? math(_parts[12].trim()) : math('0')
+    // jours.unit = unit('jours')
+    // const heures = _parts[15] ? math(_parts[15].trim()) : math('0')
+    // heures.unit = unit('h')
+    // const minutes = _parts[18] ? math(_parts[18].trim()) : math('0')
+    // minutes.unit = unit('min')
+    // const secondes = _parts[21] ? math(_parts[21].trim()) : math('0')
+    // secondes.unit = unit('s')
+    // const millisecondes = _parts[24] ? math(_parts[24].trim()) : math('0')
+    // millisecondes.unit = unit('ms')
+    // const filtered = times.filter(t => !t.isZero())
+
+    // if (filtered.length === 1) {
+    //   e = filtered[0]
+    // } else {
+    //   e = time(times)
+    // }
+
+
 
     // boolean
     else if (match(SEGMENT_LENGTH)) {
