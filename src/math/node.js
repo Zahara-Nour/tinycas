@@ -21,6 +21,7 @@ import {
   shallowSortTerms,
   shallowSortFactors,
   simplifyNullProducts,
+  removeZerosAndSpaces,
 } from './transform'
 import { gcd } from '../utils/utils'
 import Decimal from 'decimal.js'
@@ -591,6 +592,10 @@ const PNode = {
     return removeUnecessaryBrackets(this, allowFirstNegativeTerm)
   },
 
+  removeZerosAndSpaces() {
+    return removeZerosAndSpaces(this)
+  },
+
   removeSigns() {
     return removeSigns(this)
   },
@@ -672,7 +677,7 @@ const PNode = {
     if (unit) {
       if (unit === 'HMS' && !e.isDuration() || (unit !=='HMS' && !math('1' + unit.string).normal.isSameQuantityType(e))) {
 
-        throw new Error("Unités incompatibles")
+        throw new Error(`Unités incompatibles ${e.string} ${unit.string}` )
       }
       if (unit !== 'HMS') {
         const coef = e.unit.getCoefTo(unit.normal)
@@ -1017,13 +1022,14 @@ export function percentage(children) {
   return createNode({ type: TYPE_PERCENTAGE, children })
 }
 export function number(input) {
+  //  on remplace la virgule par un point car decimaljs ne gère pas la virgule
   const value = new Decimal(
     typeof input === 'string'
-      ? input.replace(',', '.').replace(/\s/g, '')
-      : input,
+      ? input.replace(',', '.').replace(/\s/g, '') // decimaljs ne gere pas les espaces
+      : input, // number
   )
 
-  return createNode({ type: TYPE_NUMBER, value, input })
+  return createNode({ type: TYPE_NUMBER, value, input:input.toString().trim().replace(',', '.') })
 }
 export function boolean(value) {
   return createNode({ type: TYPE_BOOLEAN, value })

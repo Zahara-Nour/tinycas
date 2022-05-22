@@ -30,7 +30,7 @@ describe('Parsing', () => {
   test('Parser parses a number whith coma', () => {
     const e = p.parse('123,45')
     expect(e.string).toEqual('123.45')
-    expect(e.input).toEqual('123,45')
+    expect(e.input).toEqual('123.45')
     expect(e.isNumber()).toBeTruthy()
   })
 
@@ -43,34 +43,46 @@ describe('Parsing', () => {
 
   test('Parser parses an integer whith leading 0', () => {
     const e = p.parse('00123')
-    expect(e.string).toEqual('123')
+    expect(e.string).toEqual('00123')
     expect(e.input).toEqual('00123')
     expect(e.isNumber()).toBeTruthy()
   })
 
   test('Parser parses a decimal whith leading 0', () => {
     const e = p.parse('00123,445')
-    expect(e.string).toEqual('123.445')
-    expect(e.input).toEqual('00123,445')
+    expect(e.string).toEqual('00123.445')
+    expect(e.input).toEqual('00123.445')
     expect(e.isNumber()).toBeTruthy()
   })
 
   test('Parser parses a decimal whith trailing 0', () => {
     const e = p.parse('123,44500')
-    expect(e.input).toEqual('123,44500')
-    expect(e.string).toEqual('123.445')
+    expect(e.input).toEqual('123.44500')
+    expect(e.string).toEqual('123.44500')
     expect(e.isNumber()).toBeTruthy()
   })
 
-  test('Parser parses a decimal number with"," and output the comma', () => {
+  test('Parser parses a decimal number with "," and output the comma', () => {
     const e = p.parse('123,45')
     expect(e.toString({ comma: true })).toEqual('123,45')
     expect(e.isNumber()).toBeTruthy()
   })
 
+  test('Parser parses number with heading space', () => {
+    let e = p.parse(' 3')
+    expect(e.string).toEqual('3')
+    expect(e.input).toEqual('3')
+  })
+
+  test('Parser parses number with trailing space', () => {
+    let e = p.parse('3 ')
+    expect(e.string).toEqual('3')
+    expect(e.input).toEqual('3')
+  })
+
   test('Parser parses number with spaces', () => {
     let e = p.parse('3 9 8 9')
-    expect(e.string).toEqual('3989')
+    expect(e.string).toEqual('3 9 8 9')
     expect(e.input).toEqual('3 9 8 9')
   })
 
@@ -82,8 +94,8 @@ describe('Parsing', () => {
   
   test('Parser parses a decimal whith spaces', () => {
     const e = p.parse('  1 23  ,4 45 0 0 ')
-    expect(e.input).toEqual('1 23  ,4 45 0 0')
-    expect(e.string).toEqual('123.445')
+    expect(e.input).toEqual('1 23  .4 45 0 0')
+    expect(e.string).toEqual('1 23  .4 45 0 0')
     expect(e.isNumber()).toBeTruthy()
   })
 
@@ -755,7 +767,14 @@ describe('Testing parsing units', () => {
     '1 cm^2.cm^2': '1 cm^2.cm^2',
     '1 cm^2.cm^(-2)': '1 cm^2.cm^(-2)',
     '1 t.cm^(-2)': '1 t.cm^(-2)',
+    '1 cm.t^(-2)': '1 cm.t^(-2)',
     '1 kg.m^(-2)': '1 kg.m^(-2)',
+    '1 km.ms^(-1)': '1 km.ms^(-1)',
+    '1 km.h^(-1)': '1 km.h^(-1)',
+    '1 km.h^{-1}': '1 km.h^{-1}',
+    '1 km.ans^(-1)': '1 km.ans^(-1)',
+    '1 km.min^(-1)': '1 km.min^(-1)',
+    '1 km.s^(-1)': '1 km.s^(-1)',
     '(1+2) cm': '(1+2) cm',
     '(1*2) cm': '(1*2) cm',
     '1*2 cm': '1*2 cm',

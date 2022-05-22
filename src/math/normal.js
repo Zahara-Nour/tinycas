@@ -422,12 +422,12 @@ const PNormal = {
         positive = false
         n = n.first
       }
-      if (!(n.isNumber() || n.isHole() || n.isSymbol() || n.isPower())) {
-        n = n.bracket()
-      }
-      if (!(d.isNumber() || d.isHole() || d.isSymbol() || d.isPower())) {
-        d = d.bracket()
-      }
+      // if (!(n.isNumber() || n.isHole() || n.isSymbol() || n.isPower())) {
+      //   n = n.bracket()
+      // }
+      // if (!(d.isNumber() || d.isHole() || d.isSymbol() || d.isPower())) {
+      //   d = d.bracket()
+      // }
       e = n.frac(d)
       if (!positive) e = e.oppose()
     }
@@ -664,7 +664,8 @@ const PNList = {
         e = radical([base])
       } else
         if (!base.isOne() && !coef.isOne()) {
-          e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+          // e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+          e = e.pow(coef)
         }
       return e
     }
@@ -945,7 +946,7 @@ export default function normalize(node) {
         // il faut se debarasser de l'unité
         n = nSum([
           [
-            simpleCoef(number(node.toString({ displayUnit: false }))),
+            simpleCoef(number(node.value.toString({ displayUnit: false }))),
             baseOne(),
           ],
         ])

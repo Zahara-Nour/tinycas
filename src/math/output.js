@@ -50,7 +50,7 @@ export function text(e, options) {
 
     case TYPE_TIME:
       // format = options.formatTime
-     
+
       s = ""
       if (e.children[0] && !e.children[0].isZero()) {
         s += e.children[0]
@@ -65,7 +65,7 @@ export function text(e, options) {
         s += ' '
       }
       if (e.children[3] && !e.children[3].isZero()) {
-        s += e.children[3] 
+        s += e.children[3]
         s += ' '
       }
       if (e.children[4] && !e.children[4].isZero()) {
@@ -145,7 +145,11 @@ export function text(e, options) {
       break
 
     case TYPE_POWER:
-      s = e.first.toString(options) + '^' + e.last.toString(options)
+      s = e.last.toString(options)
+      if (!(e.last.isSymbol() || e.last.isNumber() || e.last.isHole() || e.last.isBracket())) {
+        s = '{' + s + '}'
+      }
+      s = e.first.toString(options) + '^' + s
       break
 
     case TYPE_DIVISION:
@@ -190,7 +194,11 @@ export function text(e, options) {
       break
 
     case TYPE_NUMBER:
-      s = e.value.toString()
+      // s = e.value.toString()
+      // if (e.value.toString() !== e.input) {
+      //   console.log(`difference _${e.value.toString()}_ _${e.input}_`, typeof e.value.toString(), typeof e.input )
+      // }
+      s = e.input
       if (options.comma) {
         s = s.replace('.', ',')
       }
@@ -202,12 +210,12 @@ export function text(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error : ' + e.error.message + ' ' + e.error.input
+      s = 'Error :\n' + e.error.message + ' ' + e.error.input
       break
 
-    case TYPE_NORMAL:
-      s = e.n.string + '/' + +e.d.string
-      break
+    // case TYPE_NORMAL:
+    //   s = e.n.string + '/' + +e.d.string
+    //   break
 
     case TYPE_GCD:
       s = 'pgcd(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
@@ -243,7 +251,7 @@ export function text(e, options) {
           }
           break
 
-          
+
         case '$d':
         case '$dr':
         case '$dn':
@@ -281,8 +289,8 @@ export function text(e, options) {
 
 
   if (e.unit && options.displayUnit) {
-    if (e.isQuotient() || e.isDivision()) {
-      s = '(' + s + ')'
+    if (!(e.isSymbol() || e.isNumber() || e.isBracket() || e.isHole() || e.isTemplate())) {
+      s = '{' + s + '}'
     }
     s += ' ' + e.unit.string
   }
@@ -296,7 +304,7 @@ export function latex(e, options) {
   switch (e.type) {
     case TYPE_TIME:
       // format = options.formatTime
-     
+
       s = ""
       if (e.children[0] && !e.children[0].isZero()) {
         s += e.children[0].toLatex(options)
@@ -320,7 +328,7 @@ export function latex(e, options) {
       }
       if (e.children[5] && !e.children[5].isZero()) {
         if (e.children[5].value.lessThan(10)) {
-          s += '0'+ e.children[5].toLatex(options)
+          s += '0' + e.children[5].toLatex(options)
         } else {
           s += e.children[5].toLatex(options)
         }
@@ -334,10 +342,10 @@ export function latex(e, options) {
         s += e.children[7].toLatex(options)
         s += '\\,'
       }
-      
+
       break
 
-   
+
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
       break
@@ -445,11 +453,7 @@ export function latex(e, options) {
       // console.log('e.first', e.first.toLatex(options))
       s =
         e.first.toLatex(options) +
-        '^{' +
-        (e.last.isBracket()
-          ? e.last.first.toLatex(options)
-          : e.last.toLatex(options)) +
-        '}'
+        '^{' + e.last.toLatex(options) + '}'
       // console.log('s', s)
       break
 
@@ -506,10 +510,10 @@ export function latex(e, options) {
       //   .toLocaleString('en',{maximumSignificantDigits:20} )
       //   .replace(/,/g, '\\,')
       //   .replace('.', '{,}')
-      // s = e.value.toString().replace('.', '{,}')
-      const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
+      s = e.string.replace(/ /g, '\\,').replace('.','{,}')
+      // const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
 
-      s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')
+      // s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')
       break
 
     case TYPE_HOLE:
@@ -517,7 +521,7 @@ export function latex(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error : ' + e.error + ' ' + e.input
+      s = 'Error : \n' + e.error + ' ' + e.input
       break
 
     default:

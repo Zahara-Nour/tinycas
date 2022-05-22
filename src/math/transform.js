@@ -45,6 +45,21 @@ export function reduceFractions(node) {
 
 }
 
+export function removeZerosAndSpaces(node) {
+
+  let e = node.children
+    ? createNode({ type: node.type, children: node.children.map(child => child.removeZerosAndSpaces()) })
+    : math(node.string)
+
+  if (node.type === TYPE_NUMBER)  {
+    e = e.eval({decimal:true})
+  }
+  e.unit = node.unit
+  
+  return e
+
+}
+
 export function removeMultOperator(node) {
 
   let e = node.children

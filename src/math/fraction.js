@@ -35,15 +35,15 @@ const PFraction = {
   sub(f) {
     // console.log('sub...........')
     const a = this.n.mul(f.d).mul(this.s)
-    const b= this.d.mul(f.s).mul(f.n)
+    const b = this.d.mul(f.s).mul(f.n)
     let n = a.sub(b)
-   
+
     const d = this.d.mul(f.d)
     const s = n.s
 
-    
-    if (s !==-1 && s !== 1) {
-    console.log('sub', s, this, f,a , b, n)
+
+    if (s !== -1 && s !== 1) {
+      console.log('sub', s, this, f, a, b, n)
     }
     n = n.abs()
     return createFraction({ n, d, s }).reduce()
@@ -75,7 +75,7 @@ const PFraction = {
   isLowerThan(f) {
     const diff = this.sub(f)
     if (diff.n.equals(0)) return false
-    if (diff.s !==-1 && diff.s !== 1) {
+    if (diff.s !== -1 && diff.s !== 1) {
       console.log('!!!! erreur s!!!', this, f, diff)
     }
     return diff.s === -1
@@ -83,7 +83,7 @@ const PFraction = {
 
   isGreaterThan(f) {
     if (this.sub(f).n.equals(0)) return false
-    if (this.sub(f).s !==-1 && this.sub(f).s !== 1) console.log('!!!! erreur s!!!', this.sub(f).s)
+    if (this.sub(f).s !== -1 && this.sub(f).s !== 1) console.log('!!!! erreur s!!!', this.sub(f).s)
     return this.sub(f).s === 1
   },
 
@@ -97,7 +97,7 @@ const PFraction = {
 
 function createFraction({ n, d, s }) {
   if (n.isNegative()) console.log('!!!negatice !!!')
-  
+
   const f = Object.create(PFraction)
   Object.assign(f, { n, d, s })
   return f
@@ -125,6 +125,7 @@ function removeCommas(n, d) {
 }
 
 function fraction(arg) {
+
   // conversion décimal -> fraction
   if (typeof arg === 'number' || Decimal.isDecimal(arg)) {
 
@@ -135,17 +136,17 @@ function fraction(arg) {
     return createFraction({ n, d, s }).reduce()
 
   } else if (typeof arg === 'string') {
-
+    arg = arg.replace(/ /g, '')
     const regex = new RegExp('^(\\(?(-?\\d+)(\\.\\d+)?\\)?)(\\/(-?\\d+))?$')
     const result = regex.exec(arg)
     if (!result) {
-      console.log('arg', arg)
+      console.log('arg', arg, typeof arg)
     }
     // let num = parseFloat(result[1])
     // let denom = result[5] ? parseFloat(result[5]) : null
     const removedCommas = removeCommas(parseFloat(result[1]), result[5] ? parseFloat(result[5]) : 1)
     let { n, d, s } = removedCommas
-   
+
     return createFraction({ n, d, s })
   } else {
     // console.log('arg ' + arg)

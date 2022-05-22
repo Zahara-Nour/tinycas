@@ -96,7 +96,7 @@ const TIME = token('@\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*s(?![a-zA-Z]))?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?')
 const UNIT = token(
-  '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n',
+  '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n|h|s',
 )
 
 const ERROR_NO_VALID_ATOM = 'no valid atom found'
@@ -681,11 +681,14 @@ ${msg}`
       e = bracket([parseExpression()])
       require(CLOSING_BRACKET)
     }
-    // Fausses parenthèses pour gérer les fractions
+    // Fausses parenthèses pour gérer les fractions et les puissances
     else if (match(OPENING_CURLYBRACKET)) {
       // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
       e = parseExpression()
+      // console.log(e.string)
+      // console.log('require }', _input, _lex)
       require(CLOSING_CURLYBRACKET)
+      // console.log('no error')
     }
     else {
 
@@ -718,14 +721,14 @@ ${msg}`
       let u = unit(_lexem)
       if (match(POW)) {
         const n = parseAtom()
-        if (
-          !(
-            n.isInt() ||
-            (n.isBracket() && n.first.isOpposite() && n.first.first.isInt())
-          )
-        ) {
-          failure('Integer required')
-        }
+        // if (
+        //   !(
+        //     n.isInt() 
+        //     || (n.isOpposite() && n.first.isInt())
+        //   )
+        // ) {
+        //   failure('Integer required')
+        // }
         u = u.pow(n)
       }
       return u
