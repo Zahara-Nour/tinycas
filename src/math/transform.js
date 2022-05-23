@@ -51,11 +51,11 @@ export function removeZerosAndSpaces(node) {
     ? createNode({ type: node.type, children: node.children.map(child => child.removeZerosAndSpaces()) })
     : math(node.string)
 
-  if (node.type === TYPE_NUMBER)  {
-    e = e.eval({decimal:true})
+  if (node.type === TYPE_NUMBER) {
+    e = e.eval({ decimal: true })
   }
   e.unit = node.unit
-  
+
   return e
 
 }
@@ -71,7 +71,7 @@ export function removeMultOperator(node) {
     e = product([e.first, e.last], TYPE_PRODUCT_IMPLICIT)
   }
   e.unit = node.unit
-  
+
   return e
 
 }
@@ -217,6 +217,7 @@ export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
       node.parent.isDivision() && node.first.isDivision() && node.isFirst() ||
       node.parent.isDivision() && node.first.isPower() ||
       node.parent.isPower() && node.first.isPower() && node.isFirst() ||
+      node.parent.isPower() && node.isLast() ||
 
       !allowFirstNegativeTerm && node.parent.isSum() && node.first.isOpposite() && node.isFirst() ||
       !allowFirstNegativeTerm && node.parent.isSum() && node.first.isPositive() && node.isFirst() ||
@@ -230,19 +231,19 @@ export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
 
       // cas ou les brackets doivent être remplacées par des curly brackets en sortie
       node.parent.isProduct() && node.first.isQuotient() && node.isLast() ||
-    node.parent.isQuotient() && node.first.isProduct() && node.isLast() ||
-    node.parent.isQuotient() && node.first.isQuotient() && node.isLast() ||
-    node.parent.isQuotient() && node.first.isDivision() && node.isLast() ||
-    node.parent.isQuotient() && node.first.isOpposite() ||
-    node.parent.isQuotient() && node.first.isSum() ||
-    node.parent.isQuotient() && node.first.isDifference()
+      node.parent.isQuotient() && node.first.isProduct() && node.isLast() ||
+      node.parent.isQuotient() && node.first.isQuotient() && node.isLast() ||
+      node.parent.isQuotient() && node.first.isDivision() && node.isLast() ||
+      node.parent.isQuotient() && node.first.isOpposite() ||
+      node.parent.isQuotient() && node.first.isSum() ||
+      node.parent.isQuotient() && node.first.isDifference()
 
 
 
     )) {
     e = node.first.removeUnecessaryBrackets(allowFirstNegativeTerm)
   }
-  
+
   else if (node.children) {
     e = createNode({ type: node.type, children: node.children.map(child => child.removeUnecessaryBrackets(allowFirstNegativeTerm)) })
   }
@@ -418,6 +419,10 @@ export function removeSigns(node) {
     else if (e.first.isBracket() && e.first.first.isPositive()) {
       first = e.first.first.first
     }
+    else if (e.isQuotient() && e.first.isOpposite()) {
+      first = e.first.first
+      negative = !negative
+    }
     else {
       first = e.first
     }
@@ -432,11 +437,13 @@ export function removeSigns(node) {
     else if (e.last.isBracket() && e.last.first.isPositive()) {
       last = e.last.first.first
     }
+    else if (e.isQuotient() && e.last.isOpposite()) {
+      last = e.last.first
+      negative = !negative
+    }
     else {
       last = e.last
     }
-
-
 
     if (e.isProduct()) {
       // prendre en compte les différentes notation pour la multiplication
@@ -450,11 +457,11 @@ export function removeSigns(node) {
 
     if (negative) {
       e = e.oppose()
-    } 
+    }
     // else {
     //   e = e.positive()
     // }
-    if (negative && parent && !(parent.isBracket())) {
+    if (negative && parent && !(parent.isBracket() || parent.isQuotient() || (parent.isPower() && e.isLast()))) {
       e = e.bracket()
     }
 
@@ -684,10 +691,10 @@ function generateTemplate(node) {
           e = number(
             getRandomIntInclusive(
               children[2].isOpposite()
-                ? children[2].first.value.toNumber()*(-1)
+                ? children[2].first.value.toNumber() * (-1)
                 : children[2].value.toNumber(),
               children[3].isOpposite()
-                ? children[3].first.value.toNumber()*(-1)
+                ? children[3].first.value.toNumber() * (-1)
                 : children[3].value.toNumber()
             ),
           )

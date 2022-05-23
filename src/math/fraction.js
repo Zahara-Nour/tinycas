@@ -137,7 +137,7 @@ function fraction(arg) {
 
   } else if (typeof arg === 'string') {
     arg = arg.replace(/ /g, '')
-    const regex = new RegExp('^(\\(?(-?\\d+)(\\.\\d+)?\\)?)(\\/(-?\\d+))?$')
+    const regex = new RegExp('^([\\(\\{]?(-?\\d+)(\\.\\d+)?[\\)\\}]?)(\\/[\\(\\{]?(-?\\d+)[\\]\\}]?)?$')
     const result = regex.exec(arg)
     if (!result) {
       console.log('arg', arg, typeof arg)
