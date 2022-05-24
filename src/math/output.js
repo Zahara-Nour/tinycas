@@ -510,7 +510,7 @@ export function latex(e, options) {
       //   .toLocaleString('en',{maximumSignificantDigits:20} )
       //   .replace(/,/g, '\\,')
       //   .replace('.', '{,}')
-      s = e.string.replace(/ /g, '\\,').replace('.','{,}')
+      s = e.toString({displayUnit:false}).replace(/ /g, '\\,').replace('.','{,}')
       // const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
 
       // s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')

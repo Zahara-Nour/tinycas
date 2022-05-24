@@ -50,13 +50,17 @@ describe('Testing latex export', () => {
       ['0.012 345 678 912 345 6','0{,}012\\,345\\,678\\,912\\,345\\,6'],
       ['0.0123456789123456','0{,}0123456789123456'],
       ['{3/4}x','\\dfrac{3}{4}x'],
-      ['1 2', '1\\,2']
+      ['1 2', '1\\,2'],
+      ['5 km', '5\\,km']
     ]
   
     test.each(t)(
       'exporting %s to latex',
       (e, expected) => {
-        expect(math(e).latex).toBe(expected)
+        e=math(e)
+        if (e.unit) {
+        }
+        expect(e.latex).toBe(expected)
       }
     )
   })
