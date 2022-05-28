@@ -13,10 +13,10 @@ import {
   product,
   TYPE_PRODUCT,
   TYPE_QUOTIENT,
-} from './node'
-import { math } from './math'
+} from './node.mjs'
+import { math } from './math.mjs'
 import Decimal from 'decimal.js'
-import { gcd, shuffle } from '../utils/utils'
+import { gcd, shuffle } from '../utils/utils.mjs'
 
 const constants = {
   pi: '3.14',

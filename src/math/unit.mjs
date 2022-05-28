@@ -1,4 +1,4 @@
-import { symbol, number, TYPE_PRODUCT_POINT } from './node'
+import { symbol, number, TYPE_PRODUCT_POINT } from './node.mjs'
 
 const TYPE_UNIT = 'type unit'
 

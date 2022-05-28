@@ -14,7 +14,7 @@ import {
   TYPE_RADICAL,
   TYPE_SUM,
   TYPE_SYMBOL,
-} from './node'
+} from './node.mjs'
 
 
 import Decimal from 'decimal.js'

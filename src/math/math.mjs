@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
-import { number } from './node'
-import parser from './parser'
+import { number } from './node.mjs'
+import parser from './parser.mjs'
 
 export function math (exp, options) {
   let e

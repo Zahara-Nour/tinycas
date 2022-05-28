@@ -36,8 +36,8 @@ import {
   TYPE_TEMPLATE,
   TYPE_UNEQUALITY,
   TYPE_UNIT,
-} from './node'
-import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal'
+} from './node.mjs'
+import { TYPE_NPRODUCT, TYPE_NSUM, TYPE_NORMAL } from './normal.mjs'
 /**
  * Un ordre doit être défini sur les expressions afin de créer les formes normales, qui permettent d'identifier
  * deux expressions équivalentes

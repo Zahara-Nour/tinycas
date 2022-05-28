@@ -47,13 +47,13 @@ import {
   TYPE_TIME,
   TYPE_SIMPLE_TIME,
   time,
-} from './node'
-import fraction from './fraction'
-import { math } from './math'
-import { binarySearchCmp, gcd, pgcd, RadicalReduction } from '../utils/utils'
-import compare from './compare'
+} from './node.mjs'
+import fraction from './fraction.mjs'
+import { math } from './math.mjs'
+import { binarySearchCmp, gcd, pgcd, RadicalReduction } from '../utils/utils.mjs'
+import compare from './compare.mjs'
 import Decimal from 'decimal.js'
-import { unit } from './unit'
+import { unit } from './unit.mjs'
 
 export const TYPE_NORMAL = 'normal'
 export const TYPE_NSUM = 'nsum'

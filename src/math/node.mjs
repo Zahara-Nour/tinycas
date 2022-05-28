@@ -1,8 +1,8 @@
-import evaluate from './evaluate'
-import fraction from './fraction'
-import normalize from './normal'
-import { text, latex } from './output'
-import compare from './compare'
+import evaluate from './evaluate.mjs'
+import fraction from './fraction.mjs'
+import normalize from './normal.mjs'
+import { text, latex } from './output.mjs'
+import compare from './compare.mjs'
 import {
   substitute,
   generate,
@@ -22,11 +22,11 @@ import {
   shallowSortFactors,
   simplifyNullProducts,
   removeZerosAndSpaces,
-} from './transform'
-import { gcd } from '../utils/utils'
+} from './transform.mjs'
+import { gcd } from '../utils/utils.mjs'
 import Decimal from 'decimal.js'
-import { math } from './math'
-import { unit } from './unit'
+import { math } from './math.mjs'
+import { unit } from './unit.mjs'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'

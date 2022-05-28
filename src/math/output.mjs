@@ -36,9 +36,9 @@ import {
   TYPE_MOD,
   TYPE_ABS,
   TYPE_TIME,
-} from './node'
+} from './node.mjs'
 
-import { TYPE_NORMAL } from './normal'
+import { TYPE_NORMAL } from './normal.mjs'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
 export function text(e, options) {
