@@ -50,14 +50,14 @@ const PFraction = {
   },
 
   mult(f) {
-    let n = this.n.mul(f.n)
+    const n = this.n.mul(f.n)
     const d = this.d.mul(f.d)
     const s = f.s * this.s
     return createFraction({ n, d, s }).reduce()
   },
 
   div(f) {
-    let n = this.n.mul(f.d)
+    const n = this.n.mul(f.d)
     const d = this.d.mul(f.n)
     const s = f.s * this.s
     return createFraction({ n, d, s })
@@ -145,7 +145,7 @@ function fraction(arg) {
     // let num = parseFloat(result[1])
     // let denom = result[5] ? parseFloat(result[5]) : null
     const removedCommas = removeCommas(parseFloat(result[1]), result[5] ? parseFloat(result[5]) : 1)
-    let { n, d, s } = removedCommas
+    const { n, d, s } = removedCommas
 
     return createFraction({ n, d, s })
   } else {

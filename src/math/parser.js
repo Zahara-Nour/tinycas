@@ -1,5 +1,5 @@
-import { token, lexer } from './lexer.mjs'
-import { math } from './math.mjs'
+import { token, lexer } from './lexer.js'
+import { math } from './math.js'
 import {
   number,
   hole,
@@ -36,9 +36,9 @@ import {
   min,
   max,
   time,
-} from './node.mjs'
+} from './node.js'
 
-import { unit, baseUnits } from './unit.mjs'
+import { unit, baseUnits } from './unit.js'
 // import template from './template'
 
 // const COMMA = token(',')

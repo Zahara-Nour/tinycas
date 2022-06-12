@@ -36,9 +36,9 @@ import {
   TYPE_MOD,
   TYPE_ABS,
   TYPE_TIME,
-} from './node.mjs'
+} from './node.js'
 
-import { TYPE_NORMAL } from './normal.mjs'
+import { TYPE_NORMAL } from './normal.js'
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
 export function text(e, options) {
@@ -47,11 +47,10 @@ export function text(e, options) {
   // console.log('isUnit', options.isUnit)
 
   switch (e.type) {
-
     case TYPE_TIME:
       // format = options.formatTime
 
-      s = ""
+      s = ''
       if (e.children[0] && !e.children[0].isZero()) {
         s += e.children[0]
         s += ' '
@@ -146,7 +145,14 @@ export function text(e, options) {
 
     case TYPE_POWER:
       s = e.last.toString(options)
-      if (!(e.last.isSymbol() || e.last.isNumber() || e.last.isHole() || e.last.isBracket())) {
+      if (
+        !(
+          e.last.isSymbol() ||
+          e.last.isNumber() ||
+          e.last.isHole() ||
+          e.last.isBracket()
+        )
+      ) {
         s = '{' + s + '}'
       }
       s = e.first.toString(options) + '^' + s
@@ -156,34 +162,48 @@ export function text(e, options) {
       s = e.first.toString(options) + ':' + e.last.toString(options)
       break
 
-    case TYPE_QUOTIENT:
+    case TYPE_QUOTIENT: {
       let s1 = e.first.toString(options)
       let s2 = e.last.toString(options)
       if (e.first.isOpposite() || e.first.isSum() || e.first.isDifference()) {
         s1 = '{' + s1 + '}'
       }
-      if (e.last.isOpposite() || e.last.isSum() || e.last.isDifference() || e.last.isProduct() || e.last.isDivision() || e.last.isQuotient()) {
+      if (
+        e.last.isOpposite() ||
+        e.last.isSum() ||
+        e.last.isDifference() ||
+        e.last.isProduct() ||
+        e.last.isDivision() ||
+        e.last.isQuotient()
+      ) {
         s2 = '{' + s2 + '}'
       }
       s = s1 + '/' + s2
+
       break
+    }
 
     case TYPE_SUM:
       s = e.children.map(child => child.toString(options)).join(e.type)
       break
 
     case TYPE_PRODUCT:
-      s = e.children.map(child => child.toString(options)).join(options.isUnit ? '.' : options.implicit ? '' : e.type)
+      s = e.children
+        .map(child => child.toString(options))
+        .join(options.isUnit ? '.' : options.implicit ? '' : e.type)
       // console.log('isunit PRODUCT', options.isUnit, s)
       break
 
     case TYPE_PRODUCT_IMPLICIT:
-      s = e.children.map(child =>
-        child.isQuotient() ? '{' + child.toString(options) + '}' : child.toString(options)).join('')
+      s = e.children
+        .map(child =>
+          child.isQuotient()
+            ? '{' + child.toString(options) + '}'
+            : child.toString(options),
+        )
+        .join('')
       break
     case TYPE_PRODUCT_POINT:
-
-
       s = e.children.map(child => child.toString(options)).join(e.type)
       // console.log('isunit IMPLCITI POINT', options.isUnit, s)
 
@@ -218,11 +238,21 @@ export function text(e, options) {
     //   break
 
     case TYPE_GCD:
-      s = 'pgcd(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
+      s =
+        'pgcd(' +
+        e.first.toString(options) +
+        ';' +
+        e.last.toString(options) +
+        ')'
       break
 
     case TYPE_MOD:
-      s = 'mod(' + e.first.toString(options) + ';' + e.last.toString(options) + ')'
+      s =
+        'mod(' +
+        e.first.toString(options) +
+        ';' +
+        e.last.toString(options) +
+        ')'
       break
 
     case TYPE_BOOLEAN:
@@ -238,19 +268,26 @@ export function text(e, options) {
         case '$ep':
         case '$ei':
           if (!(e.children[0].isHole() && e.children[1].isHole())) {
-            s += `{${!e.children[0].isHole() ? e.children[0].toString(options) + ';' : ''
-              }${e.children[1].toString(options)}}`
+            s += `{${
+              !e.children[0].isHole()
+                ? e.children[0].toString(options) + ';'
+                : ''
+            }${e.children[1].toString(options)}}`
           } else {
-            s += `[${e.children[2].toString(options)};${e.children[3].toString(options)}]`
+            s += `[${e.children[2].toString(options)};${e.children[3].toString(
+              options,
+            )}]`
           }
           if (e.exclude) {
-            s += '\\{' + e.exclude.map(child => child.toString(options)).join(';') + '}'
+            s +=
+              '\\{' +
+              e.exclude.map(child => child.toString(options)).join(';') +
+              '}'
           }
           if (e.excludeMin) {
             s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
           }
           break
-
 
         case '$d':
         case '$dr':
@@ -269,9 +306,15 @@ export function text(e, options) {
           }
           break
         case '$l':
-          s += '{' + e.children.map(child => child.toString(options)).join(';') + '}'
+          s +=
+            '{' +
+            e.children.map(child => child.toString(options)).join(';') +
+            '}'
           if (e.exclude) {
-            s += '\\{' + e.exclude.map(child => child.toString(options)).join(';') + '}'
+            s +=
+              '\\{' +
+              e.exclude.map(child => child.toString(options)).join(';') +
+              '}'
           }
           if (e.excludeMin) {
             s += '\\[' + e.excludeMin + ';' + e.excludeMax + ']'
@@ -287,9 +330,16 @@ export function text(e, options) {
     default:
   }
 
-
   if (e.unit && options.displayUnit) {
-    if (!(e.isSymbol() || e.isNumber() || e.isBracket() || e.isHole() || e.isTemplate())) {
+    if (
+      !(
+        e.isSymbol() ||
+        e.isNumber() ||
+        e.isBracket() ||
+        e.isHole() ||
+        e.isTemplate()
+      )
+    ) {
       s = '{' + s + '}'
     }
     s += ' ' + e.unit.string
@@ -305,7 +355,7 @@ export function latex(e, options) {
     case TYPE_TIME:
       // format = options.formatTime
 
-      s = ""
+      s = ''
       if (e.children[0] && !e.children[0].isZero()) {
         s += e.children[0].toLatex(options)
         s += '\\,'
@@ -344,7 +394,6 @@ export function latex(e, options) {
       }
 
       break
-
 
     case TYPE_SEGMENT_LENGTH:
       s = e.begin + e.end
@@ -451,9 +500,7 @@ export function latex(e, options) {
     case TYPE_POWER:
       // console.log('e', e.string)
       // console.log('e.first', e.first.toLatex(options))
-      s =
-        e.first.toLatex(options) +
-        '^{' + e.last.toLatex(options) + '}'
+      s = e.first.toLatex(options) + '^{' + e.last.toLatex(options) + '}'
       // console.log('s', s)
       break
 
@@ -497,8 +544,7 @@ export function latex(e, options) {
     case TYPE_SYMBOL:
       if (e.letter === 'pi') {
         s = '\\pi'
-      }
-      else {
+      } else {
         s = e.letter
       }
       break
@@ -510,7 +556,13 @@ export function latex(e, options) {
       //   .toLocaleString('en',{maximumSignificantDigits:20} )
       //   .replace(/,/g, '\\,')
       //   .replace('.', '{,}')
-      s = e.toString({displayUnit:false}).replace(/ /g, '\\,').replace('.','{,}')
+      s = e.toString({ displayUnit: false })
+      if (options.addSpaces) {
+        s = formatSpaces(s)
+      }
+      s = s
+        .replace(/ /g, '\\,')
+        .replace('.', '{,}')
       // const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
 
       // s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')
@@ -533,12 +585,10 @@ export function latex(e, options) {
 }
 
 // Ajoute un espace tous les 3 chiffres
-function formatLatexNumber(num) {
-
-  ; let [int, dec] = num.split('.')
-  int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1\\,')
-  if (dec) dec = dec.replace(/\d{3}(?=\d)/g, '$&\\,')
+function formatSpaces(num) {
+  let [int, dec] = num.replace(/ /g, '').split('.')
+  int = int.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1 ')
+  if (dec) dec = dec.replace(/\d{3}(?=\d)/g, '$& ')
   // if (dec) dec = dec.replace(/(\d)(?<=(?<!\d)(\d{3})+)/g, '$1\\,')
-  return dec ? int + ',' + dec : int
+  return dec ? int + '.' + dec : int
 }
-

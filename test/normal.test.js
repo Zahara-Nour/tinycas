@@ -260,6 +260,10 @@ describe('Testing normal forms for functions', () => {
     ['cos(2)*cos(2)', 'cos(2)^2'],
     ['cos(2)+cos(2)', '2*cos(2)'],
     ['cos(6)*x+cos(7)*x', '(cos(6)+cos(7))*x'],
+    ['exp(x)', 'exp(x)'],
+    ['exp(ln(x))', 'x'],
+    ['ln(exp(x))', 'x'],
+    ['ln((x^2))', '2*ln(x)']
 
 
   ]

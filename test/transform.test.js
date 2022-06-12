@@ -1,5 +1,8 @@
 import { math } from '../src/math/math'
 
+
+
+
 describe('Testing substitutions', () => {
   const t = [
     ['a', '1', 'a', '1'],
@@ -621,6 +624,64 @@ describe('Testing removing factors one', () => {
 
   test.each(t)('%s and %s', (e, expected) => {
     expect(math(e).removeFactorsOne().string).toBe(expected)
+  })
+})
+
+describe('Testing composing functions', () => {
+
+  const t = [
+    ['x+1', 'x^2', 'x^2+1'],
+    ['x^2', 'x+1', '(x+1)^2'],
+    ['exp(x)', '2x', 'exp(2x)'],
+    ['ln(x)', '2x', 'ln(2x)'],
+    ['cos(x)', '2x', 'cos(2x)'],
+    ['sin(x)', '2x', 'sin(2x)'],
+    ['sqrt(x)', '2x', 'sqrt(2x)'],
+  ]
+
+
+  test.each(t)('composing %s with %s', (f,g, expected) => {
+    expect(math(f).compose(math(g)).string).toBe(expected)
+  })
+})
+
+
+describe('Testing derivating functions', () => {
+
+  const t = [
+    ['1', '0'],
+    ['x', '1'],
+    ['-x', '-1'],
+    ['1/x', '-1/x^2'],
+    ['a', '0'],
+    ['exp(x)', 'exp(x)'],
+    ['exp(2x)', '2exp(2x)'],
+    ['2exp(x)', '2exp(x)'],
+    ['exp(y)', '0'],
+    ['ln(x)', '1/x'],
+    ['2ln(x)', '2/x'],
+    ['ln(2x)', '1/x'],
+    ['exp(ln(x))', '1'],
+    ['exp(2*ln(x))', '2x'],
+    ['cos(x)', '-sin(x)'],
+    ['sin(x)', 'cos(x)'],
+    ['ln(cos(x))', '-sin(x)/cos(x)'],
+    ['ln(exp(x))', '1'],
+    ['x*x', '2x'],
+    ['x*ln(x)', '1+ln(x)'],
+    ['x/ln(x)', '(ln(x)-1)/(ln(x)^2)'],
+    ['x^2', '2x'],
+    ['x^3', '3x^2'],
+    ['x^3', '3x^2'],
+    ['6x^3-5x^2+10x-7', '18x^2-10x+10'],
+    ['sqrt(x)', '1/(2*sqrt(x))'],
+    ['x^{1/2}', '1/(2*sqrt(x))'],
+  ]
+
+
+  test.each(t)('%s', (e, expected) => {
+    expect(math(e).derivate().equals(math(expected))).toBeTruthy()
+    // expect(math(e).derivate().string).toBe("a")
   })
 })
 

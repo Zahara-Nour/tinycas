@@ -287,6 +287,14 @@ describe('Parsing', () => {
     e = p.parse('abs(-5)')
     expect(e.string).toEqual('abs(-5)')
     expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('ln(x)')
+    expect(e.string).toEqual('ln(x)')
+    expect(e.isFunction()).toBeTruthy()
+
+    e = p.parse('ln(x^2)')
+    expect(e.string).toEqual('ln(x^2)')
+    expect(e.isFunction()).toBeTruthy()
   })
 
   test('Parser parses booleans', () => {

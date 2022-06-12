@@ -56,7 +56,7 @@ function token (pattern) {
 }
 
 function lexer (exp) {
-  let whiteSpace = token('@\\s+')
+  const whiteSpace = token('@\\s+')
   let _pos = 0
   let _savedPos
   let _lexem

@@ -57,3 +57,7 @@ node_modules/
 .env.test
 
 build2/
+
+build/
+
+dist/

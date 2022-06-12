@@ -48,9 +48,9 @@ describe('Testing latex export', () => {
       ['3%', '3\\%'],
       ['3%+4%', '3\\%+4\\%'],
       ['0.012 345 678 912 345 6','0{,}012\\,345\\,678\\,912\\,345\\,6'],
-      ['0.0123456789123456','0{,}0123456789123456'],
+      ['0.0123456789123456','0{,}012\\,345\\,678\\,912\\,345\\,6'],
       ['{3/4}x','\\dfrac{3}{4}x'],
-      ['1 2', '1\\,2'],
+      ['1 2', '12'],
       ['5 km', '5\\,km']
     ]
   
@@ -61,6 +61,28 @@ describe('Testing latex export', () => {
         if (e.unit) {
         }
         expect(e.latex).toBe(expected)
+      }
+    )
+  })
+
+  describe('Testing latex export (no add spaces)', () => {
+
+    const t = [ 
+      
+      ['0.012 345 678 912 345 6','0{,}012\\,345\\,678\\,912\\,345\\,6'],
+      ['0.0123456789123456','0{,}0123456789123456'],
+      ['{3/4}x','\\dfrac{3}{4}x'],
+      ['1 2', '1\\,2'],
+      ['5 km', '5\\,km']
+    ]
+  
+    test.each(t)(
+      'exporting %s to latex (no add spaces)',
+      (e, expected) => {
+        e=math(e)
+        if (e.unit) {
+        }
+        expect(e.toLatex({addSpaces:false})).toBe(expected)
       }
     )
   })

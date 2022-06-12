@@ -20,6 +20,8 @@ describe('Testing input value', () => {
 describe('Testing tree', () => {
   test('Root is set on children', () => {
     const e = math('2*3+4')
+    console.log('parent', e.first.first.parent, e.first)
+    console.log(e.first.first.parent === e.first)
     expect(e.first.first.root).toBe(e)
   })
 

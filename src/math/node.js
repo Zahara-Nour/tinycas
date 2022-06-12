@@ -1,12 +1,11 @@
-import evaluate from './evaluate.mjs'
-import fraction from './fraction.mjs'
-import normalize from './normal.mjs'
-import { text, latex } from './output.mjs'
-import compare from './compare.mjs'
+import evaluate from './evaluate.js'
+import fraction from './fraction.js'
+import normalize from './normal.js'
+import { text, latex } from './output.js'
+import compare from './compare.js'
 import {
   substitute,
   generate,
-  shuffleTerms,
   sortTermsAndFactors,
   removeUnecessaryBrackets,
   removeSigns,
@@ -22,11 +21,15 @@ import {
   shallowSortFactors,
   simplifyNullProducts,
   removeZerosAndSpaces,
-} from './transform.mjs'
-import { gcd } from '../utils/utils.mjs'
+  shuffleTerms,
+  shuffleFactors,
+  shuffleTermsAndFactors,
+  derivate,
+  compose,
+} from './transform.js'
 import Decimal from 'decimal.js'
-import { math } from './math.mjs'
-import { unit } from './unit.mjs'
+import { math } from './math.js'
+import { unit } from './unit.js'
 
 export const TYPE_SUM = '+'
 export const TYPE_DIFFERENCE = '-'
@@ -82,6 +85,14 @@ const PNode = {
     return this.children ? this.children[Symbol.iterator]() : null
   },
 
+  derivate(variable = 'x') {
+    return derivate(this, variable)
+  },
+
+  compose(g, variable = 'x') {
+    return compose(this, g, variable)
+  },
+
   //  simplifier une fraction numérique
   reduce() {
     // la fraction est déj
@@ -92,7 +103,6 @@ const PNode = {
     b = fraction(negative ? b.first.string : b.string).reduce()
 
     let result
-
 
     if (b.n.equals(0)) {
       result = number(0)
@@ -273,7 +283,9 @@ const PNode = {
     )
   },
   isDuration() {
-    return this.isTime() || (!!this.unit && this.unit.isConvertibleTo(unit('s')))
+    return (
+      this.isTime() || (!!this.unit && this.unit.isConvertibleTo(unit('s')))
+    )
   },
   isLength() {
     return !!this.unit && this.unit.isConvertibleTo(unit('m'))
@@ -480,7 +492,7 @@ const PNode = {
   isNumeric() {
     return (
       this.isNumber() ||
-      (this.children && !!this.children.find(child => child.isNumeric()))
+      (this.children && this.children.every(child => child.isNumeric()))
     )
   },
 
@@ -508,6 +520,14 @@ const PNode = {
     return opposite([this])
   },
 
+  inverse() {
+    return quotient([one, this])
+  },
+
+  radical() {
+    return radical([this])
+  },
+
   positive() {
     return positive([this])
   },
@@ -530,6 +550,26 @@ const PNode = {
 
   abs() {
     return abs([this])
+  },
+
+  exp() {
+    return exp([this])
+  },
+
+  ln() {
+    return ln([this])
+  },
+
+  log() {
+    return log([this])
+  },
+
+  sin() {
+    return sin([this])
+  },
+
+  cos() {
+    return cos([this])
   },
 
   shallowShuffleTerms() {
@@ -624,9 +664,8 @@ const PNode = {
   },
 
   searchMisplacedSpaces() {
-    let regexs
     if (this.isNumber()) {
-      let [int, dec] = this.input.replace(',', '.').split('.')
+      const [int, dec] = this.input.replace(',', '.').split('.')
       let regexs = [/\d{4}/, /\s$/, /\s\d{2}$/, /\s\d{2}\s/, /\s\d$/, /\s\d\s/]
       if (regexs.some(regex => int.match(regex))) return true
 
@@ -636,7 +675,7 @@ const PNode = {
       }
       return false
     } else if (this.children) {
-      return children.some(child => child.searchMisplacedSpaces())
+      return this.children.some(child => child.searchMisplacedSpaces())
     } else {
       return false
     }
@@ -651,7 +690,6 @@ const PNode = {
    */
 
   eval(params = {}) {
-
     // par défaut on veut une évaluation exacte (entier, fraction, racine,...)
     params.decimal = params.decimal || false
     const precision = params.precision || 20
@@ -661,8 +699,7 @@ const PNode = {
     if (params.unit) {
       if (typeof params.unit === 'string' && params.unit !== 'HMS') {
         unit = math('1 ' + params.unit).unit
-      }
-      else {
+      } else {
         unit = params.unit
       }
     }
@@ -675,9 +712,12 @@ const PNode = {
 
     // si l'unité du résultat est imposée
     if (unit) {
-      if (unit === 'HMS' && !e.isDuration() || (unit !=='HMS' && !math('1' + unit.string).normal.isSameQuantityType(e))) {
-
-        throw new Error(`Unités incompatibles ${e.string} ${unit.string}` )
+      if (
+        (unit === 'HMS' && !e.isDuration()) ||
+        (unit !== 'HMS' &&
+          !math('1' + unit.string).normal.isSameQuantityType(e))
+      ) {
+        throw new Error(`Unités incompatibles ${e.string} ${unit.string}`)
       }
       if (unit !== 'HMS') {
         const coef = e.unit.getCoefTo(unit.normal)
@@ -687,21 +727,19 @@ const PNode = {
 
     // on retourne à la forme naturelle
     if (unit === 'HMS') {
-      e=e.toNode({formatTime:true})
-    }
-    else {
+      e = e.toNode({ formatTime: true })
+    } else {
       e = e.node
     }
-    
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
     //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
-    if (unit && unit !=='HMS') {
+    if (unit && unit !== 'HMS') {
       e.unit = unit
     }
 
     // si on veut la valeur décimale, on utilise la fonction evaluate
-    if (params.decimal && unit !=='HMS') {
+    if (params.decimal && unit !== 'HMS') {
       //  on garde en mémoire l'unité
       const u = e.unit
 
@@ -726,11 +764,10 @@ const PNode = {
   },
 
   shallow() {
-
     return {
       nature: this.type,
       children: this.children ? this.children.map(e => e.type) : null,
-      unit: this.unit ? this.unit.string : ''
+      unit: this.unit ? this.unit.string : '',
     }
   },
 
@@ -886,6 +923,17 @@ const PNode = {
         )
     }
   },
+
+  addParent(e) {
+    const node = Object.create(PNode)
+    Object.assign(node, { ...this, parent: e })
+    if (node.children) {
+      node.children.forEach(child => {
+        child.parent = node
+      })
+    }
+    return node
+  },
 }
 
 /* 
@@ -893,16 +941,12 @@ Création de la représentation intermédiaire de l'expresssion mathématique (A
 La forme normale utilise une forme propre.
  */
 export function createNode(params) {
-
-
   const node = Object.create(PNode)
   Object.assign(node, params)
 
   //  on associe le père à chaque fils
   if (node.children) {
-    for (const child of node) {
-      child.parent = node
-    }
+    node.children = node.children.map(c => c.addParent(node))
   }
 
   if (node.exclude) {
@@ -921,23 +965,24 @@ export function createNode(params) {
 
 // Deux constantes (à utiliser sous la forme de fonction) servant régulièrement. Singletons.
 
-const one = (function () {
-  let instance
-  return () => {
-    if (!instance) instance = number('1')
-    return instance
-  }
-})()
+// const one = (function () {
+//   let instance
+//   return () => {
+//     if (!instance) instance = number('1')
+//     return instance
+//   }
+// })()
 
-const zero = (function () {
-  let instance
-  return () => {
-    if (!instance) instance = number('0')
-    return instance
-  }
-})()
+// const zero = (function () {
+//   let instance
+//   return () => {
+//     if (!instance) instance = number('0')
+//     return instance
+//   }
+// })()
 
-export { one, zero }
+export const one = number(1)
+export const zero = number(0)
 
 export function sum(children) {
   return createNode({ type: TYPE_SUM, children })
@@ -1029,7 +1074,14 @@ export function number(input) {
       : input, // number
   )
 
-  return createNode({ type: TYPE_NUMBER, value, input:input.toString().trim().replace(',', '.') })
+  return createNode({
+    type: TYPE_NUMBER,
+    value,
+    input: input
+      .toString()
+      .trim()
+      .replace(',', '.'),
+  })
 }
 export function boolean(value) {
   return createNode({ type: TYPE_BOOLEAN, value })
@@ -1066,4 +1118,3 @@ export function inequality(children, relation) {
 export function time(children) {
   return createNode({ type: TYPE_TIME, children })
 }
-
