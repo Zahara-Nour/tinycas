@@ -38,6 +38,8 @@ import {
   TYPE_TIME,
   TYPE_MAX,
   TYPE_MIN,
+  TYPE_MINP,
+  TYPE_MAXP,
 } from './node.js'
 
 import { TYPE_NORMAL } from './normal.js'
@@ -331,6 +333,8 @@ export function text(e, options) {
 
     case TYPE_MIN:
     case TYPE_MAX:
+    case TYPE_MINP:
+    case TYPE_MAXP:
       s = e.type+'('+e.first.string+';'+e.last.string+')'
 
     break

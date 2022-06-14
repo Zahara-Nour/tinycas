@@ -370,6 +370,20 @@ describe('Testing normal forms for functions', () => {
     ['maxi(5;a)', 'maxi(5;a)'],
     ['maxi(a;b)', 'maxi(a;b)'],
 
+    ['minip(1;2)', '1'],
+    ['minip(1.2;2)', '6/5'],
+    ['minip(sqrt(2);5)', 'sqrt(2)'],
+    ['minip(a;5)', 'minip(a;5)'],
+    ['minip(5;a)', 'minip(5;a)'],
+    ['minip(a;b)', 'minip(a;b)'],
+
+    ['maxip(1;2)', '2'],
+    ['maxip(1.2;2)', '2'],
+    ['maxip(sqrt(2);5)', '5'],
+    ['maxip(a;5)', 'maxip(a;5)'],
+    ['maxip(5;a)', 'maxip(5;a)'],
+    ['maxip(a;b)', 'maxip(a;b)'],
+
   ]
 
   test.each(t)('normal form of %s', (e, expected) => {

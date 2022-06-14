@@ -36,12 +36,13 @@ import {
   min,
   max,
   time,
+  minPreserve,
+  maxPreserve,
 } from './node.js'
 
-import { unit, baseUnits } from './unit.js'
+import { unit } from './unit.js'
 // import template from './template'
 
-// const COMMA = token(',')
 // const SEMICOLON = token(';')
 const PLUS = token('+')
 const MINUS = token('-')
@@ -51,7 +52,6 @@ const FRAC = token('/')
 const POW = token('^')
 const HOLE = token('?')
 const PERIOD = token('.')
-const COMMA = token(',')
 const EQUAL = token('=')
 const NOTEQUAL = token('!=')
 const PERCENT = token('%')
@@ -60,8 +60,6 @@ const MULTIPLE = token('m')
 const DIVIDER = token('d')
 const COMMON_DIVIDERS = token('cd')
 const COMP = token('@[<>]=?')
-// const ANTISLASH = token('\\')
-// const DIGITS = token('@(\\d)+')
 const OPENING_BRACKET = token('(')
 const CLOSING_BRACKET = token(')')
 const SEMICOLON = token(';')
@@ -69,7 +67,6 @@ const OPENING_SQUAREBRACKET = token('[')
 const CLOSING_SQUAREBRACKET = token(']')
 const OPENING_CURLYBRACKET = token('{')
 const CLOSING_CURLYBRACKET = token('}')
-// const INTEGER_TEMPLATE = '@\\$(e[pi])(r)?'
 
 const VALUE_DECIMAL_TEMPLATE = token('$$')
 const INTEGER_TEMPLATE = token('@\\$(e[pi]?)(rs?)?')
@@ -81,10 +78,8 @@ const VALUE_TEMPLATE = token('$')
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
 const BOOLEAN = token('@false|true')
-const FUNCTION = token('@cos|sin|sqrt|pgcd|mini|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs')
-// NUMBER      = token("\\d+(\\.\\d+)?"); // obligé de doubler les \ sinon ils sont enlevés de la chaine
-// const DECIMAL = token('@[\\d]+[,\\.][\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
-const INTEGER = token('@[\\d]+') // obligé de doubler les \ sinon ils sont enlevés de la chaine
+const FUNCTION = token('@cos|sin|sqrt|pgcd|minip|mini|maxip|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs')
+const INTEGER = token('@[\\d]+') 
 const NUMBER = token('@\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?')
 const TIME = token('@\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ans?)?\\s*\
@@ -146,7 +141,7 @@ class ParsingError extends Error {
 function parser({ implicit = true, allowDoubleSign = true } = {}) {
   let _lex
   let _lexem
-  let _last_lexem
+  let _lastLexem
   let _input
   let _parts
 
@@ -161,7 +156,7 @@ ${msg}`
 
   function match(t) {
     if (_lex.match(t)) {
-      _last_lexem = _lexem
+      _lastLexem = _lexem
       _lexem = _lex.lexem
       _parts = _lex.parts
       return _lexem
@@ -409,11 +404,27 @@ ${msg}`
           break
         }
 
+        case 'minip': {
+          const a = parseExpression()
+          require(SEMICOLON)
+          const b = parseExpression()
+          e = minPreserve([a, b])
+          break
+        }
+
         case 'mini': {
           const a = parseExpression()
           require(SEMICOLON)
           const b = parseExpression()
           e = min([a, b])
+          break
+        }
+
+        case 'maxip': {
+          const a = parseExpression()
+          require(SEMICOLON)
+          const b = parseExpression()
+          e = maxPreserve([a, b])
           break
         }
 
@@ -692,10 +703,10 @@ ${msg}`
     }
     else {
 
-      if (_lexem === '-' && _last_lexem === '+') {
+      if (_lexem === '-' && _lastLexem === '+') {
         console.log('erreur op')
       }
-      if ('+-:*'.includes(_lexem) && '+-:*'.includes(_last_lexem)) {
+      if ('+-:*'.includes(_lexem) && '+-:*'.includes(_lastLexem)) {
         console.log('erreur op')
       }
       failure(ERROR_NO_VALID_ATOM)

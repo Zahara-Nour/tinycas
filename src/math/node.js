@@ -60,7 +60,9 @@ export const TYPE_INEQUALITY_MOREOREQUAL = '>='
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
 export const TYPE_MAX = 'maxi'
+export const TYPE_MAXP = 'maxip'
 export const TYPE_MIN = 'mini'
+export const TYPE_MINP = 'minip'
 export const TYPE_MOD = 'mod'
 export const TYPE_BOOLEAN = 'boolean'
 export const TYPE_COS = 'cos'
@@ -202,8 +204,14 @@ const PNode = {
   isMax() {
     return this.type === TYPE_MAX
   },
+  isMaxP() {
+    return this.type === TYPE_MAXP
+  },
   isMin() {
     return this.type === TYPE_MIN
+  },
+  isMinP() {
+    return this.type === TYPE_MINP
   },
   isMod() {
     return this.type === TYPE_MOD
@@ -270,7 +278,9 @@ const PNode = {
       this.isRadical() ||
       this.isPGCD() ||
       this.isMin() ||
+      this.isMinP() ||
       this.isMax() ||
+      this.isMaxP() ||
       this.isMod() ||
       this.isCos() ||
       this.isSin() ||
@@ -299,7 +309,9 @@ const PNode = {
   isLowerThan(e) {
     const e1 = this.normal.node
     const e2 =
-      typeof e === 'string' || typeof e === 'number' ? math(e).normal.node : e.normal.node
+      typeof e === 'string' || typeof e === 'number'
+        ? math(e).normal.node
+        : e.normal.node
     let result
     try {
       result = fraction(e1).isLowerThan(fraction(e2))
@@ -314,7 +326,7 @@ const PNode = {
     return this.isLowerThan(e) || this.equals(e)
   },
   isGreaterThan(e) {
-    if (typeof e === 'string' || typeof e ==='number') {
+    if (typeof e === 'string' || typeof e === 'number') {
       e = math(e)
     }
     return e.isLowerThan(this)
@@ -335,7 +347,7 @@ const PNode = {
     return this.string === e.string
   },
   equals(e) {
-    if (typeof e ==='string' || typeof e === 'number') {
+    if (typeof e === 'string' || typeof e === 'number') {
       e = math(e)
     }
     switch (this.type) {
@@ -727,38 +739,47 @@ const PNode = {
       }
     }
 
-    //  Cas particuliers : fonctions mini et maxi
+    //  Cas particuliers : fonctions minip et maxip
     // ces fonctions doivent retourner la forme initiale d'une des deux expressions
-    // et non la forme normaleg
-    // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
-    e = e.normal
-
-    // si l'unité du résultat est imposée
-    if (unit) {
-      if (
-        (unit === 'HMS' && !e.isDuration()) ||
-        (unit !== 'HMS' &&
-          !math('1' + unit.string).normal.isSameQuantityType(e))
-      ) {
-        throw new Error(`Unités incompatibles ${e.string} ${unit.string}`)
+    // et non la forme normale
+    if (this.isNumeric() && (this.isMaxP() || this.isMinP())) {
+      // TODO: et l'unité ?
+      if (this.isMinP()) {
+        e = this.first.isLowerThan(this.last) ? this.first : this.last
+      }else {
+        e = this.first.isGreaterThan(this.last) ? this.first : this.last
       }
-      if (unit !== 'HMS') {
-        const coef = e.unit.getCoefTo(unit.normal)
-        e = e.mult(coef)
-      }
-    }
-
-    // on retourne à la forme naturelle
-    if (unit === 'HMS') {
-      e = e.toNode({ formatTime: true })
     } else {
-      e = e.node
-    }
+      // on passe par la forme normale car elle nous donne la valeur exacte et gère les unités
+      e = e.normal
 
-    // on met à jour l'unité qui a pu être modifiée par une conversion
-    //  par défaut, c'est l'unité de base de la forme normale qui est utilisée.
-    if (unit && unit !== 'HMS') {
-      e.unit = unit
+      // si l'unité du résultat est imposée
+      if (unit) {
+        if (
+          (unit === 'HMS' && !e.isDuration()) ||
+          (unit !== 'HMS' &&
+            !math('1' + unit.string).normal.isSameQuantityType(e))
+        ) {
+          throw new Error(`Unités incompatibles ${e.string} ${unit.string}`)
+        }
+        if (unit !== 'HMS') {
+          const coef = e.unit.getCoefTo(unit.normal)
+          e = e.mult(coef)
+        }
+      }
+
+      // on retourne à la forme naturelle
+      if (unit === 'HMS') {
+        e = e.toNode({ formatTime: true })
+      } else {
+        e = e.node
+      }
+
+      // on met à jour l'unité qui a pu être modifiée par une conversion
+      //  par défaut, c'est l'unité de base de la forme normale qui est utilisée.
+      if (unit && unit !== 'HMS') {
+        e.unit = unit
+      }
     }
 
     // si on veut la valeur décimale, on utilise la fonction evaluate
@@ -1082,8 +1103,16 @@ export function min(children) {
   return createNode({ type: TYPE_MIN, children })
 }
 
+export function minPreserve(children) {
+  return createNode({ type: TYPE_MINP, children })
+}
+
 export function max(children) {
   return createNode({ type: TYPE_MAX, children })
+}
+
+export function maxPreserve(children) {
+  return createNode({ type: TYPE_MAXP, children })
 }
 
 export function percentage(children) {

@@ -167,10 +167,35 @@ describe('Test functions evaluation', () => {
     ['mini(2;2)', '2'],
     ['mini(10-3;2+3)', '5'],
     ['mini(2+3;10-3)', '5'],
+    ['mini(1;2)', '1'],
+    ['mini(1.2;2)', '6/5'],
+    ['mini(sqrt(2);5)', 'sqrt(2)'],
+    ['mini(a;5)', 'mini(a;5)'],
+    ['mini(5;a)', 'mini(5;a)'],
+    ['mini(a;b)', 'mini(a;b)'],
   
   ]
   
   test.each(t)('mini %s %s', (e1, e2) => {
+    expect(math(e1).eval().string).toEqual(e2)
+  })
+
+  t = [
+    ['minip(8;5)', '5'],
+    ['minip(5;8)', '5'],
+    ['minip(2;2)', '2'],
+    ['minip(10-3;2+3)', '2+3'],
+    ['minip(2+3;10-3)', '2+3'],
+    ['minip(1;2)', '1'],
+    ['minip(1.2;2)', '1.2'],
+    ['minip(sqrt(2);5)', 'sqrt(2)'],
+    ['minip(a;5)', 'minip(a;5)'],
+    ['minip(5;a)', 'minip(5;a)'],
+    ['minip(a;b)', 'minip(a;b)'],
+  
+  ]
+  
+  test.each(t)('minip %s %s', (e1, e2) => {
     expect(math(e1).eval().string).toEqual(e2)
   })
 
@@ -180,10 +205,35 @@ describe('Test functions evaluation', () => {
     ['maxi(2;2)', '2'],
     ['maxi(10-3;2+3)', '7'],
     ['maxi(2+3;10-3)', '7'],
+    ['maxi(1;2)', '2'],
+    ['maxi(1.2;2)', '2'],
+    ['maxi(sqrt(2);5)', '5'],
+    ['maxi(a;5)', 'maxi(a;5)'],
+    ['maxi(5;a)', 'maxi(5;a)'],
+    ['maxi(a;b)', 'maxi(a;b)'],
   
   ]
   
   test.each(t)('maxi %s %s', (e1, e2) => {
+    expect(math(e1).eval().string).toEqual(e2)
+  })
+
+  t = [
+    ['maxip(8;5)', '8'],
+    ['maxip(5;8)', '8'],
+    ['maxip(2;2)', '2'],
+    ['maxip(10-3;2+3)', '10-3'],
+    ['maxip(2+3;10-3)', '10-3'],
+    ['maxip(1;2)', '2'],
+    ['maxip(1.2;2)', '2'],
+    ['maxip(sqrt(2);5)', '5'],
+    ['maxip(a;5)', 'maxip(a;5)'],
+    ['maxip(5;a)', 'maxip(5;a)'],
+    ['maxip(a;b)', 'maxip(a;b)'],
+  
+  ]
+  
+  test.each(t)('maxip %s %s', (e1, e2) => {
     expect(math(e1).eval().string).toEqual(e2)
   })
 

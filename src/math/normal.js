@@ -42,6 +42,8 @@ import {
   TYPE_MIN,
   TYPE_MAX,
   TYPE_TIME,
+  TYPE_MINP,
+  TYPE_MAXP,
 } from './node.js'
 import fraction from './fraction.js'
 import { math } from './math.js'
@@ -1305,7 +1307,8 @@ export default function normalize(node) {
       break
     }
 
-    case TYPE_MIN: {
+    case TYPE_MIN:
+    case TYPE_MINP: {
       const children = node.children.map(c => c.normal.node)
       const a = children[0]
       const b = children[1]
@@ -1319,7 +1322,8 @@ export default function normalize(node) {
       break
     }
 
-    case TYPE_MAX: {
+    case TYPE_MAX:
+    case TYPE_MAXP: {
       const children = node.children.map(c => c.normal.node)
       const a = children[0]
       const b = children[1]
