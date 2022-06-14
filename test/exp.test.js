@@ -20,8 +20,6 @@ describe('Testing input value', () => {
 describe('Testing tree', () => {
   test('Root is set on children', () => {
     const e = math('2*3+4')
-    console.log('parent', e.first.first.parent, e.first)
-    console.log(e.first.first.parent === e.first)
     expect(e.first.first.root).toBe(e)
   })
 
@@ -145,6 +143,9 @@ describe('Testing equality between two expressions', () => {
     ['1 cm', '10 mm'],
     ['1 h 1 min', '61 min'],
 
+    ['x/x', '1'],
+    ['exp(x)/exp(x)', '1'],
+
   ]
   test.each(t)(
     '%s is equivalent to %s',
@@ -163,6 +164,69 @@ describe('Testing equality between two expressions', () => {
     '%s is not equivalent to %s',
     (e1, e2) => {
       expect(math(e1).equals(math(e2))).toBeFalsy()
+    }
+  )
+})
+
+describe('Testing comparison between two numericals expressions', () => {
+  const t = [
+    ['1', 2],
+    ['1', 2],
+    ['-5', -3],
+    ['-1', 0],
+    ['-1', 4],
+    ['1.5', 2.7],
+    ['3/2', '5/2'],
+    ['4^2', '5^3'],
+    ['sqrt(2)', 5],
+    ['cos(10)', 5],
+    ['sin(10)', 5],
+    ['ln(1)', 5],
+    ['exp(1)', 5],
+
+  ]
+  test.each(t)(
+    '%s is lower than %s',
+    (e1, e2) => {
+      expect(math(e1).isLowerThan(e2)).toBeTruthy()
+      expect(math(e1).isLowerOrEqual(e2)).toBeTruthy()
+    }
+  )
+
+  test.each(t)(
+    '%s is greater than %s',
+    (e1, e2) => {
+      expect(math(e2).isGreaterThan(e1)).toBeTruthy()
+      expect(math(e2).isGreaterOrEqual(e1)).toBeTruthy()
+    }
+  )
+})
+
+describe('Testing comparison between two numericals expressions (2)', () => {
+  
+  const t = [
+    ['sqrt(4)', 2],
+    ['cos(pi)', -1],
+    ['sin(pi)', 0],
+    ['ln(1)', 0],
+    ['ln(e)', 1],
+    ['exp(0)', 1],
+    ['cos(10)', 'cos(10)'],
+    ['sin(10)', 'sin(10)'],
+    ['ln(10)', 'ln(10)'],
+  ]
+
+  test.each(t)(
+    '%s is lower than %s',
+    (e1, e2) => {
+      expect(math(e1).isLowerOrEqual(e2)).toBeTruthy()
+    }
+  )
+
+  test.each(t)(
+    '%s is greater than %s',
+    (e1, e2) => {
+      expect(math(e2).isGreaterOrEqual(e1)).toBeTruthy()
     }
   )
 })
@@ -193,6 +257,29 @@ describe('Testing strict equality between two expressions', () => {
     '%s is not equivalent to %s',
     (e1, e2) => {
       expect(math(e1).strictlyEquals(math(e2))).toBeFalsy()
+    }
+  )
+})
+
+describe('Testing isNumeric', () => {
+  const t = [
+    ['1', true],
+    ['1,5', true],
+    ['-1', true],
+    ['-1,5', true],
+    ['1/2', true],
+    ['-1/2', true],
+    ['cos(2)', true],
+    ['-cos(2)', true],
+    ['cos(ln(2))', true],
+    ['1+2*3', true],
+    ['x', false],
+    ['1+x', false],
+  ]
+  test.each(t)(
+    '%s is numeric ?',
+    (e, expected) => {
+      expect(math(e).isNumeric()).toBe(expected)
     }
   )
 })

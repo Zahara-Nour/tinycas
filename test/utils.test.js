@@ -1,5 +1,5 @@
 import {Decimal} from 'decimal.js'
-import {pgcd, RadicalReduction, roundDecimal} from '../src/utils/utils'
+import {pgcd, primeFactors, RadicalReduction, roundDecimal} from '../src/utils/utils'
 
 
 
@@ -53,6 +53,20 @@ describe('Testing pgcd', () => {
     'rounding %s',
     (numbers,   expected) => {
       expect(pgcd(numbers).toString()).toBe(expected)
+    }
+  )
+})
+
+
+describe('Testing prime factorization', () => {
+
+  const t = [
+    [1234567890, [[2,1], [3,2], [5,1], [3607,1], [3803,1]]], 
+  ]
+  test.each(t)(
+    'fatorize %s',
+    (n,   expected) => {
+      expect(primeFactors(n)).toStrictEqual(expected)
     }
   )
 })

@@ -297,12 +297,26 @@ const PNode = {
     return compare(this, e)
   },
   isLowerThan(e) {
-    return fraction(this).isLowerThan(fraction(e))
+    const e1 = this.normal.node
+    const e2 =
+      typeof e === 'string' || typeof e === 'number' ? math(e).normal.node : e.normal.node
+    let result
+    try {
+      result = fraction(e1).isLowerThan(fraction(e2))
+    } catch (err) {
+      result = e1
+        .eval({ decimal: true })
+        .isLowerThan(e2.eval({ decimal: true }))
+    }
+    return result
   },
   isLowerOrEqual(e) {
     return this.isLowerThan(e) || this.equals(e)
   },
   isGreaterThan(e) {
+    if (typeof e === 'string' || typeof e ==='number') {
+      e = math(e)
+    }
     return e.isLowerThan(this)
   },
   isGreaterOrEqual(e) {
@@ -321,6 +335,9 @@ const PNode = {
     return this.string === e.string
   },
   equals(e) {
+    if (typeof e ==='string' || typeof e === 'number') {
+      e = math(e)
+    }
     switch (this.type) {
       case TYPE_EQUALITY:
         return (
@@ -492,11 +509,14 @@ const PNode = {
   isNumeric() {
     return (
       this.isNumber() ||
-      (this.children && this.children.every(child => child.isNumeric()))
+      (!!this.children && this.children.every(child => child.isNumeric()))
     )
   },
 
   add(e) {
+    if (typeof e === 'string' || typeof e === 'number') {
+      e = math(e)
+    }
     return sum([this, e])
   },
 
@@ -505,6 +525,9 @@ const PNode = {
   },
 
   mult(e, type = TYPE_PRODUCT) {
+    if (typeof e === 'string' || typeof e === 'number') {
+      e = math(e)
+    }
     return product([this, e], type)
   },
 
@@ -733,7 +756,7 @@ const PNode = {
     }
 
     // on met à jour l'unité qui a pu être modifiée par une conversion
-    //  par défaut, c'est l'unité de base dela forme normale qui est utilisée.
+    //  par défaut, c'est l'unité de base de la forme normale qui est utilisée.
     if (unit && unit !== 'HMS') {
       e.unit = unit
     }

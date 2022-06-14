@@ -36,6 +36,8 @@ import {
   TYPE_MOD,
   TYPE_ABS,
   TYPE_TIME,
+  TYPE_MAX,
+  TYPE_MIN,
 } from './node.js'
 
 import { TYPE_NORMAL } from './normal.js'
@@ -327,6 +329,11 @@ export function text(e, options) {
       }
       break
 
+    case TYPE_MIN:
+    case TYPE_MAX:
+      s = e.type+'('+e.first.string+';'+e.last.string+')'
+
+    break
     default:
   }
 
@@ -560,9 +567,7 @@ export function latex(e, options) {
       if (options.addSpaces) {
         s = formatSpaces(s)
       }
-      s = s
-        .replace(/ /g, '\\,')
-        .replace('.', '{,}')
+      s = s.replace(/ /g, '\\,').replace('.', '{,}')
       // const value = options.keepUnecessaryZeros ? e.input : e.value.toString()
 
       // s = options.addSpaces ? formatLatexNumber(value) : value.replace('.', ',')

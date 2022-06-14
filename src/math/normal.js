@@ -45,9 +45,16 @@ import {
 } from './node.js'
 import fraction from './fraction.js'
 import { math } from './math.js'
-import { binarySearchCmp, gcd, pgcd, RadicalReduction } from '../utils/utils.js'
+import {
+  binarySearchCmp,
+  gcd,
+  pgcd,
+  primeFactors,
+  RadicalReduction,
+} from '../utils/utils.js'
 import compare from './compare.js'
 import { unit } from './unit.js'
+import Decimal from 'decimal.js'
 
 export const TYPE_NORMAL = 'normal'
 export const TYPE_NSUM = 'nsum'
@@ -58,7 +65,7 @@ Les formes normales servent à déterminer si deux expressions sont équivalente
 Les formes normales sont vues comme des fractions rationnelles.
 Le numérateur et le dénominateur doivent être développées et réduits. Les fractions et racines doivent être simplifiées.
 Les fonctions numériques doivent être évaluées à une forme exacte.
-Les unités sont convertis à l'unité de base.
+Les unités sont converties à l'unité de base.
 */
 
 const PNormal = {
@@ -468,6 +475,7 @@ const PNormal = {
   },
 
   equalsTo(e) {
+    if (typeof e === 'string' || typeof e === 'number') e = math(e).normal
     return this.n.mult(e.d).equalsTo(this.d.mult(e.n))
   },
 }
@@ -959,97 +967,369 @@ export default function normalize(node) {
       e = node.first.normal.pow(number(0.5).normal)
       break
     }
-    case TYPE_COS:
-    case TYPE_SIN:
-    case TYPE_TAN:
-    case TYPE_LN:
-    case TYPE_LOG:
-    case TYPE_EXP:
-    case TYPE_FLOOR:
-    case TYPE_ABS:
-    case TYPE_GCD:
-    case TYPE_MIN:
-    case TYPE_MAX:
-    case TYPE_MOD: {
-      if (node.isNumeric()) {
-        switch (node.type) {
-          case TYPE_MOD: {
-            const a = node.first.eval()
-            const b = node.last.eval()
-            e = number(a.value.mod(b.value)).normal
-            break
-          }
+    case TYPE_COS: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
 
-          case TYPE_FLOOR: {
-            e = number(node.first.eval({ decimal: true }).value.trunc()).normal
-            break
-          }
+      if (childNormal.equalsTo(0) || childNormal.equalsTo('2pi')) {
+        e = math(1).normal
+      } else if (childNormal.equalsTo('pi') || childNormal.equalsTo('-pi')) {
+        e = math(-1).normal
+      } else if (
+        childNormal.equalsTo('pi/2') ||
+        childNormal.equalsTo('-pi/2')
+      ) {
+        e = math(0).normal
+      } else if (
+        childNormal.equalsTo('pi/3') ||
+        childNormal.equalsTo('-pi/3')
+      ) {
+        e = math(0.5).normal
+      } else if (
+        childNormal.equalsTo('2pi/3') ||
+        childNormal.equalsTo('-2pi/3')
+      ) {
+        e = math(-0.5).normal
+      } else if (
+        childNormal.equalsTo('pi/4') ||
+        childNormal.equalsTo('-pi/4')
+      ) {
+        e = math('sqrt(2)/2').normal
+      } else if (
+        childNormal.equalsTo('3pi/4') ||
+        childNormal.equalsTo('-3pi/4')
+      ) {
+        e = math('-sqrt(2)/2').normal
+      } else if (
+        childNormal.equalsTo('pi/6') ||
+        childNormal.equalsTo('-pi/6')
+      ) {
+        e = math('sqrt(3)/2').normal
+      } else if (
+        childNormal.equalsTo('5pi/6') ||
+        childNormal.equalsTo('-5pi/6')
+      ) {
+        e = math('-sqrt(3)/2').normal
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
 
-          case TYPE_ABS: {
-            e = number(node.first.eval({ decimal: true }).value.abs()).normal
-            break
-          }
+      break
+    }
 
-          case TYPE_GCD: {
-            let a = node.first.eval()
-            let b = node.last.eval()
-            a = a.isOpposite() ? a.first.value.toNumber() : a.value.toNumber()
-            b = b.isOpposite() ? b.first.value.toNumber() : b.value.toNumber()
-            e = number(gcd(a, b)).normal
-            break
-          }
+    case TYPE_SIN: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
 
-          case TYPE_MIN: {
-            const a = node.first.eval()
+      if (
+        childNormal.equalsTo(0) ||
+        childNormal.equalsTo('2pi') ||
+        childNormal.equalsTo('pi') ||
+        childNormal.equalsTo('-pi')
+      ) {
+        e = math(0).normal
+      } else if (childNormal.equalsTo('pi/2')) {
+        e = math(1).normal
+      } else if (childNormal.equalsTo('-pi/2')) {
+        e = math(-1).normal
+      } else if (
+        childNormal.equalsTo('pi/6') ||
+        childNormal.equalsTo('5pi/6')
+      ) {
+        e = math(0.5).normal
+      } else if (
+        childNormal.equalsTo('-pi/6') ||
+        childNormal.equalsTo('-5pi/6')
+      ) {
+        e = math(-0.5).normal
+      } else if (
+        childNormal.equalsTo('pi/4') ||
+        childNormal.equalsTo('3pi/4')
+      ) {
+        e = math('sqrt(2)/2').normal
+      } else if (
+        childNormal.equalsTo('-pi/4') ||
+        childNormal.equalsTo('-3pi/4')
+      ) {
+        e = math('-sqrt(2)/2').normal
+      } else if (
+        childNormal.equalsTo('pi/3') ||
+        childNormal.equalsTo('2pi/3')
+      ) {
+        e = math('sqrt(3)/2').normal
+      } else if (
+        childNormal.equalsTo('-pi/3') ||
+        childNormal.equalsTo('-2pi/3')
+      ) {
+        e = math('-sqrt(3)/2').normal
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
 
-            const b = node.last.eval()
+      break
+    }
+    case TYPE_TAN: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
 
-            e = a.isLowerThan(b) ? node.first.normal : node.last.normal
-            // e = number(Decimal.min(a.value, b.value)).normal
-            break
-          }
+      if (childNormal.equalsTo(0)) {
+        e = math(0).normal
+      } else if (childNormal.equalsTo('pi/6')) {
+        e = math('1/sqrt(3)').normal
+      } else if (childNormal.equalsTo('-pi/6')) {
+        e = math('-1/sqrt(3)').normal
+      } else if (childNormal.equalsTo('pi/4')) {
+        e = math(1).normal
+      } else if (childNormal.equalsTo('-pi/4')) {
+        e = math('-1').normal
+      } else if (childNormal.equalsTo('pi/3')) {
+        e = math('sqrt(3)').normal
+      } else if (childNormal.equalsTo('-pi/3')) {
+        e = math('-sqrt(3)').normal
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
+      break
+    }
 
-          case TYPE_MAX: {
-            const a = node.first.eval()
-            const b = node.last.eval()
-            // e = number(Decimal.max(a.value, b.value)).normal
-            e = a.isLowerThan(b) ? node.last.normal : node.first.normal
-            break
-          }
+    case TYPE_LN: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
 
-          default: {
-            const children = node.children.map(c => c.normal.node)
-            const base = createNode({ type: node.type, children })
-            const coef = nSum([[one, createBase(base)]])
-            n = nSum([[coef, baseOne()]])
-            d = nSumOne()
-          }
+      if (child.type === TYPE_EXP) {
+        e = child.first.normal
+      } else if (child.type === TYPE_POWER) {
+        e = child.last.mult(child.first.ln()).normal
+      } else if (childNormal.equalsTo(1)) {
+        e = math(0).normal
+      } else if (childNormal.equalsTo('e')) {
+        e = math(1).normal
+      } else if (child.isInt()) {
+        const N = child.value.toNumber()
+        const factors = primeFactors(N)
+        if (factors.length === 1 && factors[0][1] === 1) {
+          const base = createNode({
+            type: node.type,
+            children: [child],
+          })
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+          d = nSumOne()
+        } else {
+          e = math(0).normal
+          factors.forEach(factor => {
+            const [a, k] = factor
+            const term = math(`${k}*ln(${a})`).normal
+            e = e.add(term)
+          })
         }
       } else {
-        const children = node.children.map(c => c.normal.node)
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
+      break
+    }
+    case TYPE_EXP: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
 
-        if (
-          (node.type === TYPE_EXP && children[0].type === TYPE_LN) ||
-          (node.type === TYPE_LN && children[0].type === TYPE_EXP)
-        ) {
-          e = children[0].first.normal
-        } else if (node.type === TYPE_LN && children[0].type === TYPE_POWER) {
-          e = children[0].last.mult(children[0].first.ln()).normal
-        } else if (
-          node.type === TYPE_EXP &&
-          node.first.isProduct() &&
-          node.first.children.some(c => c.isLn())
-        ) {
-          if (node.first.first.isLn()) {
-            e = node.first.first.first.pow(node.first.last).normal
-          } else {
-            e = node.first.last.first.pow(node.first.first).normal
-          }
+      if (child.isProduct() && child.children.some(c => c.isLn())) {
+        if (child.first.isLn()) {
+          e = child.first.first.pow(child.last).normal
+        } else {
+          e = child.last.first.pow(child.first).normal
+        }
+      } else if (child.isLn()) {
+        e = child.first.normal
+      } else if (childNormal.equalsTo(0)) {
+        e = math(1).normal
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
+      break
+    }
+    case TYPE_ABS: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
+      if (child.isNumeric()) {
+        if (child.isLowerThan(0)) {
+          e = child.mult(-1).normal
+        } else {
+          e = childNormal
+        }
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        n = nSum([[coefOne(), createBase(base)]])
+      }
+      break
+    }
+    case TYPE_LOG: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
+
+      if (child.type === TYPE_POWER) {
+        e = child.last.mult(child.first.log()).normal
+      } else if (childNormal.equalsTo(1)) {
+        e = math(0).normal
+      } else if (childNormal.equalsTo('10')) {
+        e = math(1).normal
+      } else if (child.isInt()) {
+        const N = child.value.toNumber()
+        const factors = primeFactors(N)
+        if (factors.length === 1 && factors[0][1] === 1) {
+          const base = createNode({
+            type: node.type,
+            children: [child],
+          })
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+          d = nSumOne()
+        } else {
+          e = math(0).normal
+          factors.forEach(factor => {
+            const [a, k] = factor
+            const term = math(`${k}*log(${a})`).normal
+            e = e.add(term)
+          })
+        }
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        if (child.isNumeric()) {
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+        } else {
+          n = nSum([[coefOne(), createBase(base)]])
+        }
+      }
+      break
+    }
+    case TYPE_FLOOR: {
+      const childNormal = node.children[0].normal
+      const child = childNormal.node
+      if (child.isNumeric()) {
+        e = number(child.eval({ decimal: true }).value.floor()).normal
+      } else {
+        const base = createNode({ type: node.type, children: [child] })
+        d = nSumOne()
+        n = nSum([[coefOne(), createBase(base)]])
+      }
+      break
+    }
+
+    case TYPE_GCD: {
+      const children = node.children.map(c => c.normal.node)
+      let a = children[0]
+      let b = children[1]
+      if (node.isNumeric) {
+        if (a.isOpposite() && a.first.isInt()) {
+          a = a.first
+        }
+        if (b.isOpposite() && b.first.isInt()) {
+          b = b.first
+        }
+        if (a.isInt() && b.isInt()) {
+          e = number(gcd(a.value.toNumber(), b.value.toNumber())).normal
         } else {
           const base = createNode({ type: node.type, children })
-          n = nSum([[coefOne(), createBase(base)]])
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
           d = nSumOne()
         }
+      } else {
+        const base = createNode({ type: node.type, children })
+        n = nSum([[coefOne(), createBase(base)]])
+        d = nSumOne()
+      }
+      break
+    }
+
+    case TYPE_MOD: {
+      const children = node.children.map(c => c.normal.node)
+      let a = children[0]
+      let b = children[1]
+      if (node.isNumeric()) {
+        if (
+          (a.isInt() || (a.isOpposite() && a.first.isInt())) &&
+          (b.isInt() || (b.isOpposite() && b.first.isInt()))
+        ) {
+          a = new Decimal(a.string)
+          b = new Decimal(b.string)
+          e = number(a.mod(b)).normal
+        } else {
+          const base = createNode({ type: node.type, children })
+          const coef = nSum([[one, createBase(base)]])
+          n = nSum([[coef, baseOne()]])
+          d = nSumOne()
+        }
+      } else {
+        const base = createNode({ type: node.type, children })
+        n = nSum([[coefOne(), createBase(base)]])
+        d = nSumOne()
+      }
+      break
+    }
+
+    case TYPE_MIN: {
+      const children = node.children.map(c => c.normal.node)
+      const a = children[0]
+      const b = children[1]
+      if (node.isNumeric()) {
+        e = a.isLowerThan(b) ? a.normal : b.normal
+      } else {
+        const base = createNode({ type: node.type, children })
+        n = nSum([[coefOne(), createBase(base)]])
+        d = nSumOne()
+      }
+      break
+    }
+
+    case TYPE_MAX: {
+      const children = node.children.map(c => c.normal.node)
+      const a = children[0]
+      const b = children[1]
+
+      if (node.isNumeric()) {
+        e = a.isGreaterThan(b) ? a.normal : b.normal
+      } else {
+        const base = createNode({ type: node.type, children })
+        n = nSum([[coefOne(), createBase(base)]])
+        d = nSumOne()
       }
       break
     }
