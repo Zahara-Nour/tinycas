@@ -309,6 +309,8 @@ describe('Testing detection of unecessary zeros', () => {
     ['101', false],
     ['1,01', false],
     ['1.01', false],
+    ['3+1.01', false],
+    ['3+1.010', true],
 
 
 

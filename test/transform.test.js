@@ -560,6 +560,10 @@ describe('Testing removing unecessary signs', () => {
     ['6a', '6a'],
     ['6a-9', '6a-9'],
     ['-6a-9', '-6a-9'],
+    ['c:d*a', 'c:d*a'],
+    ['c:a', 'c:a'],
+    ['da', 'da'],
+    ['c:da', 'c:da'],
 
     
 
