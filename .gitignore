@@ -56,7 +56,5 @@ node_modules/
 .env
 .env.test
 
-build2/
 
-build/
-
+/build2

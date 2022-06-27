@@ -2300,6 +2300,17 @@ function normalize(node) {
       e = node.first.normal.div(node.last.normal);
       break
 
+    case TYPE_RELATIONS: {
+      let bool = true;
+      console.log('node', node);
+      node.ops.forEach((op, i) => {
+        const test = math(node.children[i].string + op + node.children[i + 1]);
+        bool = bool && test.eval().value;
+      });
+      e = boolean(bool).normal;
+      break
+    }
+
     case TYPE_UNEQUALITY:
       e = boolean(!node.first.eval().equals(node.last.eval())).normal;
       break
@@ -2363,6 +2374,14 @@ function text(e, options) {
   // console.log('isUnit', options.isUnit)
 
   switch (e.type) {
+    case TYPE_RELATIONS:
+      s = e.first.toString(options);
+      e.ops.forEach((op, i) => {
+        s += op;
+        s += e.children[i + 1].toString(options);
+      });
+      break
+
     case TYPE_TIME:
       // format = options.formatTime
 
@@ -2647,9 +2666,9 @@ function text(e, options) {
     case TYPE_MAX:
     case TYPE_MINP:
     case TYPE_MAXP:
-      s = e.type+'('+e.first.string+';'+e.last.string+')';
+      s = e.type + '(' + e.first.string + ';' + e.last.string + ')';
 
-    break
+      break
   }
 
   if (e.unit && options.displayUnit) {
@@ -2721,6 +2740,14 @@ function latex(e, options) {
       s = e.begin + e.end;
       break
 
+    case TYPE_RELATIONS: {
+      s = e.first.toLatex(options);
+      e.ops.forEach((op, i) => {
+        s += op;
+        s += e.children[i + 1].toLatex(options);
+      });
+      break
+    }
     case TYPE_EQUALITY:
     case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_LESS:
@@ -3591,6 +3618,7 @@ function substitute(node, params) {
   } else if (node.children) {
     e = createNode({
       type: node.type,
+      ops: node.ops,
       children: node.children.map(child => substitute(child, params)),
     });
   } else {
@@ -3932,6 +3960,7 @@ const TYPE_INEQUALITY_LESS = '<';
 const TYPE_INEQUALITY_LESSOREQUAL = '<=';
 const TYPE_INEQUALITY_MORE = '>';
 const TYPE_INEQUALITY_MOREOREQUAL = '>=';
+const TYPE_RELATIONS = 'relations';
 const TYPE_SEGMENT_LENGTH = 'segment length';
 const TYPE_GCD = 'gcd';
 const TYPE_MAX = 'maxi';
@@ -4013,6 +4042,9 @@ const PNode = {
   },
   isIncorrect() {
     return this.type === TYPE_ERROR
+  },
+  isRelations() {
+    return this.type === TYPE_RELATIONS
   },
   isEquality() {
     return this.type === TYPE_EQUALITY
@@ -4604,6 +4636,9 @@ const PNode = {
     const precision = params.precision || 20;
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params);
+    if (this.ops && !e.ops) {
+      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    }
     let unit;
     if (params.unit) {
       if (typeof params.unit === 'string' && params.unit !== 'HMS') {
@@ -5029,6 +5064,9 @@ function template(params) {
   return createNode({ type: TYPE_TEMPLATE, ...params })
 }
 
+function relations(ops, children) {
+  return createNode({ type: TYPE_RELATIONS,ops, children })
+}
 function equality(children) {
   return createNode({ type: TYPE_EQUALITY, children })
 }
@@ -5194,10 +5232,13 @@ const VALUE_TEMPLATE = token('$');
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]');
 const CONSTANTS = token('@pi');
 const BOOLEAN = token('@false|true');
-const FUNCTION = token('@cos|sin|sqrt|pgcd|minip|mini|maxip|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs');
-const INTEGER = token('@[\\d]+'); 
+const FUNCTION = token(
+  '@cos|sin|sqrt|pgcd|minip|mini|maxip|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs',
+);
+const INTEGER = token('@[\\d]+');
 const NUMBER = token('@\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?');
-const TIME = token('@\
+const TIME = token(
+  '@\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ans?)?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*mois)?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*semaines?)?\\s*\
@@ -5205,7 +5246,8 @@ const TIME = token('@\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*h(?![a-zA-Z]))?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*mins?)?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*s(?![a-zA-Z]))?\\s*\
-((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?');
+((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?',
+);
 const UNIT = token(
   '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n|h|s',
 );
@@ -5289,32 +5331,66 @@ ${msg}`;
   }
 
   function parseExpression() {
-    return parseRelation()
+    return parseRelations()
   }
 
-  function parseRelation() {
-    let e = parseMember();
-    let relation;
-    if (match(EQUAL) || match(NOTEQUAL) || match(COMP)) {
-      relation = _lexem;
+  function parseRelations() {
+    const exps = [];
+    const ops = [];
+    exps.push(parseMember());
+      let e;
+    while (match(EQUAL) || match(NOTEQUAL) || match(COMP)) {
+      ops.push(_lexem);
+      exps.push(parseMember());
     }
-    switch (relation) {
-      case "!=":
-        e = unequality([e, parseMember()]);
-        break
-      case '=':
-        e = equality([e, parseMember()]);
-        break
-
-      case '<':
-      case '>':
-      case '<=':
-      case '>=':
-        e = inequality([e, parseMember()], relation);
+    if (ops.length ===0) {
+      e = exps[0];
     }
+    else if (ops.length === 1) {
+      switch (ops[0]) {
+        case '!=':
+          e = unequality([exps[0], exps[1]]);
+          break
+        case '=':
+          e = equality([exps[0], exps[1]]);
+          break
 
+        case '<':
+        case '>':
+        case '<=':
+        case '>=':
+          e = inequality([exps[0], exps[1]], ops[0]);
+      }
+    }
+    else {
+      e = relations(ops, exps);
+    }
     return e
   }
+
+  // function parseRelation() {
+  //   let e = parseMember()
+  //   let relation
+  //   if (match(EQUAL) || match(NOTEQUAL) || match(COMP)) {
+  //     relation = _lexem
+  //   }
+  //   switch (relation) {
+  //     case '!=':
+  //       e = unequality([e, parseMember()])
+  //       break
+  //     case '=':
+  //       e = equality([e, parseMember()])
+  //       break
+
+  //     case '<':
+  //     case '>':
+  //     case '<=':
+  //     case '>=':
+  //       e = inequality([e, parseMember()], relation)
+  //   }
+
+  //   return e
+  // }
 
   function parseMember() {
     let e;
@@ -5326,7 +5402,6 @@ ${msg}`;
       sign = _lexem;
     }
     term = parseTerm();
-
 
     if (sign) {
       e = sign === '-' ? opposite([term]) : positive([term]);
@@ -5443,12 +5518,18 @@ ${msg}`;
 
     if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true');
-    }
-
-    else if (match(TIME)) {
-
+    } else if (match(TIME)) {
       const units = ['ans', 'mois', 'semaines', 'jours', 'h', 'min', 's', 'ms'];
-      const parts = [_parts[3], _parts[6], _parts[9], _parts[12], _parts[15], _parts[18], _parts[21], _parts[24]];
+      const parts = [
+        _parts[3],
+        _parts[6],
+        _parts[9],
+        _parts[12],
+        _parts[15],
+        _parts[18],
+        _parts[21],
+        _parts[24],
+      ];
       const filtered = parts.filter(p => !!p);
       const u = filtered.length === 1 ? units[parts.findIndex(p => !!p)] : null;
 
@@ -5458,8 +5539,7 @@ ${msg}`;
       } else if (filtered.length === 0) {
         e = math('0');
         e.unit = unit('s');
-      }
-      else {
+      } else {
         const times = parts.map((p, i) => {
           const e = p ? math(p.trim()) : math('0');
           e.unit = unit(units[i]);
@@ -5492,8 +5572,6 @@ ${msg}`;
     //   e = time(times)
     // }
 
-
-
     // boolean
     else if (match(SEGMENT_LENGTH)) {
       e = segmentLength(_lexem.charAt(0), _lexem.charAt(1));
@@ -5501,7 +5579,6 @@ ${msg}`;
 
     // number
     else if (match(NUMBER)) {
-
       e = number(_lexem);
     } else if (match(HOLE)) {
       e = hole();
@@ -5791,8 +5868,7 @@ ${msg}`;
         children: [parseExpression()],
       });
       require(CLOSING_CURLYBRACKET);
-    }
-    else if (match(CONSTANTS)) {
+    } else if (match(CONSTANTS)) {
       e = symbol(_lexem);
     } else if (match(SYMBOL)) {
       switch (_lexem) {
@@ -5816,9 +5892,7 @@ ${msg}`;
       // console.log('require }', _input, _lex)
       require(CLOSING_CURLYBRACKET);
       // console.log('no error')
-    }
-    else {
-
+    } else {
       if (_lexem === '-' && _lastLexem === '+') {
         console.log('erreur op');
       }
@@ -5850,7 +5924,7 @@ ${msg}`;
         const n = parseAtom();
         // if (
         //   !(
-        //     n.isInt() 
+        //     n.isInt()
         //     || (n.isOpposite() && n.first.isInt())
         //   )
         // ) {

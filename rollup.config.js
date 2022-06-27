@@ -4,11 +4,17 @@ export default [
   {
     external: ['decimal.js'],
     input: './src/index.js',
-    output: 
+    output: [
       {
         file: './dist/tinycas.mjs',
         format: 'es',
       },
+      {
+        format: 'umd',
+        name: 'tinycas',
+        file: `./dist/tinycas.js`,
+      },
+    ]
       // plugins: [nodeResolve()]
     
   },
