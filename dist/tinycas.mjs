@@ -4563,7 +4563,7 @@ const PNode = {
 
   searchUnecessaryZeros() {
     if (this.isNumber()) {
-      const regexs = [/^0\d+/, /[\.,]\d*0$/];
+      const regexs = [/^0\d+/, /[.,]\d*0$/];
       return regexs.some(regex => this.input.match(regex))
     } else if (this.children) {
       return this.children.some(child => child.searchUnecessaryZeros())

@@ -713,6 +713,7 @@ export function substitute(node, params) {
   } else if (node.children) {
     e = createNode({
       type: node.type,
+      ops: node.ops,
       children: node.children.map(child => substitute(child, params)),
     })
   } else {

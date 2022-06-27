@@ -40,6 +40,7 @@ import {
   TYPE_MIN,
   TYPE_MINP,
   TYPE_MAXP,
+  TYPE_RELATIONS,
 } from './node.js'
 
 import { TYPE_NORMAL } from './normal.js'
@@ -51,6 +52,14 @@ export function text(e, options) {
   // console.log('isUnit', options.isUnit)
 
   switch (e.type) {
+    case TYPE_RELATIONS:
+      s = e.first.toString(options)
+      e.ops.forEach((op, i) => {
+        s += op
+        s += e.children[i + 1].toString(options)
+      })
+      break
+
     case TYPE_TIME:
       // format = options.formatTime
 
@@ -335,9 +344,9 @@ export function text(e, options) {
     case TYPE_MAX:
     case TYPE_MINP:
     case TYPE_MAXP:
-      s = e.type+'('+e.first.string+';'+e.last.string+')'
+      s = e.type + '(' + e.first.string + ';' + e.last.string + ')'
 
-    break
+      break
     default:
   }
 
@@ -410,6 +419,14 @@ export function latex(e, options) {
       s = e.begin + e.end
       break
 
+    case TYPE_RELATIONS: {
+      s = e.first.toLatex(options)
+      e.ops.forEach((op, i) => {
+        s += op
+        s += e.children[i + 1].toLatex(options)
+      })
+      break
+    }
     case TYPE_EQUALITY:
     case TYPE_UNEQUALITY:
     case TYPE_INEQUALITY_LESS:

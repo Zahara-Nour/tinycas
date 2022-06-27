@@ -57,6 +57,7 @@ export const TYPE_INEQUALITY_LESS = '<'
 export const TYPE_INEQUALITY_LESSOREQUAL = '<='
 export const TYPE_INEQUALITY_MORE = '>'
 export const TYPE_INEQUALITY_MOREOREQUAL = '>='
+export const TYPE_RELATIONS = 'relations'
 export const TYPE_SEGMENT_LENGTH = 'segment length'
 export const TYPE_GCD = 'gcd'
 export const TYPE_MAX = 'maxi'
@@ -139,6 +140,9 @@ const PNode = {
   },
   isIncorrect() {
     return this.type === TYPE_ERROR
+  },
+  isRelations() {
+    return this.type === TYPE_RELATIONS
   },
   isEquality() {
     return this.type === TYPE_EQUALITY
@@ -730,6 +734,9 @@ const PNode = {
     const precision = params.precision || 20
     // on substitue récursivement car un symbole peut en introduire un autre. Exemple : a = 2 pi
     let e = this.substitute(params)
+    if (this.ops && !e.ops) {
+      console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    }
     let unit
     if (params.unit) {
       if (typeof params.unit === 'string' && params.unit !== 'HMS') {
@@ -1155,6 +1162,9 @@ export function template(params) {
   return createNode({ type: TYPE_TEMPLATE, ...params })
 }
 
+export function relations(ops, children) {
+  return createNode({ type: TYPE_RELATIONS,ops, children })
+}
 export function equality(children) {
   return createNode({ type: TYPE_EQUALITY, children })
 }

@@ -44,6 +44,7 @@ import {
   TYPE_TIME,
   TYPE_MINP,
   TYPE_MAXP,
+  TYPE_RELATIONS,
 } from './node.js'
 import fraction from './fraction.js'
 import { math } from './math.js'
@@ -1394,6 +1395,17 @@ export default function normalize(node) {
     case TYPE_QUOTIENT:
       e = node.first.normal.div(node.last.normal)
       break
+
+    case TYPE_RELATIONS: {
+      let bool = true
+      console.log('node', node)
+      node.ops.forEach((op, i) => {
+        const test = math(node.children[i].string + op + node.children[i + 1])
+        bool = bool && test.eval().value
+      })
+      e = boolean(bool).normal
+      break
+    }
 
     case TYPE_UNEQUALITY:
       e = boolean(!node.first.eval().equals(node.last.eval())).normal

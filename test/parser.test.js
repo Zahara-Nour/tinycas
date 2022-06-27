@@ -247,6 +247,17 @@ describe('Parsing', () => {
     expect(e.isInequality()).toBeTruthy()
   })
 
+  test('Parser parses a relations', () => {
+    let e = p.parse('1<2<3')
+    console.log('e', e)
+    expect(e.toString()).toEqual('1<2<3')
+    // expect(e.isInequaliqty()).toBeTruthy()
+
+    e = p.parse('1<2<=3>4>=5=6')
+    console.log('e', e)
+    expect(e.toString()).toEqual('1<2<=3>4>=5=6')
+  })
+
   test('Parser parses functions', () => {
     let e = p.parse('pgcd(12;18)')
     expect(e.string).toEqual('pgcd(12;18)')
