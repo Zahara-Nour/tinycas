@@ -1,14 +1,17 @@
 {
   "name": "tinycas",
-  "version": "0.8.17",
+  "version": "0.8.22",
   "description": "A Simple CAS",
   "keywords": [
     "cas",
     "math"
   ],
- 
   "main": "./build/index.js",
   "module": "./dist/tinycas.mjs",
+  "exports": {
+    "require": "./build/index.js",
+    "import": "./dist/tinycas.mjs"
+  },
   "author": "Zahara-Nour",
   "repository": "github:Zahara-Nour/tinycas",
   "scripts": {
