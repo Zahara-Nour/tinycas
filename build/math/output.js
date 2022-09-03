@@ -334,6 +334,10 @@ function latex(e, options) {
   var s;
 
   switch (e.type) {
+    case _node.TYPE_ABS:
+      s = '\\left\\lvert ' + e.first.toLatex(options) + ' \\right\\rvert';
+      break;
+
     case _node.TYPE_TIME:
       // format = options.formatTime
       s = '';

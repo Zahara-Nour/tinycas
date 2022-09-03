@@ -374,9 +374,9 @@ export function latex(e, options) {
   switch (e.type) {
 					
     case TYPE_ABS:
-      s = '\\left\\lvert' + e.toLatex(options) + '\\right\\rvert'
+      s = '\\left\\lvert ' + e.first.toLatex(options) + ' \\right\\rvert'
       break
-      
+
     case TYPE_TIME:
       // format = options.formatTime
 

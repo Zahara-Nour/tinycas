@@ -186,7 +186,7 @@ function primeFactorList(n) {
   if (n < 1) throw new RangeError("Argument error");
   var result = [];
 
-  while (n != 1) {
+  while (n !== 1) {
     var factor = smallestFactor(n);
     result.push(factor);
     n /= factor;

@@ -1,6 +1,6 @@
 {
   "name": "tinycas",
-  "version": "0.8.22",
+  "version": "0.8.23",
   "description": "A Simple CAS",
   "keywords": [
     "cas",
@@ -8,6 +8,7 @@
   ],
   "main": "./build/index.js",
   "module": "./dist/tinycas.mjs",
+  "type":"module",
   "exports": {
     "require": "./build/index.js",
     "import": "./dist/tinycas.mjs"
