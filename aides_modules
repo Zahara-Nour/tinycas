@@ -1,0 +1,4 @@
+"exports": {
+    "require": "./build/index.js",
+    "import": "./dist/tinycas.mjs"
+  },
