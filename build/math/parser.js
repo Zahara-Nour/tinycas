@@ -83,7 +83,7 @@ var TIME = (0, _lexer.token)('@\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*mins?)?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*s(?![a-zA-Z]))?\\s*\
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?');
-var UNIT = (0, _lexer.token)('@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n|h|s');
+var UNIT = (0, _lexer.token)('@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|h|s');
 var ERROR_NO_VALID_ATOM = 'no valid atom found'; // const TEMPLATE = token(`@${regexBase}|${regexInteger}|${regexDecimal}`)
 // const LENGTH = token('@km|hm|dam|dm|cm|mm|m')
 // const MASS = token('@kg|hg|dag|dg|cg|mg|g')
