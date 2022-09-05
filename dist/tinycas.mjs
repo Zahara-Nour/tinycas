@@ -395,7 +395,7 @@ function RadicalReduction(n) {
 		if (n < 1)
 			throw new RangeError("Argument error");
 		var result = [];
-		while (n != 1) {
+		while (n !== 1) {
 			var factor = smallestFactor(n);
 			result.push(factor);
 			n /= factor;
@@ -2693,6 +2693,11 @@ function latex(e, options) {
   let s;
 
   switch (e.type) {
+					
+    case TYPE_ABS:
+      s = '\\left\\lvert ' + e.first.toLatex(options) + ' \\right\\rvert';
+      break
+
     case TYPE_TIME:
       // format = options.formatTime
 
