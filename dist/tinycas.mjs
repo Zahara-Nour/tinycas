@@ -1586,6 +1586,9 @@ const PNList = {
         e = radical([base]);
       } else if (!base.isOne() && !coef.isOne()) {
         // e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+        if (e.isOpposite()) {
+          e = e.bracket();
+        }
         e = e.pow(coef);
       }
       return e
@@ -5254,7 +5257,7 @@ const TIME = token(
 ((\\d+[\\d\\s]*([,\\.][\\d\\s]*\\d+)?)\\s*ms)?',
 );
 const UNIT = token(
-  '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|n|h|s',
+  '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|h|s',
 );
 
 const ERROR_NO_VALID_ATOM = 'no valid atom found';

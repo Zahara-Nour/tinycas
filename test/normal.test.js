@@ -207,6 +207,11 @@ describe('Testing normal forms for litteral expressions', () => {
     ['(2+3*sqrt(x))(4+5*sqrt(x))', '8+22*sqrt(x)+15*x'],
     ['(2+3*sqrt(x))(4+5*sqrt(x))+x', '8+22*sqrt(x)+16*x'],
     ['(2-3*sqrt(x))(-4+5*sqrt(x))', '-8+22*sqrt(x)-15*x'],
+    ['(-4)^2', '16'],
+    ['(-4)^n', '(-4)^n'],
+    ['-3*(-4)^n', '-3*(-4)^n'],
+    ['3*(4)^n', '3*4^n'],
+    ['3*4^n', '3*4^n'],
   ]
 
   test.each(t)('normal form of %s', (e, expected) => {

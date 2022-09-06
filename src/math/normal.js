@@ -670,6 +670,9 @@ const PNList = {
         e = radical([base])
       } else if (!base.isOne() && !coef.isOne()) {
         // e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+        if (e.isOpposite()) {
+          e = e.bracket()
+        }
         e = e.pow(coef)
       }
       return e
