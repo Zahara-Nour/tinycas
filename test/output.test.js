@@ -87,3 +87,23 @@ describe('Testing latex export', () => {
       }
     )
   })
+
+
+  describe('Testing export with option implicit product', () => {
+
+    const t = [ 
+      ['3*a', '3a'],
+      ['3*(2+5)', '3(2+5)'],
+      ['3*a^2', '3a^2'],
+      ['3(-2)^2', '3(-2)^2'],
+      ['3*5', '3*5'],
+  
+    ]
+  
+    test.each(t)(
+      'exporting %s to asciimath',
+      (e, expected) => {
+        expect(math(e).toString({ implicit: true })).toBe(expected)
+      }
+    )
+  })

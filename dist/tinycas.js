@@ -2379,6 +2379,11 @@
 
   /* 
   Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
+
+  function canUseImplicitProduct(exp) {
+    return exp.isBracket() || exp.isFunction() || exp.isSymbol() || (exp.isPower() && exp.first.isSymbol())
+  }
+
   function text(e, options) {
     let s;
 
@@ -2533,13 +2538,21 @@
         s = e.children.map(child => child.toString(options)).join(e.type);
         break
 
-      case TYPE_PRODUCT:
-        s = e.children
-          .map(child => child.toString(options))
-          .join(options.isUnit ? '.' : options.implicit ? '' : e.type);
+      case TYPE_PRODUCT: {
+        s =
+          e.first.toString(options) +
+          (options.isUnit
+            ? '.'
+            : options.implicit && canUseImplicitProduct(e.last)
+            ? ''
+            : e.type) +
+          e.last.toString(options);
+        // s = e.children
+        //   .map(child => child.toString(options))
+        //   .join(options.isUnit ? '.' : options.implicit ? '' : e.type)
         // console.log('isunit PRODUCT', options.isUnit, s)
         break
-
+      }
       case TYPE_PRODUCT_IMPLICIT:
         s = e.children
           .map(child =>
@@ -2704,7 +2717,6 @@
     let s;
 
     switch (e.type) {
-  					
       case TYPE_ABS:
         s = '\\left\\lvert ' + e.first.toLatex(options) + ' \\right\\rvert';
         break

@@ -1,6 +1,6 @@
 {
   "name": "tinycas",
-  "version": "0.8.30",
+  "version": "0.8.31",
   "description": "A Simple CAS",
   "keywords": [
     "cas",
@@ -8,12 +8,11 @@
   ],
   "main": "./build/index.js",
   "module": "./dist/tinycas.mjs",
-  "type": "module",
   "exports": {
     "require": "./build/index.js",
     "import": "./dist/tinycas.mjs"
   },
-  
+  "type":"module",
   "author": "Zahara-Nour",
   "repository": "github:Zahara-Nour/tinycas",
   "scripts": {

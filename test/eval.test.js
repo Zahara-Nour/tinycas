@@ -62,6 +62,16 @@ describe('Testing evaluation of numerical expression ', () => {
   })
 })
 
+describe('Testing evaluation of litteral expression', () => {
+  const t = [
+    ['3*4^n', '3*4^n'],
+  ]
+
+  test.each(t)('evaluating %s', (e, expected) => {
+    expect(math(e).eval().string).toBe(expected)
+  })
+})
+
 describe('Testing evaluation of numerical expression with decimal result', () => {
   const t = [
     ['1.0', '1'],
