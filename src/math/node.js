@@ -296,16 +296,31 @@ const PNode = {
       this.isAbs()
     )
   },
+  
   isDuration() {
     return (
       this.isTime() || (!!this.unit && this.unit.isConvertibleTo(unit('s')))
     )
   },
+
   isLength() {
     return !!this.unit && this.unit.isConvertibleTo(unit('m'))
   },
+
   isMass() {
     return !!this.unit && this.unit.isConvertibleTo(unit('g'))
+  },
+
+  isVolume() {
+    return (
+      !!this.unit &&
+      (this.unit.isConvertibleTo(
+        unit('m')
+          .mult(unit('m'))
+          .mult(unit('m')),
+      ) ||
+        this.unit.isConvertibleTo(unit('L')))
+    )
   },
   compareTo(e) {
     return compare(this, e)
@@ -753,7 +768,7 @@ const PNode = {
       // TODO: et l'unité ?
       if (this.isMinP()) {
         e = this.first.isLowerThan(this.last) ? this.first : this.last
-      }else {
+      } else {
         e = this.first.isGreaterThan(this.last) ? this.first : this.last
       }
     } else {
@@ -1163,7 +1178,7 @@ export function template(params) {
 }
 
 export function relations(ops, children) {
-  return createNode({ type: TYPE_RELATIONS,ops, children })
+  return createNode({ type: TYPE_RELATIONS, ops, children })
 }
 export function equality(children) {
   return createNode({ type: TYPE_EQUALITY, children })

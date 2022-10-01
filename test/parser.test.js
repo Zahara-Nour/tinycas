@@ -248,12 +248,12 @@ describe('Parsing', () => {
 
   test('Parser parses a relations', () => {
     let e = p.parse('1<2<3')
-    console.log('e', e)
+    // console.log('e', e)
     expect(e.toString()).toEqual('1<2<3')
     // expect(e.isInequaliqty()).toBeTruthy()
 
     e = p.parse('1<2<=3>4>=5=6')
-    console.log('e', e)
+    // console.log('e', e)
     expect(e.toString()).toEqual('1<2<=3>4>=5=6')
   })
 

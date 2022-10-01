@@ -131,7 +131,7 @@ const PNormal = {
     const u2D = nSum([[simpleCoef(one), u.d.first[1]]])
     const u2 = normal(u2N, u2D)
 
-    return u1.equalsTo(u2)
+    return u1.equalsTo(u2) || u1.string==='m^3' && u2.string==='L' || u1.string==='L' && u2.string==='m^3' 
   },
 
   isSameQuantityType(e) {
@@ -149,7 +149,27 @@ const PNormal = {
     const coefD2 = nSum([[u.d.first[0], baseOne()]])
     const coef2 = normal(coefN2, coefD2)
 
-    return coef1.div(coef2)
+    const baseN1 = nSum([[nSumOne(), this.n.first[1]]])
+    const baseD1 = nSum([[nSumOne(), this.d.first[1]]])
+    const base1 = normal(baseN1, baseD1)
+    const baseN2 = nSum([[nSumOne(), u.n.first[1]]])
+    const baseD2 = nSum([[nSumOne(), u.d.first[1]]])
+    const base2 = normal(baseN2, baseD2)
+    console.log('base1', base1.string)
+      console.log('base2', base2.string)
+    
+    let coef = coef1.div(coef2)
+    if (base1.string==='L' && base2.string==='m^3') {
+      console.log('base1', base1.string)
+      console.log('base2', base2.string)
+      coef=coef.mult(math('0.001').normal)
+    }
+    else if (base2.string==='L' && base1.string==='m^3') {
+      console.log('base1', base1.string)
+      console.log('base2', base2.string)
+      coef=coef.mult(math('1000').normal)
+    }
+    return coef
   },
 
   // réduit une expression normale correspondant à une fraction numérique
@@ -1401,7 +1421,7 @@ export default function normalize(node) {
 
     case TYPE_RELATIONS: {
       let bool = true
-      console.log('node', node)
+      // console.log('node', node)
       node.ops.forEach((op, i) => {
         const test = math(node.children[i].string + op + node.children[i + 1])
         bool = bool && test.eval().value

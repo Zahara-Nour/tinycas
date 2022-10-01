@@ -1,7 +1,25 @@
 import {math} from '../src/math/math'
 import {unit} from '../src/math/unit'
 
-describe('Stringing unit', () => {
+describe('Stringing  unit', () => {
+
+  const t = [
+   ['1 m','m'], 
+   ['1 m^2','m^2'], 
+   ['1 m^3','m^3'], 
+   ['1 m^{-3}','m^{-3}'], 
+   ['1 L','L'], 
+  ]
+
+  test.each(t)(
+    'Stringing %s %s',
+    (e, u) => {
+      expect(math(e).unit.string).toBe(u)
+    }
+  )
+})
+
+describe('Stringing  expression withunit', () => {
 
   const t = [
     '0 m',
@@ -114,6 +132,7 @@ describe('Testing normalizing unit', () => {
     ['1 kg.km^{-2}', '{1/1000} g.m^{-2}'],
     ['1 k€', '1000 €'],
     ['1 Qr', '1 Qr'],
+    ['1 hL', '100 L'],
   ]
 
 
@@ -126,10 +145,127 @@ describe('Testing normalizing unit', () => {
   )
 })
 
+
+describe('Testing unit isVolume', () => {
+
+  const t = [
+    // ['mm^3'],
+    // ['cm^3'],
+    // ['dm^3'],
+    // ['m^3'],
+    // ['dam^3'],
+    // ['hm^3'],
+    // ['km^3'],
+    ['mL'],
+    ['cL'],
+    ['dL'],
+    ['L'],
+    ['daL'],
+    ['hL'],
+    ['kL'],
+  ]
+
+
+  test.each(t)(
+    'Is %s a volume ?',
+    (u) => {
+      expect(unit(u).isVolume()).toBeTruthy()
+    }
+  )
+
+  const t2 = [
+    ['mm'],
+    ['g'],
+    ['h'],
+  ]
+
+
+  test.each(t2)(
+    'Is %s a volume ?',
+    (u) => {
+      expect(unit(u).isVolume()).toBeFalsy()
+    }
+  )
+})
+
+describe('Testing expression isVolume', () => {
+
+  const t = [
+    ['1 mm^3'],
+    ['1 cm^3'],
+    ['1 dm^3'],
+    ['1 m^3'],
+    ['1 dam^3'],
+    ['1 hm^3'],
+    ['1 km^3'],
+  ]
+
+
+  test.each(t)(
+    'Is %s a volume ?',
+    (e) => {
+      expect(math(e).isVolume()).toBeTruthy()
+    }
+  )
+
+  const t2 = [
+    ['1 mm'],
+    ['1 g'],
+    ['1 h'],
+  ]
+
+
+  test.each(t2)(
+    'Is %s a volume ?',
+    (e) => {
+      expect(math(e).isVolume()).toBeFalsy()
+    }
+  )
+})
+
+describe('Testing isSameQuantityType', () => {
+
+  const t = [
+    ['1 mm^3', '1L'],
+    ['1 cm^3', '1L'],
+    ['1 dm^3', '1L'],
+    ['1 m^3', '1L'],
+    ['1 dam^3', '1L'],
+    ['1 hm^3', '1L'],
+    ['1 km^3', '1L'],
+  ]
+
+
+  test.each(t)(
+    'Are %s ans %s the same quantity type ?',
+    (e, f) => {
+      expect(math(e).isSameQuantityType(math(f))).toBeTruthy()
+    }
+  )
+
+  const t2 = [
+    ['1 mm^2', '1L'],
+    ['1 cm', '1L'],
+    ['1 g', '1L'],
+    ['1 h', '1L'],
+  ]
+
+
+  test.each(t2)(
+    'Are %s ans %s the same quantity type ?',
+    (e, f) => {
+      expect(math(e).isSameQuantityType(math(f))).toBeFalsy()
+    }
+  )
+
+})
+
 describe('Testing convertible units', () => {
 
   const t = [
     ['km', 'km'],
+    ['km', 'm'],
+    // ['km^3', 'm^3'],
   ]
 
 
@@ -168,7 +304,11 @@ describe('Testing units conversions', () => {
     ['1 an 1 jour 1 h 1 min 1s 1ms','s', '31626061.001 s'],
     ['31626061.001 s','HMS', '1 ans 1 jours 1 h 1 min 1 s 1 ms'],
     ['1 km.s^(-2)', 'km.s^{-2}', '1 km.s^{-2}'],
-    ['1 km.s^{-2}', 'km.s^{-2}', '1 km.s^{-2}']
+    ['1 km.s^{-2}', 'km.s^{-2}', '1 km.s^{-2}'],
+    ['1 L', 'dm^3', '1 dm^3'],
+    ['1 dm^3', 'L', '1 L'],
+    ['1 m^3', 'L', '1000 L'],
+    ['1 L', 'm^3', '0.001 m^3'],
   ]
 
   test.each(t)(
