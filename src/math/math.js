@@ -11,4 +11,5 @@ export function math (exp, options) {
    e = parser(options).parse(exp)
   }
   return e
+  
 }
