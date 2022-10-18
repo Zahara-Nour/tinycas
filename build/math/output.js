@@ -24,6 +24,10 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /* 
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
+function canUseImplicitProduct(exp) {
+  return exp.isBracket() || exp.isFunction() || exp.isSymbol() || exp.isPower() && exp.first.isSymbol();
+}
+
 function text(e, options) {
   var s; // console.log('isUnit', options.isUnit)
 
@@ -180,11 +184,14 @@ function text(e, options) {
       break;
 
     case _node.TYPE_PRODUCT:
-      s = e.children.map(function (child) {
-        return child.toString(options);
-      }).join(options.isUnit ? '.' : options.implicit ? '' : e.type); // console.log('isunit PRODUCT', options.isUnit, s)
+      {
+        s = e.first.toString(options) + (options.isUnit ? '.' : options.implicit && canUseImplicitProduct(e.last) ? '' : e.type) + e.last.toString(options); // s = e.children
+        //   .map(child => child.toString(options))
+        //   .join(options.isUnit ? '.' : options.implicit ? '' : e.type)
+        // console.log('isunit PRODUCT', options.isUnit, s)
 
-      break;
+        break;
+      }
 
     case _node.TYPE_PRODUCT_IMPLICIT:
       s = e.children.map(function (child) {

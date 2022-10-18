@@ -154,7 +154,7 @@ function parser() {
   function failure(msg) {
     var place = '-'.repeat(_lex.pos);
     place += '^';
-    var text = "".concat(_input, "\n").concat(place, "\n").concat(msg);
+    var text = "\n".concat(_input, "\n").concat(place, "\n").concat(msg);
     throw new ParsingError(text, msg);
   }
 
@@ -178,7 +178,8 @@ function parser() {
   }
 
   function parseExpression() {
-    return parseRelations();
+    var e = parseRelations();
+    return e;
   }
 
   function parseRelations() {
@@ -849,12 +850,18 @@ function parser() {
 
   return {
     parse: function parse(input) {
+      input = input.trim();
       _input = input;
       _lex = (0, _lexer.lexer)(input);
       var e;
 
       try {
         e = parseExpression();
+
+        if (_lex.pos < _input.length) {
+          // !_input.substring(_lex.pos, _input.length).match(/^\s*$/g)
+          failure('error at end'); // console.log(_lex.pos, _input+':'+_input.length, '/'+_input.substring(_lex.pos, _input.length)+'/')
+        }
       } catch (error) {
         e = (0, _node.notdefined)({
           message: error.message,

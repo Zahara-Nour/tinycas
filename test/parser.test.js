@@ -86,6 +86,18 @@ describe('Parsing', () => {
     expect(e.input).toEqual('3 9 8 9')
   })
 
+  test('Parser parses number with spaces (2)', () => {
+    let e = p.parse('3  9   8    9')
+    expect(e.string).toEqual('3  9   8    9')
+    expect(e.input).toEqual('3  9   8    9')
+  })
+
+  test('Parser parses number with trailing comma', () => {
+    let e = p.parse('1,')
+    console.log('e', e)
+    expect(e.isIncorrect()).toBeTruthy()
+  })
+
   test('Parser parses expressions with spaces', () => {
     let e = p.parse('3 + 7')
     expect(e.string).toEqual('3+7')

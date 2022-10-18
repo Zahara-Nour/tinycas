@@ -316,6 +316,8 @@ var PNode = (_PNode = {}, _defineProperty(_PNode, Symbol.iterator, function () {
   return !!this.unit && this.unit.isConvertibleTo((0, _unit.unit)('m'));
 }), _defineProperty(_PNode, "isMass", function isMass() {
   return !!this.unit && this.unit.isConvertibleTo((0, _unit.unit)('g'));
+}), _defineProperty(_PNode, "isVolume", function isVolume() {
+  return !!this.unit && (this.unit.isConvertibleTo((0, _unit.unit)('m').mult((0, _unit.unit)('m')).mult((0, _unit.unit)('m'))) || this.unit.isConvertibleTo((0, _unit.unit)('L')));
 }), _defineProperty(_PNode, "compareTo", function compareTo(e) {
   return (0, _compare["default"])(this, e);
 }), _defineProperty(_PNode, "isLowerThan", function isLowerThan(e) {

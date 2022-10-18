@@ -31,6 +31,15 @@ var PUnit = {
     return this.toString();
   },
 
+  isVolume: function isVolume() {
+    return this.isMetricalVolume() || this.isCapacity();
+  },
+  isMetricalVolume: function isMetricalVolume() {
+    return this.isConvertibleTo(unit('m').mult(unit('m')).mult(unit('m')));
+  },
+  isCapacity: function isCapacity() {
+    return this.isConvertibleTo(unit('L'));
+  },
   isConvertibleTo: function isConvertibleTo(expectedUnit) {
     return this.normal.isConvertibleTo(expectedUnit.normal); // on compare les bases de la forme normale
   },
@@ -63,7 +72,7 @@ function unit(u, normal) {
 }
 
 var baseUnits = {
-  'Qr': [1, 'Qr'],
+  Qr: [1, 'Qr'],
   'k€': [1000, '€'],
   '€': [1, '€'],
   kL: [1000, 'L'],

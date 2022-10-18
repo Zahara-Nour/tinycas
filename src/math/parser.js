@@ -153,7 +153,8 @@ function parser({ implicit = true, allowDoubleSign = true } = {}) {
   function failure(msg) {
     let place = '-'.repeat(_lex.pos)
     place += '^'
-    const text = `${_input}
+    const text = `
+${_input}
 ${place}
 ${msg}`
     throw new ParsingError(text, msg)
@@ -178,7 +179,8 @@ ${msg}`
   }
 
   function parseExpression() {
-    return parseRelations()
+    const e = parseRelations()
+    return e
   }
 
   function parseRelations() {
@@ -799,11 +801,17 @@ ${msg}`
 
   return {
     parse(input) {
+      input=input.trim()
       _input = input
       _lex = lexer(input)
       let e
       try {
         e = parseExpression()
+        if (_lex.pos < _input.length ) {
+          // !_input.substring(_lex.pos, _input.length).match(/^\s*$/g)
+          failure('error at end')
+          // console.log(_lex.pos, _input+':'+_input.length, '/'+_input.substring(_lex.pos, _input.length)+'/')
+        }
       } catch (error) {
         e = notdefined({ message: error.message, input })
       }

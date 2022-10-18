@@ -104,7 +104,7 @@ var PNormal = {
     var u2N = nSum([[simpleCoef(_node2.one), u.n.first[1]]]);
     var u2D = nSum([[simpleCoef(_node2.one), u.d.first[1]]]);
     var u2 = normal(u2N, u2D);
-    return u1.equalsTo(u2);
+    return u1.equalsTo(u2) || u1.string === 'm^3' && u2.string === 'L' || u1.string === 'L' && u2.string === 'm^3';
   },
   isSameQuantityType: function isSameQuantityType(e) {
     return !this.unit && !e.unit || !!this.unit && !!e.unit && this.unit.isConvertibleTo(e.unit);
@@ -116,7 +116,27 @@ var PNormal = {
     var coefN2 = nSum([[u.n.first[0], baseOne()]]);
     var coefD2 = nSum([[u.d.first[0], baseOne()]]);
     var coef2 = normal(coefN2, coefD2);
-    return coef1.div(coef2);
+    var baseN1 = nSum([[nSumOne(), this.n.first[1]]]);
+    var baseD1 = nSum([[nSumOne(), this.d.first[1]]]);
+    var base1 = normal(baseN1, baseD1);
+    var baseN2 = nSum([[nSumOne(), u.n.first[1]]]);
+    var baseD2 = nSum([[nSumOne(), u.d.first[1]]]);
+    var base2 = normal(baseN2, baseD2); // console.log('base1', base1.string)
+    //   console.log('base2', base2.string)
+
+    var coef = coef1.div(coef2);
+
+    if (base1.string === 'L' && base2.string === 'm^3') {
+      // console.log('base1', base1.string)
+      // console.log('base2', base2.string)
+      coef = coef.mult((0, _math.math)('0.001').normal);
+    } else if (base2.string === 'L' && base1.string === 'm^3') {
+      // console.log('base1', base1.string)
+      // console.log('base2', base2.string)
+      coef = coef.mult((0, _math.math)('1000').normal);
+    }
+
+    return coef;
   },
   // réduit une expression normale correspondant à une fraction numérique
   reduce: function reduce() {
@@ -609,6 +629,10 @@ var PNList = (_PNList = {}, _defineProperty(_PNList, Symbol.iterator, function (
       e = (0, _node2.radical)([base]);
     } else if (!base.isOne() && !coef.isOne()) {
       // e = e.pow(coef.isNumber() || coef.isSymbol() ? coef : bracket([coef]))
+      if (e.isOpposite()) {
+        e = e.bracket();
+      }
+
       e = e.pow(coef);
     }
 
@@ -1489,8 +1513,8 @@ function normalize(node) {
 
     case _node2.TYPE_RELATIONS:
       {
-        var bool = true;
-        console.log('node', node);
+        var bool = true; // console.log('node', node)
+
         node.ops.forEach(function (op, i) {
           var test = (0, _math.math)(node.children[i].string + op + node.children[i + 1]);
           bool = bool && test.eval().value;

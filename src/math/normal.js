@@ -155,18 +155,18 @@ const PNormal = {
     const baseN2 = nSum([[nSumOne(), u.n.first[1]]])
     const baseD2 = nSum([[nSumOne(), u.d.first[1]]])
     const base2 = normal(baseN2, baseD2)
-    console.log('base1', base1.string)
-      console.log('base2', base2.string)
+    // console.log('base1', base1.string)
+    //   console.log('base2', base2.string)
     
     let coef = coef1.div(coef2)
     if (base1.string==='L' && base2.string==='m^3') {
-      console.log('base1', base1.string)
-      console.log('base2', base2.string)
+      // console.log('base1', base1.string)
+      // console.log('base2', base2.string)
       coef=coef.mult(math('0.001').normal)
     }
     else if (base2.string==='L' && base1.string==='m^3') {
-      console.log('base1', base1.string)
-      console.log('base2', base2.string)
+      // console.log('base1', base1.string)
+      // console.log('base2', base2.string)
       coef=coef.mult(math('1000').normal)
     }
     return coef

@@ -147,7 +147,7 @@ describe('Testing templates generations', () => {
       const f = math(e)
       const g = f.generate()
 
-      console.log(f.string, g.string)
+      // console.log(f.string, g.string)
       // for (let i=0; i<100 ; i++) {
       expect(g.matchTemplate(f)).toBeTruthy()
       // }

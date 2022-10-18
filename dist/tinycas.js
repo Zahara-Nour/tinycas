@@ -884,31 +884,48 @@
 
   const TYPE_UNIT$1 = 'type unit';
 
-
-
   // une unité simple ou composée
   const PUnit = {
-    mult (u) {
-      return  unit(this.u.mult(u.u, TYPE_PRODUCT_POINT), this.normal.mult(u.normal) )
+    mult(u) {
+      return unit(
+        this.u.mult(u.u, TYPE_PRODUCT_POINT),
+        this.normal.mult(u.normal),
+      )
     },
 
-    div (u) {
+    div(u) {
       return unit(this.u.div(u.u), this.normal.div(u.normal))
     },
-    pow (n) {
+    pow(n) {
       //  n doit être un entier relatif
       return unit(this.u.pow(n), this.normal.pow(n.normal))
     },
 
-    toString () {
-      return this.u.toString({isUnit:true})
+    toString() {
+      return this.u.toString({ isUnit: true })
     },
 
-    get string () {
+    get string() {
       return this.toString()
     },
 
-    isConvertibleTo (expectedUnit) {
+    isVolume() {
+      return this.isMetricalVolume() || this.isCapacity()
+    },
+
+    isMetricalVolume() {
+      return this.isConvertibleTo(
+        unit('m')
+          .mult(unit('m'))
+          .mult(unit('m')),
+      )
+    },
+
+    isCapacity() {
+      return this.isConvertibleTo(unit('L'))
+    },
+
+    isConvertibleTo(expectedUnit) {
       return this.normal.isConvertibleTo(expectedUnit.normal)
       // on compare les bases de la forme normale
     },
@@ -917,73 +934,72 @@
       return this.normal.getCoefTo(u.normal).node
     },
 
-    equalsTo (u) {
+    equalsTo(u) {
       return this.normal.equalsTo(u.normal)
-    }
+    },
   };
 
   /* 
   ne doit être appelée à l'extérieur que pour créer une unité simple. Les unités composées sont créées par multiplication, division ou exponentiation.
   */
-  function unit (u, normal) {
-    if (!normal) { // c'est une unité simple
-        const coef = number(baseUnits[u][0]);
-        const base = symbol(baseUnits[u][1]);
-        normal = coef.mult(base).normal;
+  function unit(u, normal) {
+    if (!normal) {
+      // c'est une unité simple
+      const coef = number(baseUnits[u][0]);
+      const base = symbol(baseUnits[u][1]);
+      normal = coef.mult(base).normal;
     }
-       
+
     const e = Object.create(PUnit);
-    Object.assign(e,  {
-      type:    TYPE_UNIT$1,
-      u: (typeof u === 'string' || u instanceof String ) ? symbol(u) : u,
-      normal
+    Object.assign(e, {
+      type: TYPE_UNIT$1,
+      u: typeof u === 'string' || u instanceof String ? symbol(u) : u,
+      normal,
     });
     return e
-    
-
   }
 
   const baseUnits = {
-    'Qr':       [1, 'Qr'],
-    'k€':       [1000, '€'],
-    '€':       [1, '€'],
-    kL:       [1000, 'L'],
-    hL:       [100, 'L'],
-    daL:      [10, 'L'],
-    L:        [1, 'L'],
-    dL:       [0.1, 'L'],
-    cL:       [0.01, 'L'],
-    mL:       [0.001, 'L'],
-    km:       [1000, 'm'],
-    hm:       [100, 'm'],
-    dam:      [10, 'm'],
-    m:        [1, 'm'],
-    dm:       [0.1, 'm'],
-    cm:       [0.01, 'm'],
-    mm:       [0.001, 'm'],
-    t:        [1000000, 'g'],
-    q:        [100000, 'g'],
-    kg:       [1000, 'g'],
-    hg:       [100, 'g'],
-    dag:      [10, 'g'],
-    g:        [1, 'g'],
-    dg:       [0.1, 'g'],
-    cg:       [0.01, 'g'],
-    mg:       [0.001, 'g'],
-    an:       [31536000000, 'ms'],
-    ans:      [31536000000, 'ms'],
-    mois:     [2592000000, 'ms'],
-    semaine:  [604800000, 'ms'],
+    Qr: [1, 'Qr'],
+    'k€': [1000, '€'],
+    '€': [1, '€'],
+    kL: [1000, 'L'],
+    hL: [100, 'L'],
+    daL: [10, 'L'],
+    L: [1, 'L'],
+    dL: [0.1, 'L'],
+    cL: [0.01, 'L'],
+    mL: [0.001, 'L'],
+    km: [1000, 'm'],
+    hm: [100, 'm'],
+    dam: [10, 'm'],
+    m: [1, 'm'],
+    dm: [0.1, 'm'],
+    cm: [0.01, 'm'],
+    mm: [0.001, 'm'],
+    t: [1000000, 'g'],
+    q: [100000, 'g'],
+    kg: [1000, 'g'],
+    hg: [100, 'g'],
+    dag: [10, 'g'],
+    g: [1, 'g'],
+    dg: [0.1, 'g'],
+    cg: [0.01, 'g'],
+    mg: [0.001, 'g'],
+    an: [31536000000, 'ms'],
+    ans: [31536000000, 'ms'],
+    mois: [2592000000, 'ms'],
+    semaine: [604800000, 'ms'],
     semaines: [604800000, 'ms'],
-    jour:     [86400000, 'ms'],
-    jours:    [86400000, 'ms'],
-    h:        [3600000, 'ms'],
-    min:      [60000, 'ms'],
-    mins:      [60000, 'ms'],
-    s:        [1000, 'ms'],
-    ms:       [1, 'ms'],
-    '°':      [1, '°'],
-    noUnit:   [1, 'noUnit']
+    jour: [86400000, 'ms'],
+    jours: [86400000, 'ms'],
+    h: [3600000, 'ms'],
+    min: [60000, 'ms'],
+    mins: [60000, 'ms'],
+    s: [1000, 'ms'],
+    ms: [1, 'ms'],
+    '°': [1, '°'],
+    noUnit: [1, 'noUnit'],
   };
 
   const TYPE_NORMAL = 'normal';
@@ -1058,7 +1074,7 @@
       const u2D = nSum([[simpleCoef(one), u.d.first[1]]]);
       const u2 = normal(u2N, u2D);
 
-      return u1.equalsTo(u2)
+      return u1.equalsTo(u2) || u1.string==='m^3' && u2.string==='L' || u1.string==='L' && u2.string==='m^3' 
     },
 
     isSameQuantityType(e) {
@@ -1076,7 +1092,27 @@
       const coefD2 = nSum([[u.d.first[0], baseOne()]]);
       const coef2 = normal(coefN2, coefD2);
 
-      return coef1.div(coef2)
+      const baseN1 = nSum([[nSumOne(), this.n.first[1]]]);
+      const baseD1 = nSum([[nSumOne(), this.d.first[1]]]);
+      const base1 = normal(baseN1, baseD1);
+      const baseN2 = nSum([[nSumOne(), u.n.first[1]]]);
+      const baseD2 = nSum([[nSumOne(), u.d.first[1]]]);
+      const base2 = normal(baseN2, baseD2);
+      // console.log('base1', base1.string)
+      //   console.log('base2', base2.string)
+      
+      let coef = coef1.div(coef2);
+      if (base1.string==='L' && base2.string==='m^3') {
+        // console.log('base1', base1.string)
+        // console.log('base2', base2.string)
+        coef=coef.mult(math('0.001').normal);
+      }
+      else if (base2.string==='L' && base1.string==='m^3') {
+        // console.log('base1', base1.string)
+        // console.log('base2', base2.string)
+        coef=coef.mult(math('1000').normal);
+      }
+      return coef
     },
 
     // réduit une expression normale correspondant à une fraction numérique
@@ -2313,7 +2349,7 @@
 
       case TYPE_RELATIONS: {
         let bool = true;
-        console.log('node', node);
+        // console.log('node', node)
         node.ops.forEach((op, i) => {
           const test = math(node.children[i].string + op + node.children[i + 1]);
           bool = bool && test.eval().value;
@@ -4226,16 +4262,31 @@
         this.isAbs()
       )
     },
+    
     isDuration() {
       return (
         this.isTime() || (!!this.unit && this.unit.isConvertibleTo(unit('s')))
       )
     },
+
     isLength() {
       return !!this.unit && this.unit.isConvertibleTo(unit('m'))
     },
+
     isMass() {
       return !!this.unit && this.unit.isConvertibleTo(unit('g'))
+    },
+
+    isVolume() {
+      return (
+        !!this.unit &&
+        (this.unit.isConvertibleTo(
+          unit('m')
+            .mult(unit('m'))
+            .mult(unit('m')),
+        ) ||
+          this.unit.isConvertibleTo(unit('L')))
+      )
     },
     compareTo(e) {
       return compare(this, e)
@@ -4683,7 +4734,7 @@
         // TODO: et l'unité ?
         if (this.isMinP()) {
           e = this.first.isLowerThan(this.last) ? this.first : this.last;
-        }else {
+        } else {
           e = this.first.isGreaterThan(this.last) ? this.first : this.last;
         }
       } else {
@@ -5093,7 +5144,7 @@
   }
 
   function relations(ops, children) {
-    return createNode({ type: TYPE_RELATIONS,ops, children })
+    return createNode({ type: TYPE_RELATIONS, ops, children })
   }
   function equality(children) {
     return createNode({ type: TYPE_EQUALITY, children })
@@ -5334,7 +5385,8 @@
     function failure(msg) {
       let place = '-'.repeat(_lex.pos);
       place += '^';
-      const text = `${_input}
+      const text = `
+${_input}
 ${place}
 ${msg}`;
       throw new ParsingError(text, msg)
@@ -5359,7 +5411,8 @@ ${msg}`;
     }
 
     function parseExpression() {
-      return parseRelations()
+      const e = parseRelations();
+      return e
     }
 
     function parseRelations() {
@@ -5980,11 +6033,17 @@ ${msg}`;
 
     return {
       parse(input) {
+        input=input.trim();
         _input = input;
         _lex = lexer(input);
         let e;
         try {
           e = parseExpression();
+          if (_lex.pos < _input.length ) {
+            // !_input.substring(_lex.pos, _input.length).match(/^\s*$/g)
+            failure('error at end');
+            // console.log(_lex.pos, _input+':'+_input.length, '/'+_input.substring(_lex.pos, _input.length)+'/')
+          }
         } catch (error) {
           e = notdefined({ message: error.message, input });
         }
