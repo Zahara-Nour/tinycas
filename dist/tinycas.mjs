@@ -6053,6 +6053,7 @@ function math (exp, options) {
    e = parser(options).parse(exp);
   }
   return e
+  
 }
 
 export { math as default };

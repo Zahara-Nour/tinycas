@@ -12,7 +12,7 @@ export default [
       {
         format: 'umd',
         name: 'tinycas',
-        file: `./dist/tinycas.js`,
+        file: `./dist/index.js`,
       },
     ]
       // plugins: [nodeResolve()]
