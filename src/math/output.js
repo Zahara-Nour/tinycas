@@ -612,7 +612,7 @@ export function latex(e, options) {
       break
 
     case TYPE_HOLE:
-      s = '........'
+      s = '\\ldots'
       break
 
     case TYPE_ERROR:
