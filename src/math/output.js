@@ -256,7 +256,8 @@ export function text(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error :\n' + e.error.message + ' ' + e.error.input
+      s = e.input
+      // s = 'Error :\n' + e.error.message + ' ' + e.error.input
       break
 
     // case TYPE_NORMAL:
@@ -616,7 +617,8 @@ export function latex(e, options) {
       break
 
     case TYPE_ERROR:
-      s = 'Error : \n' + e.error + ' ' + e.input
+      // s = 'Error : \n' + e.error + ' ' + e.input
+      s = e.input
       break
 
     default:

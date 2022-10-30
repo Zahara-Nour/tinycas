@@ -12,6 +12,23 @@ import { math } from '../src/math/math'
 // console.log(formatNumber(123456789.123456789))
  
 
+describe('Testing error output', () => {
+
+  const t = [ 
+  //   ['3/4', '\\frac{3}{4}'],
+    ['<', '<'],
+  ]
+
+  test.each(t)(
+    'exporting %s to asciimath',
+    (e, expected) => {
+      console.log('e.input', math(e))
+      expect(math(e).isIncorrect()).toBeTruthy()
+      expect(math(e).string).toBe(expected)
+    }
+  )
+})
+
 console.log(math('2+').string)
 describe('Testing asciimath export', () => {
 
