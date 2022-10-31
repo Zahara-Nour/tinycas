@@ -48,7 +48,12 @@ import { TYPE_NORMAL } from './normal.js'
 Doit produire la même chaîne que celle qui été utilisée pour créer l'expression */
 
 function canUseImplicitProduct(exp) {
-  return exp.isBracket() || exp.isFunction() || exp.isSymbol() || (exp.isPower() && exp.first.isSymbol())
+  return (
+    exp.isBracket() ||
+    exp.isFunction() ||
+    exp.isSymbol() ||
+    (exp.isPower() && exp.first.isSymbol())
+  )
 }
 
 export function text(e, options) {
@@ -618,7 +623,17 @@ export function latex(e, options) {
 
     case TYPE_ERROR:
       // s = 'Error : \n' + e.error + ' ' + e.input
-      s = e.input
+      switch (e.input) {
+        case '<':
+          s = '\\lt'
+          break
+        case '>':
+          s = '\\gt'
+          break
+        default:
+          s = e.input
+      }
+
       break
 
     default:

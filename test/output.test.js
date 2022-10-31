@@ -16,16 +16,17 @@ describe('Testing error output', () => {
 
   const t = [ 
   //   ['3/4', '\\frac{3}{4}'],
-    ['<', '<'],
+    ['<', '<', '\\lt'],
+    ['>', '>', '\\gt'],
   ]
 
   test.each(t)(
     'exporting %s to asciimath',
-    (e, expected) => {
+    (e, expected, expected2) => {
       console.log('e.input', math(e))
       expect(math(e).isIncorrect()).toBeTruthy()
       expect(math(e).string).toBe(expected)
-      expect(math(e).latex).toBe(expected)
+      expect(math(e).latex).toBe(expected2)
     }
   )
 })
