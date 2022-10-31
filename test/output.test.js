@@ -25,6 +25,7 @@ describe('Testing error output', () => {
       console.log('e.input', math(e))
       expect(math(e).isIncorrect()).toBeTruthy()
       expect(math(e).string).toBe(expected)
+      expect(math(e).latex).toBe(expected)
     }
   )
 })

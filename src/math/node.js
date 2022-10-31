@@ -1167,7 +1167,7 @@ export function segmentLength(begin, end) {
   return createNode({ type: TYPE_SEGMENT_LENGTH, begin, end })
 }
 export function notdefined(error) {
-  return createNode({ type: TYPE_ERROR, error, input:error.input })
+  return createNode({ type: TYPE_ERROR, input:error.input })
 }
 export function hole() {
   return createNode({ type: TYPE_HOLE })
