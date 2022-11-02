@@ -644,6 +644,180 @@ export function latex(e, options) {
   return s
 }
 
+export function texmacs(e, options) {
+  let s
+
+  switch (e.type) {
+    case TYPE_ABS:
+      s = '<around*|\\||' + e.first.toLatex(options) + '|\\|>'
+      break
+
+    case TYPE_TIME:
+      // format = options.formatTime
+
+      s = ''
+      if (e.children[0] && !e.children[0].isZero()) {
+        s += e.children[0].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[1] && !e.children[1].isZero()) {
+        s += e.children[1].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[2] && !e.children[2].isZero()) {
+        s += e.children[2].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[3] && !e.children[3].isZero()) {
+        s += e.children[3].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[4] && !e.children[4].isZero()) {
+        s += e.children[4].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[5] && !e.children[5].isZero()) {
+        if (e.children[5].value.lessThan(10)) {
+          s += '0' + e.children[5].toTexmacs(options)
+        } else {
+          s += e.children[5].toTexmacs(options)
+        }
+        s += '<space|0.17em>'
+      }
+      if (e.children[6] && !e.children[6].isZero()) {
+        s += e.children[6].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      if (e.children[7] && !e.children[7].isZero()) {
+        s += e.children[7].toTexmacs(options)
+        s += '<space|0.17em>'
+      }
+      break
+
+    case TYPE_SEGMENT_LENGTH:
+      s = e.begin + e.end
+      break
+
+    case TYPE_EQUALITY:
+      s = e.first.toTexmacs(options) + '=' + e.last.toTexmacs(options)
+      break
+
+    case TYPE_UNEQUALITY:
+      s = e.first.toTexmacs(options) + '\\<neq\\>' + e.last.toTexmacs(options)
+      break
+    case TYPE_INEQUALITY_LESS:
+      s = e.first.toTexmacs(options) + '\\<less\\>' + e.last.toTexmacs(options)
+      break
+    case TYPE_INEQUALITY_LESSOREQUAL:
+      s =
+        e.first.toTexmacs(options) +
+        '\\<leqslant\\>' +
+        e.last.toTexmacs(options)
+      break
+    case TYPE_INEQUALITY_MORE:
+      s = e.first.toTexmacs(options) + '\\<gtr\\>' + e.last.toTexmacs(options)
+      break
+    case TYPE_INEQUALITY_MOREOREQUAL:
+      s =
+        e.first.toTexmacs(options) +
+        '\\<geqslant\\>' +
+        e.last.toTexmacs(options)
+      break
+
+    case TYPE_PERCENTAGE:
+      s = e.first.toTexmacs(options) + '%'
+      break
+
+    case TYPE_RADICAL:
+      s = '<sqrt|' + e.first.toTexmacs(options) + '>'
+      break
+
+    case TYPE_BRACKET: {
+      s = '<around*|(|' + e.first.toTexmacs(options) + '|)>'
+      break
+    }
+
+    case TYPE_POSITIVE: {
+      s += '+' + e.first.toTexmacs(options)
+      break
+    }
+
+    case TYPE_OPPOSITE: {
+      s = '-' + e.first.toTexmacs(options)
+      break
+    }
+
+    case TYPE_DIFFERENCE: {
+  
+      s = e.first.toTexmacs(options) + '-'  + e.last.toTexmacs(options)
+      break
+    }
+    case TYPE_SUM: {
+
+      s = e.first.toTexmacs(options) + '+' + e.last.toTexmacs(options)
+      break
+    }
+
+    case TYPE_POWER:
+      // console.log('e', e.string)
+      // console.log('e.first', e.first.toLatex(options))
+      s = e.first.toTexmacs(options) + '<rsup|' +  e.last.toTexmacs(options) + '>'
+      // console.log('s', s)
+      break
+
+    case TYPE_DIVISION:
+      s = e.first.toTexmacs(options) + '\\<div\\>' + e.last.toTexmacs(options)
+      break
+
+    case TYPE_QUOTIENT:
+      s = '<dfrac|'+e.first.toTexmacs(options)+'|'+e.last.toTexmacs(options)+'>'
+      break
+
+    case TYPE_PRODUCT: {
+      s = e.first.toTexmacs(options) + '\\<times\\>' + e.last.toTexmacs(options)
+      break
+    }
+
+    case TYPE_PRODUCT_IMPLICIT:
+      s = e.first.toTexmacs(options) + '*' + e.last.toTexmacs(options)
+      break
+
+    case TYPE_PRODUCT_POINT:
+      s = e.first.toTexmacs(options) + '\\<cdot\\>' + e.last.toTexmacs(options)
+      break
+
+    case TYPE_SYMBOL:
+      if (e.letter === 'pi') {
+        s = '\\<pi\\>'
+      } else {
+        s = e.letter
+      }
+      break
+
+    case TYPE_NUMBER:
+      s = e.toString({ displayUnit: false })
+      if (options.addSpaces) {
+        s = formatSpaces(s)
+      }
+      s = s.replace(/ /g, '<space|0.17em>').replace('.', ',')
+      break
+
+    case TYPE_HOLE:
+      s = '\\<ldots\\>'
+      break
+
+    case TYPE_ERROR:
+      s='error'
+      break
+
+    default:
+      s = e.string
+  }
+  // if (e.unit && options.displayUnit) s += ' ' + e.unit.string
+  if (e.unit) s += '<space|0.17em>' + e.unit.string
+  return s
+}
+
 // Ajoute un espace tous les 3 chiffres
 function formatSpaces(num) {
   let [int, dec] = num.replace(/ /g, '').split('.')
