@@ -14,6 +14,33 @@ describe('Parser interface', () => {
 describe('Parsing', () => {
   const p = parser()
 
+  test('Parser parses identifiers', () => {
+    let e = p.parse('&1')
+    expect(e.toString()).toEqual('&1')
+    expect(e.isIdentifier()).toBeTruthy()
+
+    e = p.parse('&23')
+    expect(e.toString()).toEqual('&23')
+    expect(e.isIdentifier()).toBeTruthy()
+
+    e = p.parse('1+&23')
+    expect(e.toString()).toEqual('1+&23')
+   
+
+    e = p.parse('&ans')
+    expect(e.toString()).toEqual('&ans')
+    expect(e.isIdentifier()).toBeTruthy()
+
+    e = p.parse('&ans1')
+    expect(e.toString()).toEqual('&ans1')
+    expect(e.isIdentifier()).toBeTruthy()
+
+    e = p.parse('1+&ans1')
+    expect(e.toString()).toEqual('1+&ans1')
+
+  })
+
+
   test('Parser parses a hole', () => {
     const e = p.parse('?')
     expect(e.toString()).toEqual('?')

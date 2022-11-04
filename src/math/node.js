@@ -77,6 +77,7 @@ export const TYPE_ABS = 'abs'
 export const TYPE_RADICAL = 'sqrt'
 export const TYPE_TIME = 'time'
 export const TYPE_SIMPLE_TIME = 'simple_time'
+export const TYPE_IDENTIFIER = 'identifiant'
 
 Decimal.set({
   toExpPos: 89,
@@ -267,6 +268,9 @@ const PNode = {
   },
   isChild() {
     return !!this.parent
+  },
+  isIdentifier() {
+    return this.type === TYPE_IDENTIFIER
   },
 
   isFirst() {
@@ -1194,4 +1198,8 @@ export function inequality(children, relation) {
 
 export function time(children) {
   return createNode({ type: TYPE_TIME, children })
+}
+
+export function identifier(name) {
+  return createNode({type: TYPE_IDENTIFIER, name})
 }

@@ -45,6 +45,7 @@ import {
   TYPE_MINP,
   TYPE_MAXP,
   TYPE_RELATIONS,
+  TYPE_IDENTIFIER
 } from './node.js'
 import fraction from './fraction.js'
 import { math } from './math.js'
@@ -1368,6 +1369,13 @@ export default function normalize(node) {
 
     case TYPE_HOLE:
       n = nSum([[coefOne(), createBase(node)]])
+      d = nSumOne()
+      break
+
+    case TYPE_IDENTIFIER:
+      n = nSum([
+        [coefOne(), createBase(node)],
+      ])
       d = nSumOne()
       break
 

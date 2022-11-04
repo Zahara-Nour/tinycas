@@ -39,6 +39,7 @@ import {
   minPreserve,
   maxPreserve,
   relations,
+  identifier
 } from './node.js'
 
 import { unit } from './unit.js'
@@ -75,6 +76,7 @@ const DECIMAL_TEMPLATE = token('@\\$d(r)?')
 const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
 const VALUE_TEMPLATE = token('$')
+const IDENTIFIANT = token('@&[a-z]+(\\d)*|&(\\d)+')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
@@ -365,7 +367,10 @@ ${msg}`
     let e, func
     let exclude, excludeMin, excludeMax
 
-    if (match(BOOLEAN)) {
+    if (match(IDENTIFIANT)) {
+      e = identifier(_lexem)
+    }
+    else if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true')
     } else if (match(TIME)) {
       const units = ['ans', 'mois', 'semaines', 'jours', 'h', 'min', 's', 'ms']

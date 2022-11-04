@@ -212,6 +212,10 @@ describe('Testing normal forms for litteral expressions', () => {
     ['-3*(-4)^n', '-3*(-4)^n'],
     ['3*(4)^n', '3*4^n'],
     ['3*4^n', '3*4^n'],
+    ['&ans', '&ans'],
+    ['&ans1', '&ans1'],
+    ['&1', '&1'],
+    ['1+&1', '1+&1'],
   ]
 
   test.each(t)('normal form of %s', (e, expected) => {

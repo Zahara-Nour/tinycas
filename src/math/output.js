@@ -41,6 +41,7 @@ import {
   TYPE_MINP,
   TYPE_MAXP,
   TYPE_RELATIONS,
+  TYPE_IDENTIFIER,
 } from './node.js'
 
 import { TYPE_NORMAL } from './normal.js'
@@ -142,7 +143,6 @@ export function text(e, options) {
       if (needBrackets) {
         s += ')'
       }
-
       break
     }
 
@@ -225,6 +225,7 @@ export function text(e, options) {
       // console.log('isunit PRODUCT', options.isUnit, s)
       break
     }
+
     case TYPE_PRODUCT_IMPLICIT:
       s = e.children
         .map(child =>
@@ -234,10 +235,14 @@ export function text(e, options) {
         )
         .join('')
       break
+
     case TYPE_PRODUCT_POINT:
       s = e.children.map(child => child.toString(options)).join(e.type)
       // console.log('isunit IMPLCITI POINT', options.isUnit, s)
+      break
 
+    case TYPE_IDENTIFIER:
+      s = e.name
       break
 
     case TYPE_SYMBOL:
@@ -592,6 +597,10 @@ export function latex(e, options) {
       s = e.children.map(child => child.toLatex(options)).join(' \\cdot ')
       break
 
+    case TYPE_IDENTIFIER:
+      s = e.name
+      break
+
     case TYPE_SYMBOL:
       if (e.letter === 'pi') {
         s = '\\pi'
@@ -748,12 +757,10 @@ export function texmacs(e, options) {
     }
 
     case TYPE_DIFFERENCE: {
-  
-      s = e.first.toTexmacs(options) + '-'  + e.last.toTexmacs(options)
+      s = e.first.toTexmacs(options) + '-' + e.last.toTexmacs(options)
       break
     }
     case TYPE_SUM: {
-
       s = e.first.toTexmacs(options) + '+' + e.last.toTexmacs(options)
       break
     }
@@ -761,7 +768,8 @@ export function texmacs(e, options) {
     case TYPE_POWER:
       // console.log('e', e.string)
       // console.log('e.first', e.first.toLatex(options))
-      s = e.first.toTexmacs(options) + '<rsup|' +  e.last.toTexmacs(options) + '>'
+      s =
+        e.first.toTexmacs(options) + '<rsup|' + e.last.toTexmacs(options) + '>'
       // console.log('s', s)
       break
 
@@ -770,7 +778,12 @@ export function texmacs(e, options) {
       break
 
     case TYPE_QUOTIENT:
-      s = '<dfrac|'+e.first.toTexmacs(options)+'|'+e.last.toTexmacs(options)+'>'
+      s =
+        '<dfrac|' +
+        e.first.toTexmacs(options) +
+        '|' +
+        e.last.toTexmacs(options) +
+        '>'
       break
 
     case TYPE_PRODUCT: {
@@ -784,6 +797,10 @@ export function texmacs(e, options) {
 
     case TYPE_PRODUCT_POINT:
       s = e.first.toTexmacs(options) + '\\<cdot\\>' + e.last.toTexmacs(options)
+      break
+
+    case TYPE_IDENTIFIER:
+      s = e.name
       break
 
     case TYPE_SYMBOL:
@@ -807,7 +824,7 @@ export function texmacs(e, options) {
       break
 
     case TYPE_ERROR:
-      s='error'
+      s = 'error'
       break
 
     default:

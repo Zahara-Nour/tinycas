@@ -10,6 +10,7 @@ import {
   TYPE_FLOOR,
   TYPE_GCD,
   TYPE_HOLE,
+  TYPE_IDENTIFIER,
   TYPE_INEQUALITY_LESS,
   TYPE_INEQUALITY_LESSOREQUAL,
   TYPE_INEQUALITY_MORE,
@@ -56,6 +57,7 @@ export default function compare(node1, node2) {
   const priorityList = [
     TYPE_NUMBER,
     TYPE_SYMBOL,
+    TYPE_IDENTIFIER,
     TYPE_HOLE,
     TYPE_BOOLEAN,
     TYPE_TEMPLATE,
@@ -115,6 +117,7 @@ export default function compare(node1, node2) {
         return 0
 
       case TYPE_SYMBOL:
+      case TYPE_IDENTIFIER:
         if (node1.string < node2.string) {
           return -1
         } else if (node1.string > node2.string) {
@@ -234,229 +237,3 @@ export default function compare(node1, node2) {
     return priorityList.indexOf(node1.type) < priorityList.indexOf(node2.type) ? -1 : 1
   }
 }
-
-
-// switch (node1.type) {
-//   case TYPE_HOLE:
-//     switch (node2.type) {
-//       case TYPE_NUMBER:
-//       case TYPE_SYMBOL:
-//         return 1
-
-//       case TYPE_HOLE:
-//         return 0
-
-//       case TYPE_TEMPLATE:
-//       case TYPE_COS:
-//       case TYPE_SIN:
-//       case TYPE_TAN:
-//       case TYPE_LN:
-//       case TYPE_LOG:
-//       case TYPE_EXP:
-//       case TYPE_INEQUALITY_LESS:
-//       case TYPE_INEQUALITY_LESSOREQUAL:
-//       case TYPE_INEQUALITY_MORE:
-//       case TYPE_INEQUALITY_MOREOREQUAL:
-//       case TYPE_EQUALITY:
-//         return -1
-
-//       default:
-//         return node1.normal.compareTo(node2.normal)
-//     }
-
-//   case TYPE_SYMBOL:
-//     switch (node2.type) {
-//       case TYPE_NUMBER:
-//         return 1
-
-//       case TYPE_HOLE:
-//       case TYPE_TEMPLATE:
-//       case TYPE_COS:
-//       case TYPE_SIN:
-//       case TYPE_TAN:
-//       case TYPE_LN:
-//       case TYPE_LOG:
-//       case TYPE_EXP:
-//       case TYPE_INEQUALITY_LESS:
-//       case TYPE_INEQUALITY_LESSOREQUAL:
-//       case TYPE_INEQUALITY_MORE:
-//       case TYPE_INEQUALITY_MOREOREQUAL:
-//       case TYPE_EQUALITY:
-//         return -1
-
-//       case TYPE_SYMBOL:
-//         if (node1.string < node2.string) {
-//           return -1
-//         } else if (node1.string > node2.string) {
-//           return 1
-//         } else {
-//           return 0
-//         }
-
-//       default:
-//         return node1.normal.compareTo(node2.normal)
-//     }
-
-//   case TYPE_NUMBER:
-//     switch (node2.type) {
-//       case TYPE_NUMBER:
-//         if (node1.value.lt(node2.value)) {
-//           return -1
-//         } else if (node1.value.gt(node2.value)) {
-//           return 1
-//         }
-//         return 0
-
-//       case TYPE_HOLE:
-//       case TYPE_SYMBOL:
-//       case TYPE_TEMPLATE:
-//       case TYPE_COS:
-//       case TYPE_SIN:
-//       case TYPE_TAN:
-//       case TYPE_LN:
-//       case TYPE_LOG:
-//       case TYPE_EXP:
-//       case TYPE_INEQUALITY_LESS:
-//       case TYPE_INEQUALITY_LESSOREQUAL:
-//       case TYPE_INEQUALITY_MORE:
-//       case TYPE_INEQUALITY_MOREOREQUAL:
-//       case TYPE_EQUALITY:
-//         return -1
-
-//       default:
-//         return node1.normal.compareTo(node2.normal)
-//     }
-
-//   case TYPE_COS:
-//   case TYPE_SIN:
-//   case TYPE_TAN:
-//   case TYPE_LN:
-//   case TYPE_LOG:
-//   case TYPE_EXP:
-//     switch (node2.type) {
-//       case TYPE_NUMBER:
-//       case TYPE_SYMBOL:
-//       case TYPE_HOLE:
-//       case TYPE_TEMPLATE:
-//         return 1
-
-//       case TYPE_COS:
-//       case TYPE_SIN:
-//       case TYPE_TAN:
-//       case TYPE_LN:
-//       case TYPE_LOG:
-//       case TYPE_EXP:
-//         if (node1.type < node2.type) {
-//           return -1
-//         } else if (node1.type > node2.type) {
-//           return 1
-//         } else {
-//           return compare(node1.first, node2.first)
-//         }
-
-//       case TYPE_INEQUALITY_LESS:
-//       case TYPE_INEQUALITY_LESSOREQUAL:
-//       case TYPE_INEQUALITY_MORE:
-//       case TYPE_INEQUALITY_MOREOREQUAL:
-//       case TYPE_EQUALITY:
-//         return -1
-
-//       default:
-//         return node1.normal.compareTo(node2.normal)
-//     }
-
-//   case TYPE_INEQUALITY_LESS:
-//   case TYPE_INEQUALITY_LESSOREQUAL:
-//   case TYPE_INEQUALITY_MORE:
-//   case TYPE_INEQUALITY_MOREOREQUAL:
-//   case TYPE_EQUALITY:
-//     switch (node2.type) {
-//       case TYPE_NUMBER:
-//       case TYPE_SYMBOL:
-//       case TYPE_HOLE:
-//       case TYPE_TEMPLATE:
-//       case TYPE_COS:
-//       case TYPE_SIN:
-//       case TYPE_TAN:
-//       case TYPE_LN:
-//       case TYPE_LOG:
-//       case TYPE_EXP:
-//         return 1
-
-//       case TYPE_INEQUALITY_LESS:
-//       case TYPE_INEQUALITY_LESSOREQUAL:
-//       case TYPE_INEQUALITY_MORE:
-//       case TYPE_INEQUALITY_MOREOREQUAL:
-//       case TYPE_EQUALITY:
-//         if (node1.type < node2.type) {
-//           return -1
-//         } else if (node1.type > node2.type) {
-//           return 1
-//         } else {
-//           const left = compare(node1.first, node2.first)
-//           return left === 0 ? compare(node1.last, node2.last) : left
-//         }
-
-//       default:
-//         return node1.normal.compareTo(node2.normal)
-//     }
-
-//   case TYPE_NORMAL:
-//     result = node1.n.mult(node2.d).compareTo(node2.n.mult(node1.d))
-
-//     if (result === 0) {
-//       //  on doit comparer les unités
-//       if (node1.unit && node2.unit) {
-//         result = node1.unit.compareTo(node2.unit)
-//       } else if (node1.unit) {
-//         result = 1
-//       } else if (node2.unit) {
-//         result = -1
-//       }
-//     }
-//     return result
-
-//   case TYPE_NSUM:
-//   case TYPE_NPRODUCT:
-//     // !!!!! attention avec les crochets en début de ligne !!!!!!!!!!
-//     ;[i1, i2] = [node1[Symbol.iterator](), node2[Symbol.iterator]()]
-//       ;[next1, next2] = [i1.next(), i2.next()]
-
-//     while (!next1.done && !next2.done) {
-//       const [child1, child2] = [next1.value, next2.value]
-
-//       // on compare d'abord les bases
-//       // base1 et base2 sont soit un nProduct, soit une exp
-//       const [base1, base2] = [child1[1], child2[1]]
-//       result = base1.compareTo(base2)
-//       if (result !== 0) return result
-
-//       // ce n'est pas concluant, on passe aux coefs
-//       const [coef1, coef2] = [child1[0], child2[0]]
-//       if (coef1.type === TYPE_NSUM) {
-//         result = coef1.compareTo(coef2)
-//         if (result !== 0) return result
-//       } else {
-//         // ce sont des number ou rationels, on compare les valeurs numériques
-//         if (coef1.isLowerThan(coef2)) {
-//           return -1
-//         } else if (coef1.isGreaterThan(coef2)) {
-//           return 1
-//         }
-//       }
-//       //  La comparaison n'est toujours pas concluante, on passe au terme suivant
-//       next1 = i1.next()
-//       next2 = i2.next()
-//     }
-//     if (next1.done && next2.done) {
-//       return 0 // les expressions sont équivalentes
-//     }
-//     if (next1.done) return -1 // il reste des éléments dans l'expression2 : c'est elle la + grande
-
-//     return 1
-
-//   default:
-//     // par défaut on compare les formes normales
-//     return node1.normal.compareTo(node2.normal)
-// }
-// }
