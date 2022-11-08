@@ -1,7 +1,7 @@
 import evaluate from './evaluate.js'
 import fraction from './fraction.js'
 import normalize from './normal.js'
-import { text, latex } from './output.js'
+import { text, latex, texmacs } from './output.js'
 import compare from './compare.js'
 import {
   substitute,
@@ -517,6 +517,24 @@ const PNode = {
 
   get latex() {
     return this.toLatex()
+  },
+
+  toTexmacs({
+    addBrackets = false,
+    implicit = false,
+    addSpaces = true,
+    keepUnecessaryZeros = false,
+  } = {}) {
+    return texmacs(this, {
+      addBrackets,
+      implicit,
+      addSpaces,
+      keepUnecessaryZeros,
+    })
+  },
+
+  get texmacs() {
+    return this.toTexmacs()
   },
 
   get root() {
