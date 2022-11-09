@@ -820,7 +820,7 @@ export function texmacs(e, options) {
       break
 
     case TYPE_HOLE:
-      s = '\\<ldots\\>'
+      s = '......'
       break
 
     case TYPE_ERROR:
