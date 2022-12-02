@@ -37,9 +37,8 @@ const constants = {
 }
 
 export function compose(node, g, variable = 'x') {
-
   const replace = () => {
-    return '('+g.string+')'
+    return '(' + g.string + ')'
   }
   return math(
     node.string.replace(new RegExp('(x)(?!p)(?<!e)', 'g'), replace),
@@ -152,12 +151,26 @@ export function reduceFractions(node) {
     e = createNode({
       type: node.type,
       children: node.children.map(child => child.reduceFractions()),
+      ops: node.ops,
     })
   } else {
     e = node
   }
 
-  if (e.isNumeric() && e.isQuotient()) {
+  if (
+    e.isNumeric() &&
+    e.isQuotient() &&
+    (e.first.isNumber() ||
+      (e.first.isOpposite() && e.first.first.isNumber()) ||
+      (e.first.isBracket() &&
+        (e.first.first.isNumber() ||
+          (e.first.first.isOpposite() && e.first.first.first.isNumber())))) &&
+    (e.last.isNumber() ||
+      (e.last.isOpposite() && e.last.first.isNumber()) ||
+      (e.last.isBracket() &&
+        (e.last.first.isNumber() ||
+          (e.last.first.isOpposite() && e.last.first.first.isNumber()))))
+  ) {
     e = e.reduce()
   }
 
@@ -379,6 +392,7 @@ export function removeUnecessaryBrackets(node, allowFirstNegativeTerm = false) {
       children: node.children.map(child =>
         child.removeUnecessaryBrackets(allowFirstNegativeTerm),
       ),
+      ops: node.ops,
     })
   } else {
     e = math(node.string)
