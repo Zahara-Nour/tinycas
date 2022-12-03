@@ -59,6 +59,32 @@ describe('Testing asciimath export', () => {
   )
 })
 
+describe('Testing expression with indices', () => {
+
+  const t = [ 
+  //   ['3/4', '\\frac{3}{4}'],
+    ['u_n', 'u_n'],
+    ['u_n+3', 'u_n+3'],
+    ['4u_n+3', '4u_n+3'],
+    ['u_nv_n', 'u_nv_n'],
+    ['u_n/v_n', 'u_n/v_n'],
+    ['u_n=5', 'u_n=5'],
+    ['u_{n+1}=u_n+2', 'u_{n+1}=u_n+2'],
+
+
+
+  ]
+
+  test.each(t)(
+    '%s gives %s',
+    (e, expected) => {
+      expect(math(e).string).toBe(expected)
+    }
+  )
+})
+
+
+
 describe('Testing latex export', () => {
 
     const t = [ 

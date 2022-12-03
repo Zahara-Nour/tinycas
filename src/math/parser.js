@@ -77,6 +77,7 @@ const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
 const VALUE_TEMPLATE = token('$')
 const IDENTIFIANT = token('@&[a-z]+(\\d)*|&(\\d)+')
+const INDICE=token('@_({.+}|([0-9]+|[ijknmp]))')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
 const CONSTANTS = token('@pi')
@@ -725,13 +726,17 @@ ${msg}`
     } else if (match(CONSTANTS)) {
       e = symbol(_lexem)
     } else if (match(SYMBOL)) {
-      switch (_lexem) {
+      let s = _lexem
+      switch (s) {
         /*
         case "p":
           e = parseFactory.PI;
         */
         default:
-          e = symbol(_lexem)
+          if (match(INDICE)) {
+            s+=_lexem
+          }
+          e = symbol(s)
       }
     } else if (match(OPENING_BRACKET)) {
       // TODO: rajouter dans options qu'il ne faut pas de nouvelles unités
