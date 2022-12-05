@@ -39,7 +39,8 @@ import {
   minPreserve,
   maxPreserve,
   relations,
-  identifier
+  identifier,
+  limit,
 } from './node.js'
 
 import { unit } from './unit.js'
@@ -77,10 +78,10 @@ const VARIABLE_TEMPLATE = token('@\\$(\\d)+')
 const LIST_TEMPLATE = token('$l')
 const VALUE_TEMPLATE = token('$')
 const IDENTIFIANT = token('@&[a-z]+(\\d)*|&(\\d)+')
-const INDICE=token('@_({.+}|([0-9]+|[ijknmp]))')
+const INDICE = token('@_({.+}|([0-9]+|[ijknmp]))')
 
 const SEGMENT_LENGTH = token('@[A-Z][A-Z]')
-const CONSTANTS = token('@pi')
+const CONSTANTS = token('@pi|infinity')
 const BOOLEAN = token('@false|true')
 const FUNCTION = token(
   '@cos|sin|sqrt|pgcd|minip|mini|maxip|maxi|cos|sin|tan|exp|ln|log|mod|floor|abs',
@@ -101,6 +102,7 @@ const TIME = token(
 const UNIT = token(
   '@Qr|€|k€|kL|hL|daL|L|dL|cL|mL|km|hm|dam|dm|cm|mm|ans|min|ms|t|q|kg|hg|dag|dg|cg|mg|°|m|g|h|s',
 )
+const LIMIT = token('@(inf|\\d+)(plus|moins)')
 
 const ERROR_NO_VALID_ATOM = 'no valid atom found'
 // const TEMPLATE = token(`@${regexBase}|${regexInteger}|${regexDecimal}`)
@@ -190,15 +192,14 @@ ${msg}`
     const exps = []
     const ops = []
     exps.push(parseMember())
-      let e
+    let e
     while (match(EQUAL) || match(NOTEQUAL) || match(COMP)) {
       ops.push(_lexem)
       exps.push(parseMember())
     }
-    if (ops.length ===0) {
+    if (ops.length === 0) {
       e = exps[0]
-    }
-    else if (ops.length === 1) {
+    } else if (ops.length === 1) {
       switch (ops[0]) {
         case '!=':
           e = unequality([exps[0], exps[1]])
@@ -213,8 +214,7 @@ ${msg}`
         case '>=':
           e = inequality([exps[0], exps[1]], ops[0])
       }
-    }
-    else {
+    } else {
       e = relations(ops, exps)
     }
     return e
@@ -368,10 +368,28 @@ ${msg}`
     let e, func
     let exclude, excludeMin, excludeMax
 
-    if (match(IDENTIFIANT)) {
+    if (match(LIMIT)) {
+      const lim = _lexem
+      console.log('lim', _lexem,lim.substring(3), lim[0] )
+      
+      let sign
+      let children
+      if (lim[0] === 'i') {
+        console.log('infinity')
+        sign = lim.substring(3) === 'plus' ? '+' : '-'
+        children = [symbol('inf')]
+        console.log(sign, children)
+      } else {
+        sign = lim[lim.length - 2] === 'u' ? '+' : '-'
+        children =
+          lim[lim.length - 2] === 'u'
+            ? [number(lim.substring(0, lim.length - 4))]
+            : [number(lim.substring(0, lim.length - 5))]
+      }
+      e = limit(sign, children)
+    } else if (match(IDENTIFIANT)) {
       e = identifier(_lexem)
-    }
-    else if (match(BOOLEAN)) {
+    } else if (match(BOOLEAN)) {
       e = boolean(_lexem === 'true')
     } else if (match(TIME)) {
       const units = ['ans', 'mois', 'semaines', 'jours', 'h', 'min', 's', 'ms']
@@ -734,7 +752,7 @@ ${msg}`
         */
         default:
           if (match(INDICE)) {
-            s+=_lexem
+            s += _lexem
           }
           e = symbol(s)
       }
@@ -811,13 +829,13 @@ ${msg}`
 
   return {
     parse(input) {
-      input=input.trim()
+      input = input.trim()
       _input = input
       _lex = lexer(input)
       let e
       try {
         e = parseExpression()
-        if (_lex.pos < _input.length ) {
+        if (_lex.pos < _input.length) {
           // !_input.substring(_lex.pos, _input.length).match(/^\s*$/g)
           failure('error at end')
           // console.log(_lex.pos, _input+':'+_input.length, '/'+_input.substring(_lex.pos, _input.length)+'/')

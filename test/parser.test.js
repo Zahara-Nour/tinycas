@@ -177,6 +177,22 @@ describe('Parsing', () => {
     expect(e.isSymbol()).toBeTruthy()
   })
 
+  test('Parser parses a limit', () => {
+    let e = p.parse('infplus')
+    expect(e.isLimit()).toBeTruthy()
+    expect(e.toString()).toEqual('infplus')
+    
+    e = p.parse('infmoins')
+    expect(e.toString()).toEqual('infmoins')
+    expect(e.isLimit()).toBeTruthy()
+    e = p.parse('0plus')
+    expect(e.toString()).toEqual('0plus')
+    expect(e.isLimit()).toBeTruthy()
+    e = p.parse('0moins')
+    expect(e.toString()).toEqual('0moins')
+    expect(e.isLimit()).toBeTruthy()
+  })
+
   test('Parser parses a negative number', () => {
     const e = p.parse('-1')
     expect(e.toString()).toEqual('-1')

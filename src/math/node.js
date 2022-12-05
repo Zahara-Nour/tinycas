@@ -78,6 +78,7 @@ export const TYPE_RADICAL = 'sqrt'
 export const TYPE_TIME = 'time'
 export const TYPE_SIMPLE_TIME = 'simple_time'
 export const TYPE_IDENTIFIER = 'identifiant'
+export const TYPE_LIMIT = 'limit'
 
 Decimal.set({
   toExpPos: 89,
@@ -265,6 +266,9 @@ const PNode = {
   },
   isTime() {
     return this.type === TYPE_TIME
+  },
+  isLimit() {
+    return this.type === TYPE_LIMIT
   },
   isChild() {
     return !!this.parent
@@ -1220,4 +1224,8 @@ export function time(children) {
 
 export function identifier(name) {
   return createNode({type: TYPE_IDENTIFIER, name})
+}
+
+export function limit(sign, children) {
+  return createNode({type: TYPE_LIMIT, sign, children})
 }

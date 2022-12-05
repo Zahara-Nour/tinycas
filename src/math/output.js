@@ -42,6 +42,7 @@ import {
   TYPE_MAXP,
   TYPE_RELATIONS,
   TYPE_IDENTIFIER,
+  TYPE_LIMIT,
 } from './node.js'
 
 import { TYPE_NORMAL } from './normal.js'
@@ -63,6 +64,13 @@ export function text(e, options) {
   // console.log('isUnit', options.isUnit)
 
   switch (e.type) {
+    case TYPE_LIMIT:
+      if (e.first.isSymbol()) {
+        s = e.first.string + (e.sign==='+' ? 'plus' : 'moins')
+      } else {
+        s = e.first.string + (e.sign==='+' ? 'plus' : 'moins')
+      }
+      break
     case TYPE_RELATIONS:
       s = e.first.toString(options)
       e.ops.forEach((op, i) => {
@@ -396,6 +404,13 @@ export function latex(e, options) {
   let s
 
   switch (e.type) {
+    case TYPE_LIMIT:
+      if (e.first.isSymbol()) {
+        s = e.sign + '\\infin'
+      } else {
+        s = e.first.string + '^' + e.sign
+      }
+      break
     case TYPE_ABS:
       s = '\\left\\lvert ' + e.first.toLatex(options) + ' \\right\\rvert'
       break

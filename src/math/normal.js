@@ -45,7 +45,8 @@ import {
   TYPE_MINP,
   TYPE_MAXP,
   TYPE_RELATIONS,
-  TYPE_IDENTIFIER
+  TYPE_IDENTIFIER,
+  TYPE_LIMIT
 } from './node.js'
 import fraction from './fraction.js'
 import { math } from './math.js'
@@ -953,6 +954,10 @@ export default function normalize(node) {
   // others.proto
 
   switch (node.type) {
+    case TYPE_LIMIT:
+      n = nSum([[coefOne(), createBase(node)]])
+      d = nSumOne()
+      break
     case TYPE_TIME: {
       const children = node.children.map(c => c.normal)
 

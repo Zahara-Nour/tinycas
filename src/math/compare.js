@@ -15,6 +15,7 @@ import {
   TYPE_INEQUALITY_LESSOREQUAL,
   TYPE_INEQUALITY_MORE,
   TYPE_INEQUALITY_MOREOREQUAL,
+  TYPE_LIMIT,
   TYPE_LN,
   TYPE_LOG,
   TYPE_MOD,
@@ -95,19 +96,19 @@ export default function compare(node1, node2) {
     TYPE_ERROR,
     TYPE_NSUM,
     TYPE_NPRODUCT,
-
   ]
 
   // TODO: et l'unité ?
   // TODO: et les parebthèses ?
 
-  if (!(priorityList.includes(node1.type) && priorityList.includes(node2.type))) {
+  if (
+    !(priorityList.includes(node1.type) && priorityList.includes(node2.type))
+  ) {
     throw new Error(`type ${node1.type} forgotten`)
   }
 
   if (node1.type === node2.type) {
     switch (node1.type) {
-
       case TYPE_NUMBER:
         if (node1.value.lt(node2.value)) {
           return -1
@@ -163,7 +164,7 @@ export default function compare(node1, node2) {
       case TYPE_INEQUALITY_MORE:
       case TYPE_INEQUALITY_MOREOREQUAL:
         for (let i = 0; i < node1.children.length; i++) {
-          const comparaison = node1.children[i].compareTo(node2.children[i]) 
+          const comparaison = node1.children[i].compareTo(node2.children[i])
           if (comparaison) return comparaison
         }
         return 0
@@ -175,6 +176,25 @@ export default function compare(node1, node2) {
 
       case TYPE_ERROR:
         return 0
+
+      case TYPE_LIMIT:
+        if (node1.first.isSymbol() && node2.first.isSymbol()) {
+          return node1.sign < node2.sign ? -1 : node1.sign > node2.sign ? 1 : 0
+        } else if (node1.first.isSymbol()) {
+          return 1
+        } else if (node2.first.isSymbol()) {
+          return -1
+        } else {
+          if (node1.first.equals.node2.first) {
+            return node1.sign < node2.sign
+              ? -1
+              : node1.sign > node2.sign
+              ? 1
+              : 0
+          } else {
+            return node1.first.compareTo(node2.first)
+          }
+        }
 
       case TYPE_NORMAL:
         result = node1.n.mult(node2.d).compareTo(node2.n.mult(node1.d))
@@ -195,7 +215,7 @@ export default function compare(node1, node2) {
       case TYPE_NPRODUCT:
         // !!!!! attention avec les crochets en début de ligne !!!!!!!!!!
         ;[i1, i2] = [node1[Symbol.iterator](), node2[Symbol.iterator]()]
-          ;[next1, next2] = [i1.next(), i2.next()]
+        ;[next1, next2] = [i1.next(), i2.next()]
 
         while (!next1.done && !next2.done) {
           const [child1, child2] = [next1.value, next2.value]
@@ -234,6 +254,8 @@ export default function compare(node1, node2) {
         throw new Error(`type ${node1.type} forgotten`)
     }
   } else {
-    return priorityList.indexOf(node1.type) < priorityList.indexOf(node2.type) ? -1 : 1
+    return priorityList.indexOf(node1.type) < priorityList.indexOf(node2.type)
+      ? -1
+      : 1
   }
 }
