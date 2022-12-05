@@ -370,15 +370,12 @@ ${msg}`
 
     if (match(LIMIT)) {
       const lim = _lexem
-      console.log('lim', _lexem,lim.substring(3), lim[0] )
       
       let sign
       let children
       if (lim[0] === 'i') {
-        console.log('infinity')
         sign = lim.substring(3) === 'plus' ? '+' : '-'
         children = [symbol('inf')]
-        console.log(sign, children)
       } else {
         sign = lim[lim.length - 2] === 'u' ? '+' : '-'
         children =

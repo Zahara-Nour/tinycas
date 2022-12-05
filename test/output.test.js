@@ -23,7 +23,6 @@ describe('Testing error output', () => {
   test.each(t)(
     'exporting %s to asciimath',
     (e, expected, expected2) => {
-      console.log('e.input', math(e))
       expect(math(e).isIncorrect()).toBeTruthy()
       expect(math(e).string).toBe(expected)
       expect(math(e).latex).toBe(expected2)
@@ -31,7 +30,6 @@ describe('Testing error output', () => {
   )
 })
 
-console.log(math('2+').string)
 describe('Testing asciimath export', () => {
 
   const t = [ 

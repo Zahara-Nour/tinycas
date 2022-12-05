@@ -121,7 +121,6 @@ describe('Parsing', () => {
 
   test('Parser parses number with trailing comma', () => {
     let e = p.parse('1,')
-    console.log('e', e)
     expect(e.isIncorrect()).toBeTruthy()
   })
 
@@ -191,6 +190,11 @@ describe('Parsing', () => {
     e = p.parse('0moins')
     expect(e.toString()).toEqual('0moins')
     expect(e.isLimit()).toBeTruthy()
+    e = p.parse('3/0moins')
+    expect(e.isCorrect()).toBeTruthy()
+    expect(e.toString()).toEqual('3/0moins')
+    e = p.parse('infmoins/0moins')
+    expect(e.isCorrect()).toBeTruthy()
   })
 
   test('Parser parses a negative number', () => {

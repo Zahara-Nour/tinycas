@@ -110,7 +110,7 @@ export default function evaluate(node, params) {
     }
 
     default:
-      console.log('!!!!!!!  default evauluate')
+      console.log('!!!!!!!  default evaluate')
       return node
   }
 }

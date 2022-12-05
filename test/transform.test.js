@@ -691,5 +691,3 @@ describe('Testing derivating functions', () => {
 })
 
 
-const e = math('1+2+3+4')
-console.log('shuffle', e.shuffleTerms().toString())

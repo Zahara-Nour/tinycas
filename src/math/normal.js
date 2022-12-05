@@ -707,7 +707,7 @@ const PNList = {
           let factor = nProductElementToNode(this.children[i])
 
           if (factor.isOpposite() || factor.isSum() || factor.isDifference()) {
-            console.log('factor', factor.string)
+            // console.log('factor', factor.string)
             factor = factor.bracket()
           }
           if (i === 0) {
@@ -1470,7 +1470,7 @@ export default function normalize(node) {
     // TODO: et les TEMPLATES?
 
     default:
-      console.log('!!!normalizing default !!!', node, node.string)
+      // console.log('!!!normalizing default !!!', node, node.string)
   }
 
   if (!e) {
